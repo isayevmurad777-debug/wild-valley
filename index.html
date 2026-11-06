@@ -24175,7 +24175,7 @@ function updateTestPanelV74(){
 const updateAnimalsCoreV74=updateAnimals;
 updateAnimals=function(dt){
  updateAnimalsCoreV74(dt);
- if(!testV74.el&&flowV42.started)safeV74('build',buildTestPanelV74);
+ if(!testV74.el&&flowV42.started&&flowV42.debug)safeV74('build',buildTestPanelV74);
  if(testV74.el){testV74.el.hidden=!flowV42.started;testV74.t=(testV74.t||0)-dt;if(testV74.t<=0){testV74.t=.5;safeV74('upd',updateTestPanelV74);}}
 };
 /* /V74 */
