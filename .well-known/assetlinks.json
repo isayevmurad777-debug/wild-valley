@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.wildvalley.survival",
+      "sha256_cert_fingerprints": [
+        "C2:44:31:B2:D9:13:BF:CE:C3:0D:9D:4B:33:7D:11:7E:D6:36:D3:F2:2B:9B:CB:1B:ED:4C:AF:3A:54:12:20:49",
+        "3B:66:01:79:7F:5B:14:7D:83:D4:C4:DE:6B:A2:59:A1:48:99:2C:8A:80:D9:D0:7E:A3:47:04:DD:E9:E6:25:D1"
+      ]
+    }
+  }
+]
