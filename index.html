@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="wild-valley-version" content="88">
+<meta name="wild-valley-version" content="92">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#1a1520">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V88</title>
+<title>Wild Valley — Survival · V95</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V88</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V95</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V88</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V95</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -12716,7 +12716,7 @@ function renderWorldV43(){
  if(!journeying&&!flowV42.restoring&&(typeof treeBatchNeedV86!=='function'||treeBatchNeedV86())){
   if(perfV43.treeDirty||perfV43.treeCount!==trees.length||perfV43.treeFirst!==trees[0])rebuildTreeBatchesV43();
   const p=camHolder.position,zero=perfV43.zero,live=new Set(trees);
-  for(const t of trees){const near=Math.hypot(t.x-p.x,t.z-p.z)<(LOW_POWER?165:235);t.root.visible=near;
+  for(const t of trees){const near=Math.hypot(t.x-p.x,t.z-p.z)<(typeof treeViewV90==='function'?treeViewV90():(LOW_POWER?165:235));t.root.visible=near;
    if(near)t.root.updateMatrixWorld(true);for(const part of t.pieces)part.visible=t.falling&&near;
   }
   // V48: yalnız yaxın ağaclar ardıcıl yazılır, count azalır — GPU uzaq (sıfır ölçülü) ağacları emal etmir.
@@ -28728,6 +28728,1271 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v88={gun:()=
  shoot:area=>{inv.cannonV73=1;gunV88.cd=0;gunV88.charge=area?.6:0;releaseChargeV88();},traps:()=>trapBombV88.list.map(t=>({x:+t.x.toFixed(1),z:+t.z.toFixed(1),arm:+t.armT.toFixed(1)})),
  place:()=>{inv.cannonV73=1;inv.fireBombV76=(inv.fireBombV76|0)+1;bombV76.cd=0;shootBombV76();},flash:()=>flashV88.list.length,hitAt:(a,point,dmg)=>{lastShotHitV88.obj=a;lastShotHitV88.point=point.clone();lastShotHitV88.t=performance.now();const h=a.hp;hitAnimal(a,dmg,'arrow');return h-a.hp;}};
 /* /V88 */
+
+
+/* ============================================================
+   V89 — DOĞULMA DONMALARI VƏ HEYVAN HƏRƏKƏTİ (ölçülərək tapılan qüsurlar).
+   1) Model birləşdirmə (compactRigV43 / V54) hər ədədi JS massivinə bir-bir push edirdi: bir maral
+      14–25 ms (masaüstü), telefonda 60–200 ms tək kadr. İndi tipli massivlə birbaşa yazılır (~10×).
+      Üstəlik maral və cüyürün köhnə modeli studiya modeli ilə əvəz olunacaqsa, artıq birləşdirilmir.
+   2) Studiya modelləri (maral, cüyür, bizon, ayı, canavar) hər heyvan üçün sıfırdan qurulurdu
+      (~10 ms masaüstü / 40–60 ms telefon, sürüdə ardıcıl 5 kadr). İndi hər növ+rəng üçün bir şablon
+      qurulur, sonrakı heyvanlar onu köçürür (həndəsə, material və tük buferi paylaşılır).
+      Əsas şablonlar oyun başlayanda hazırlanır.
+   3) Uzaq heyvanlar (V81 LOD) hər 2-ci/3-cü kadr yenilənirdi, qalan kadrlarda yerində dururdu: yarı/üçdə
+      bir sürət və pilləli hərəkət. İndi buraxılan kadrda son addım təkrarlanır (maneə yoxlanır).
+   4) Yay/nizə əldə olanda nişan önizləməsi hər kadr bütün ağac və heyvanlar üçün qutular qururdu
+      (~100 obyekt/kadr). Maneələr 0.3 s keşlənir, hədəflər kadrda bir dəfə qurulur, telefonda
+      önizləmə hər 2-ci kadr.
+   5) Heyvan-ağac toqquşması hər yoxlamada 400 ağacın hamısını gəzirdi → 6 m-lik şəbəkə.
+   6) Raptor və bal porsuğu yana sürüşəndə gövdə hərəkət istiqamətinə dönür (yalnız görünüş).
+   8) Hava effektlərinin GPU buferləri oyun başlayanda yüklənir (ilk fırtına/qar kadrı takılmasın).
+   7) Telefonda zərbə dayanması (hit-stop): balta zərbəsi 75 → 20 ms, ağac qırılması 130 → 40 ms,
+      zərər alanda 45 → 20 ms (aşağı kadr sürətində donma kimi görünürdü).
+   ============================================================ */
+const errOnceV89=new Set();
+function safeV89(name,fn){try{return fn();}catch(e){if(!errOnceV89.has(name)){errOnceV89.add(name);console.warn('V89 '+name,e);}}}
+const frameV89={n:0};
+tick=(c=>function(){frameV89.n++;return c.apply(this,arguments);})(tick);
+
+/* ---------- 1) Sürətli birləşdirmə ---------- */
+const mergeV89={m3:new THREE.Matrix3(),fast:0,slow:0,deferred:0};
+function mergeGroupV89(parts,attrs){
+ let total=0;
+ for(const m of parts){const g=m.geometry,A=g&&g.attributes;if(!A||!A.position)return null;
+  for(const k of attrs){const a=A[k];if(!a||a.isInterleavedBufferAttribute||a.itemSize!==(k==='uv'?2:3))return null;}
+  total+=g.index?g.index.count:A.position.count;}
+ const out={};for(const k of attrs)out[k]=new Float32Array(total*(k==='uv'?2:3));
+ const op=out.position,on=out.normal||null,ou=out.uv||null,oc=out.color||null,m3=mergeV89.m3;let off=0;
+ for(const m of parts){m.updateMatrix();const g=m.geometry,A=g.attributes,M=m.matrix.elements,P=A.position.array,I=g.index?g.index.array:null,n=I?I.length:A.position.count;
+  const Nn=on?A.normal.array:null,U=ou?A.uv.array:null,C=oc?A.color.array:null;m3.getNormalMatrix(m.matrix);const N=m3.elements;
+  for(let i=0;i<n;i++){const v=I?I[i]:i,j=v*3,o=(off+i)*3,x=P[j],y=P[j+1],z=P[j+2];
+   op[o]=M[0]*x+M[4]*y+M[8]*z+M[12];op[o+1]=M[1]*x+M[5]*y+M[9]*z+M[13];op[o+2]=M[2]*x+M[6]*y+M[10]*z+M[14];
+   if(on){const a=Nn[j],b=Nn[j+1],c=Nn[j+2],nx=N[0]*a+N[3]*b+N[6]*c,ny=N[1]*a+N[4]*b+N[7]*c,nz=N[2]*a+N[5]*b+N[8]*c,l=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;on[o]=nx/l;on[o+1]=ny/l;on[o+2]=nz/l;}
+   if(ou){const q=(off+i)*2;ou[q]=U[v*2];ou[q+1]=U[v*2+1];}
+   if(oc){oc[o]=C[j];oc[o+1]=C[j+1];oc[o+2]=C[j+2];}}
+  off+=n;}
+ const geo=new THREE.BufferGeometry();for(const k of attrs)geo.setAttribute(k,new THREE.BufferAttribute(out[k],k==='uv'?2:3));geo.userData.ownedV43=true;mergeV89.fast++;return geo;
+}
+// Köhnə (yavaş) yol: qeyri-standart atributlar üçün ehtiyat
+function slowMergeV89(parts,attrs){
+ const arr={};for(const k of attrs)arr[k]=[];
+ for(const m of parts){m.updateMatrix();const g=m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone();g.applyMatrix4(m.matrix);
+  for(const k of attrs){const a=g.attributes[k];if(!a)continue;for(let i=0;i<a.array.length;i++)arr[k].push(a.array[i]);}g.dispose();}
+ const geo=new THREE.BufferGeometry();for(const k of attrs)geo.setAttribute(k,new THREE.Float32BufferAttribute(arr[k],k==='uv'?2:3));geo.userData.ownedV43=true;mergeV89.slow++;return geo;
+}
+function skinWillReplaceV89(root){const d=root&&root.userData&&root.userData.designV59;return (d==='deer'||d==='roe')&&V78.enabled&&!blockyV85.on&&!root.userData.skinBuiltV89;}
+compactRigV43=function(root,keep=new Set()){
+ if(!root)return;
+ // Maral/cüyürün köhnə görünüşü studiya modeli ilə əvəz olunacaq: birləşdirmə təxirə salınır (əvəz olunmasa 1.5 s sonra edilir).
+ if(skinWillReplaceV89(root)&&root.userData.compactLaterV89===undefined){root.userData.compactLaterV89=elapsed;root.userData.compactKeepV89=keep;mergeV89.deferred++;return;}
+ if(blockyV85.on&&!root.userData.blockyV85)safeV89('box43',()=>boxifyV85(root));
+ for(const child of [...root.children])if(child.isGroup)compactRigV43(child,keep);
+ const groups=new Map();for(const m of root.children){if(!m.isMesh||m.isInstancedMesh||keep.has(m)||m.name||Array.isArray(m.material)||m.material.transparent)continue;const list=groups.get(m.material)||[];list.push(m);groups.set(m.material,list);}
+ for(const [material,parts] of groups){if(parts.length<2)continue;
+  const hasUV=parts.every(m=>m.geometry&&m.geometry.attributes.uv),attrs=hasUV?['position','normal','uv']:['position','normal'];
+  const geo=mergeGroupV89(parts,attrs)||slowMergeV89(parts,attrs);
+  const mesh=new THREE.Mesh(geo,material);mesh.castShadow=!LOW_POWER;root.add(mesh);for(const m of parts)root.remove(m);
+ }
+};
+compactRigV54=function(node,keep){
+ if(!node)return;
+ if(blockyV85.on&&!node.userData.blockyV85)safeV89('box54',()=>boxifyV85(node));
+ for(const c of [...node.children])if(c.children&&c.children.length&&!c.isInstancedMesh)compactRigV54(c,keep);
+ const groups=new Map();
+ for(const m of node.children){
+  if(!m.isMesh||m.isInstancedMesh||m.isSkinnedMesh||keep.has(m)||m.name||m.children.length||Array.isArray(m.material)||!m.visible)continue;
+  if(Object.keys(m.userData).length||m.onBeforeRender!==defaultBeforeRenderV54||!m.geometry||!m.geometry.attributes.position)continue;
+  const g=m.geometry;if(g.morphAttributes&&Object.keys(g.morphAttributes).length)continue;
+  const attrs=['position','normal','uv','color'].filter(k=>g.attributes[k]);if(!attrs.includes('normal'))continue;
+  const sig=m.material.uuid+'|'+attrs.join(',')+'|'+(m.castShadow?1:0)+(m.receiveShadow?1:0)+'|'+m.renderOrder;
+  let l=groups.get(sig);if(!l)groups.set(sig,l={attrs,list:[]});l.list.push(m);
+ }
+ for(const {attrs,list} of groups.values()){
+  if(list.length<2)continue;
+  const geo=mergeGroupV89(list,attrs)||slowMergeV89(list,attrs);geo.computeBoundingSphere();
+  const mesh=new THREE.Mesh(geo,list[0].material);mesh.castShadow=list[0].castShadow;mesh.receiveShadow=list[0].receiveShadow;mesh.renderOrder=list[0].renderOrder;
+  node.add(mesh);for(const m of list)node.remove(m);
+ }
+};
+// Təxirə salınmış birləşdirmə: studiya modeli gəlməyibsə (kadrda ən çox 1)
+function deferredCompactTickV89(){
+ for(const a of animals){const r=a.root,u=r&&r.userData;if(!u||u.compactLaterV89===undefined)continue;
+  if(u.skinV78){u.compactLaterV89=undefined;u.compactKeepV89=null;continue;}
+  if(elapsed-u.compactLaterV89<1.5&&elapsed>=u.compactLaterV89)continue;
+  const keep=u.compactKeepV89||new Set();u.skinBuiltV89=true;u.compactLaterV89=undefined;u.compactKeepV89=null;compactRigV43(r,keep);return;}
+}
+
+/* ---------- 2) Studiya modeli şablonları ---------- */
+const tplV89={map:new Map(),builds:0,clones:0,miss:0};
+function tplKeyV89(E){const pal=E.palette||PALETTE_V78.natural;let pk=pal.__k89;if(!pk){pk=JSON.stringify(pal);if(Object.values(PALETTE_V78).includes(pal)){try{Object.defineProperty(pal,'__k89',{value:pk,enumerable:false});}catch(e){}}}return E.kind+'|'+V78.density+'|'+pk;}
+function buildTemplateV89(kind,pal){
+ let model;if(kind==='deer')model=createDeerModelV78(pal);else if(kind==='bison')model=createBisonModelV78(pal);else if(kind==='bear')model=createBearModelV78(pal);else if(kind==='wolf')model=createWolfModelV78(pal);else model=createRoeDeerModelV78(pal);
+ let ok=true;model.traverse(o=>{if(!(o.isMesh||o.type==='Group'||o.type==='Object3D'))ok=false;});if(!ok)return null;
+ compactRigV43(model);
+ model.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.shared=true;o.geometry.userData.ownedV43=false;}});
+ tplV89.builds++;return model;
+}
+function templateV89(E){const key=tplKeyV89(E);let T=tplV89.map.get(key);if(T===undefined){T=buildTemplateV89(E.kind,E.palette||PALETTE_V78.natural);tplV89.map.set(key,T||null);if(tplV89.map.size>40){const first=tplV89.map.keys().next().value;tplV89.map.delete(first);}}return T;}
+function cloneModelV89(src){
+ const map=new Map();
+ const rec=s=>{let d;
+  if(s.isInstancedMesh){d=new THREE.InstancedMesh(s.geometry,s.material,s.count);d.instanceMatrix=s.instanceMatrix;if(s.instanceColor)d.instanceColor=s.instanceColor;d.dispose=function(){};}
+  else if(s.isMesh)d=new THREE.Mesh(s.geometry,s.material);else d=new THREE.Group();
+  d.name=s.name;d.position.copy(s.position);d.rotation.copy(s.rotation);d.scale.copy(s.scale);d.visible=s.visible;d.castShadow=s.castShadow;d.receiveShadow=s.receiveShadow;d.frustumCulled=s.frustumCulled;d.renderOrder=s.renderOrder;
+  map.set(s,d);for(const c of s.children)d.add(rec(c));return d;};
+ const root=rec(src);
+ const remap=v=>{if(v&&v.isObject3D)return map.get(v)||v;if(Array.isArray(v))return v.map(remap);if(v&&typeof v==='object'&&v.constructor===Object){const o={};for(const k in v)o[k]=remap(v[k]);return o;}return v;};
+ for(const [s,d] of map){const u=s.userData;for(const k in u)d.userData[k]=remap(u[k]);}
+ tplV89.clones++;return root;
+}
+const buildSkinCoreV89=buildSkinNowV78;
+buildSkinNowV78=function(E){
+ if(blockyV85.on)return buildSkinCoreV89(E);
+ let model=null;safeV89('tpl',()=>{const T=templateV89(E);if(T)model=cloneModelV89(T);});
+ if(!model){tplV89.miss++;return buildSkinCoreV89(E);}
+ const root=E.root,o=E.opts;
+ if(E.kind==='wolf'){if(o.boss&&model.userData.maneGroup)model.userData.maneGroup.scale.set(1.12,1.15,1.12);}
+ else if(E.kind!=='deer'&&E.kind!=='bison'&&E.kind!=='bear'){if(o.noAntlers&&model.userData.antlersGroup)model.userData.antlersGroup.visible=false;}
+ if(o.antlerScale&&model.userData.antlersGroup)model.userData.antlersGroup.scale.setScalar(o.antlerScale);
+ root.userData.skinBuiltV89=true;
+ const old=stripRootV78(root);finishModelV78(root,model,old,o);
+ const u=E.u=model.userData;for(const L of E.legs)L.s=u.legs[L.k];
+ if(E.ears.length&&u.ears){E.studioEars=u.ears;for(const s of E.studioEars)s.userData.baseZ=s.rotation.z;}
+ E.mirror=u.mirrorPatch||null;E.fur=[];model.traverse(x=>{if(x.isInstancedMesh)E.fur.push(x);});
+};
+// Əsas şablonlar oyun başlayanda (ilk yükləmə anında) hazırlanır
+const prewarmCoreV89=prewarmShadersV56;
+prewarmShadersV56=function(){const was=prewarmV56.done;const r=prewarmCoreV89.apply(this,arguments);
+ if(!was&&prewarmV56.done&&V78.enabled&&!blockyV85.on)safeV89('tplWarm',()=>{for(const [k,p] of [['deer','natural'],['deer','whiteDeer'],['deer','alphaDeer'],['roe','natural'],['roe','winterRoe'],['bison','natural']])templateV89({kind:k,palette:PALETTE_V78[p]});});
+ return r;};
+
+// Hava effektlərinin buferləri (yağış, dolu, qar, tornado, qasırğa, aurora) ilk dəfə görünəndə GPU-ya yüklənirdi:
+// fırtınanın ilk kadrı bahalı idi. İndi başlanğıc yükləməsində 16×16 hədəfə bir dəfə çəkilir.
+function warmWeatherBuffersV89(){
+ const names=['rainLines','rainNearLines','rainSplashRoot','hailPoints','hurricaneRoot','tornadoRoot','snowPoints','snowNearPoints','snowDustV35','aurora'];
+ const roots=[];for(const n of names){let o=null;try{o=(0,eval)(n);}catch(e){}if(o&&o.isObject3D)roots.push(o);}
+ if(typeof heavySnowV50!=='undefined')for(const k in heavySnowV50){const o=heavySnowV50[k];if(o&&o.isObject3D)roots.push(o);}
+ const saved=[];for(const r of roots)r.traverse(o=>{saved.push([o,o.visible,o.frustumCulled]);o.visible=true;o.frustumCulled=false;});
+ const rt=new THREE.WebGLRenderTarget(16,16);const prev=renderer.getRenderTarget();
+ try{renderer.setRenderTarget(rt);renderer.render(scene,camera);}finally{renderer.setRenderTarget(prev);rt.dispose();for(const [o,v,f] of saved){o.visible=v;o.frustumCulled=f;}}
+ return roots.length;
+}
+prewarmShadersV56=(c=>function(){const was=prewarmV56.done;const r=c.apply(this,arguments);if(!was&&prewarmV56.done)safeV89('weatherWarm',warmWeatherBuffersV89);return r;})(prewarmShadersV56);
+
+/* ---------- 3) Uzaq heyvanlar: buraxılan kadrlarda son addım davam edir ---------- */
+// V81 uzaq heyvanı hər 2-ci/3-cü kadr yeniləyirdi, qalan kadrlarda heyvan yerində dururdu: yarı sürət və
+// pilləli hərəkət. İndi buraxılan kadrda heyvan son yenilənmədəki addımını təkrarlayır (maneə yoxlanır).
+const lodStatV89={skips:0,updates:0,steps:0};
+updateAnimalV55=(c=>function(a,dt){
+ if(dt>0&&a&&a.root&&!lodExemptV81(a)){
+  const d2=lodDist2V81(a),q=a.root.position;
+  if(d2>=lodV81.near2){
+   const n=d2<lodV81.far2?2:3;if(a.lodPhaseV81===undefined)a.lodPhaseV81=(Math.random()*3)|0;
+   const L=a.lodV89||(a.lodV89={px:q.x,pz:q.z,dx:0,dz:0,fresh:false});
+   if(((lodV81.frame+a.lodPhaseV81)%n)!==0){
+    if(L.fresh){L.dx=q.x-L.px;L.dz=q.z-L.pz;L.fresh=false;if(L.dx*L.dx+L.dz*L.dz>1.44||!Number.isFinite(L.dx+L.dz)){L.dx=0;L.dz=0;}}
+    if(L.dx||L.dz){const nx=q.x+L.dx,nz=q.z+L.dz;
+     if(!wildlifeBlockedV39(a,nx,nz)){const g0=terrainHeightAt(q.x,q.z);q.x=nx;q.z=nz;q.y+=terrainHeightAt(nx,nz)-g0;lodStatV89.steps++;}else{L.dx=0;L.dz=0;}}
+    lodStatV89.skips++;return true;
+   }
+   L.px=q.x;L.pz=q.z;L.fresh=true;lodStatV89.updates++;
+  }else if(a.lodV89){a.lodV89.fresh=false;a.lodV89.dx=0;a.lodV89.dz=0;}
+ }
+ return c.apply(this,arguments);
+})(updateAnimalV55);
+/* ---------- 6) Yana sürüşmə: gövdə hərəkət istiqamətinə dönür (yalnız görünüş) ---------- */
+function slideFixV89(o,dt){
+ const m=o.motionV44,r=o.root;if(!m||m.reset||!r)return;
+ const S=o.slideV89||(o.slideV89={x:r.position.x,z:r.position.z,vx:0,vz:0,off:0});
+ const ix=(r.position.x-S.x)/dt,iz=(r.position.z-S.z)/dt;S.x=r.position.x;S.z=r.position.z;
+ if(Math.abs(ix)+Math.abs(iz)>60){S.vx=0;S.vz=0;return;}          // yerdəyişmə/teleport
+ const kv=Math.min(1,dt*5);S.vx+=(ix-S.vx)*kv;S.vz+=(iz-S.vz)*kv;const sp=Math.hypot(S.vx,S.vz);
+ let want=0;
+ if(sp>1.6){const yawV=Math.atan2(-S.vx,-S.vz);let d=Math.atan2(Math.sin(yawV-r.rotation.y),Math.cos(yawV-r.rotation.y));
+  if(Math.abs(d)>2.2&&S.off)d=Math.sign(S.off)*Math.abs(d);       // geri hərəkətdə tərəf dəyişməsin
+  const k=Math.max(0,Math.min(1,(Math.abs(d)-.55)/.5));want=d*.85*k;}
+ S.off+=(want-S.off)*Math.min(1,dt*4);
+ if(Math.abs(S.off)>.01){r.rotation.y+=S.off;m.vry=r.rotation.y;}
+}
+motionApplyV44=(c=>function(o,dt){
+ const r=c.apply(this,arguments);
+ if(o&&o.root&&dt>0&&(o.raptorV55||o.badgerV75)&&!lodFarV81(o))safeV89('slide',()=>slideFixV89(o,dt));
+ return r;
+})(motionApplyV44);
+
+/* ---------- 4) Nişan/ox: maneə və hədəf keşi ---------- */
+const shotCacheV89={obs:null,ox:0,oz:0,t:-1,n:-1,b:-1,tg:null,tf:-1,tx:0,tz:0,prev:undefined,pf:-9,hits:0};
+shotObstaclesV37=(c=>function(origin){const S=shotCacheV89;
+ if(S.obs&&origin&&elapsed-S.t<.3&&elapsed>=S.t&&S.n===trees.length&&S.b===blockMeshes.length&&Math.abs(origin.x-S.ox)<2&&Math.abs(origin.z-S.oz)<2){S.hits++;return S.obs;}
+ const r=c.apply(this,arguments);if(origin){S.obs=r;S.t=elapsed;S.n=trees.length;S.b=blockMeshes.length;S.ox=origin.x;S.oz=origin.z;}return r;})(shotObstaclesV37);
+shotTargetsV37=(c=>function(origin){const S=shotCacheV89;
+ if(S.tg&&origin&&S.tf===frameV89.n&&Math.abs(origin.x-S.tx)<.5&&Math.abs(origin.z-S.tz)<.5){S.hits++;return S.tg;}
+ const r=c.apply(this,arguments);if(origin){S.tg=r;S.tf=frameV89.n;S.tx=origin.x;S.tz=origin.z;}return r;})(shotTargetsV37);
+previewShotV37=(c=>function(){const S=shotCacheV89;if(LOW_POWER&&(frameV89.n&1)&&S.pf===frameV89.n-1)return S.prev;const r=c.apply(this,arguments);S.prev=r;S.pf=frameV89.n;return r;})(previewShotV37);
+hitAnimal=(c=>function(){shotCacheV89.tf=-1;return c.apply(this,arguments);})(hitAnimal);
+removeAnimal=(c=>function(){shotCacheV89.tf=-1;return c.apply(this,arguments);})(removeAnimal);
+removeEnemy=(c=>function(){shotCacheV89.tf=-1;return c.apply(this,arguments);})(removeEnemy);
+
+/* ---------- 5) Ağac toqquşması: 6 m-lik şəbəkə ---------- */
+const treeGridV89={map:new Map(),n:-1,first:null,maxR:.48,t:-1};
+function treeGridBuildV89(){const G=treeGridV89;G.map.clear();G.n=trees.length;G.first=trees[0];G.maxR=.48;G.t=elapsed;
+ for(const t of trees){const k=((Math.floor(t.x/6)+2048)<<12)|(Math.floor(t.z/6)+2048);let l=G.map.get(k);if(!l)G.map.set(k,l=[]);l.push(t);if((t.trunkRadius||.48)>G.maxR)G.maxR=t.trunkRadius;}}
+animalTreeCollision=function(a,x,z){
+ const G=treeGridV89;if(G.n!==trees.length||G.first!==trees[0]||elapsed-G.t>5||elapsed<G.t)treeGridBuildV89();
+ const ar=animalRadius(a)+.14,reach=G.maxR+ar,x0=Math.floor((x-reach)/6),x1=Math.floor((x+reach)/6),z0=Math.floor((z-reach)/6),z1=Math.floor((z+reach)/6);let best=null,bd=Infinity;
+ for(let ix=x0;ix<=x1;ix++)for(let iz=z0;iz<=z1;iz++){const l=G.map.get(((ix+2048)<<12)|(iz+2048));if(!l)continue;
+  for(const t of l){const dx=x-t.x,dz=z-t.z,d=Math.sqrt(dx*dx+dz*dz);if(d<(t.trunkRadius||.48)+ar&&d<bd){best=t;bd=d;}}}
+ return best;
+};
+
+/* ---------- 7) Telefonda zərbə dayanması qısalır ---------- */
+safeV89('feel',()=>{if(LOW_POWER&&typeof FEEL!=='undefined'){if(typeof FEEL.hitPause==='number')FEEL.hitPause=Math.min(FEEL.hitPause,.02);if(typeof FEEL.breakPause==='number')FEEL.breakPause=Math.min(FEEL.breakPause,.04);}});
+if(LOW_POWER){hurtPlayer=(c=>function(){const r=c.apply(this,arguments);if(pause>.02)pause=.02;return r;})(hurtPlayer);}
+
+/* ---------- Bağlantılar ---------- */
+updateAnimals=(c=>function(dt){const r=c.apply(this,arguments);if(dt>0)safeV89('deferCompact',deferredCompactTickV89);return r;})(updateAnimals);
+restoreV42=(c=>async function(d){shotCacheV89.obs=null;shotCacheV89.tg=null;treeGridV89.n=-1;return c.apply(this,arguments);})(restoreV42);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v89={merge:()=>({...mergeV89,m3:undefined}),tpl:()=>({keys:tplV89.map.size,builds:tplV89.builds,clones:tplV89.clones,miss:tplV89.miss}),lod:()=>({...lodStatV89}),shot:()=>({hits:shotCacheV89.hits}),grid:()=>({cells:treeGridV89.map.size,n:treeGridV89.n})};
+/* /V89 */
+
+
+/* ============================================================
+   V90 — TELEFON KADR SÜRƏTİ (telefonda 12 FPS, PERF: heyvanlar 34%, çəkiliş 33%, sıx meşə 25%).
+   Telefon rejimində ölçü: kadrda 703 min üçbucaq, onun ~400 mini uzaqlıqdan asılı olmayaraq həmişə
+   çəkilən statik toplulardır (Qara kolluq 226 min, mamont vadisi 66 min, bataqlıq, qamışlıq...).
+   1) Statik InstancedMesh topluları məsafəyə görə sıxlaşdırılır: yalnız görmə radiusundakı nümunələr
+      çəkilir; telefonda Low/Medium pillədə ağır kolların bir hissəsi seyrəldilir.
+   1b) Statik toplular baxış konusuna görə də kəsilir (arxadakı kollar çəkilmir); relyef torunun yalnız
+      görmə radiusundakı xanaları çəkilir (122 min üçbucaq həmişə çəkilirdi).
+   2) Görmə məsafəsi qrafika pilləsinə bağlandı (telefonda Low 115 m, Medium 165 m; duman sərhədi
+      gizlədir). Ağac dəstələri və sıx meşə bu radiusu izləyir.
+   3) Sıx meşə hər 12 m-də bütün bufer tutumunu (~2.7 MB) GPU-ya göndərirdi → yalnız çəkilən hissə
+      göndərilir, telefonda 6 kadra bölünür, radius pilləyə görə kiçilir.
+   4) Uzaq heyvan qənaəti (hər 2-ci/3-cü kadr + son addımın davamı) indi BÜTÜN növlərə tətbiq olunur
+      (əvvəl at, cüyür, pişiklər və s. hər kadr tam hesablanırdı).
+   5) Pauza menyusu telefon ekranına sığır (düymələr daşmır, panel yuxarıdan sürüşür).
+   6) PERF sətri real orta kadr vaxtını, FPS-i, üçbucaq və çəkiliş çağırışı sayını göstərir.
+   ============================================================ */
+const errOnceV90=new Set();
+function safeV90(name,fn){try{return fn();}catch(e){if(!errOnceV90.has(name)){errOnceV90.add(name);console.warn('V90 '+name,e);}}}
+
+/* ---------- 2) Görmə məsafəsi ---------- */
+const viewV90={cap:Infinity,deepMul:1,frac:1,level:''};
+function setViewLevelV90(level){
+ viewV90.level=level;
+ if(LOW_POWER){viewV90.cap=level==='low'?115:level==='medium'?165:Infinity;viewV90.deepMul=level==='low'?.7:level==='medium'?.87:1;viewV90.frac=level==='low'?.55:level==='medium'?.8:1;}
+ else{viewV90.cap=level==='low'?170:Infinity;viewV90.deepMul=level==='low'?.8:1;viewV90.frac=level==='low'?.7:1;}
+ if(LOW_POWER){lodV81.near=level==='low'?40:level==='medium'?50:55;lodV81.far=level==='low'?85:level==='medium'?100:110;lodV81.near2=lodV81.near*lodV81.near;lodV81.far2=lodV81.far*lodV81.far;}
+ staticCullV90.lastX=1e9;groundCullV90.lastR=-1;deepForestV46.lastR=-999;treeGateV86.force=2;
+}
+function viewRadiusV90(){const f=scene.fog?scene.fog.far:200;return Math.min(viewV90.cap,f);}
+function treeViewV90(){return Math.min(LOW_POWER?165:235,viewRadiusV90()+15);}
+clampVisibility=(c=>function(){const r=c.apply(this,arguments);const cap=viewV90.cap;if(scene.fog&&scene.fog.far>cap){scene.fog.far=cap;if(scene.fog.near>cap*.5)scene.fog.near=cap*.5;}return r;})(clampVisibility);
+
+/* ---------- 1) Statik topluların məsafəyə görə sıxlaşdırılması ---------- */
+const staticCullV90={list:[],skip:new Set(),scanT:-99,lastX:1e9,lastZ:1e9,lastR:-1,lastFrac:1,lastYaw:0,lastHalf:0,drawn:0,total:0,runs:0,v:new THREE.Vector3()};
+function staticCullResetV90(){
+ const S=staticCullV90;if(groundCullV90.active){groundMesh.geometry.setIndex(groundCullV90.full);groundMesh.geometry.setDrawRange(0,Infinity);groundCullV90.active=false;groundCullV90.lastR=-1;}for(const e of S.list){const m=e.m;if(!m||!m.instanceMatrix)continue;
+  if(m.instanceMatrix.array.length===e.src.length){m.instanceMatrix.array.set(e.src);m.instanceMatrix.needsUpdate=true;}
+  if(e.col&&m.instanceColor&&m.instanceColor.array.length===e.col.length){m.instanceColor.array.set(e.col);m.instanceColor.needsUpdate=true;}
+  m.count=e.n;}
+ S.list.length=0;S.scanT=-99;S.lastX=1e9;
+}
+function staticCullScanV90(){
+ const S=staticCullV90,known=new Set(S.list.map(e=>e.m)),excl=new Set();
+ for(const b of deepForestV46.buckets.values())excl.add(b.mesh);for(const b of perfV43.treeBatches)excl.add(b.mesh);
+ for(const o of [grassV48.mesh,grassV48.flowers,meadowV72.mesh,meadowV72.flowers])if(o)excl.add(o);
+ for(const k in leavesV68){const o=leavesV68[k];if(o&&o.isObject3D)excl.add(o);}
+ if(snowStormV51.prints&&snowStormV51.prints.m)excl.add(snowStormV51.prints.m);
+ scene.traverse(o=>{
+  if(!o.isInstancedMesh||known.has(o)||excl.has(o)||S.skip.has(o))return;
+  if(o.frustumCulled||o.instanceMatrix.usage===THREE.DynamicDrawUsage)return;
+  const cap=o.instanceMatrix.count;if(o.count!==cap||cap<12)return;
+  const g=o.geometry,t=(g.index?g.index.count:g.attributes.position.count)/3;if(t*cap<5000)return;
+  for(let q=o.parent;q;q=q.parent)if((q.userData&&(q.userData.skinV78||q.userData.noOptV78||q.userData.proxyV78))||q.name==='skinV78')return;
+  o.updateMatrixWorld(true);const src=Float32Array.from(o.instanceMatrix.array),px=new Float32Array(cap),pz=new Float32Array(cap),v=S.v;
+  for(let i=0;i<cap;i++){v.set(src[i*16+12],src[i*16+13],src[i*16+14]).applyMatrix4(o.matrixWorld);px[i]=v.x;pz[i]=v.z;}
+  S.list.push({m:o,src,col:o.instanceColor?Float32Array.from(o.instanceColor.array):null,px,pz,n:cap,heavy:t>=150,k:cap,sig:src[12]+src[13]*3+src[14]*7});
+ });
+}
+function staticCullRunV90(force){
+ const S=staticCullV90,p=camHolder.position,R=viewRadiusV90()+18,R2=R*R,frac=viewV90.frac;
+ // Baxış konusu: üfüqi görüş bucağının yarısı + 28° ehtiyat; 25 m-dən yaxın hər şey saxlanır
+ const hf=Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect),half=Math.min(1.75,hf+.49),cosH=Math.cos(half),fx=-Math.sin(yaw),fz=-Math.cos(yaw);
+ let dyaw=yaw-S.lastYaw;dyaw=Math.abs(Math.atan2(Math.sin(dyaw),Math.cos(dyaw)));
+ if(!force&&Math.hypot(p.x-S.lastX,p.z-S.lastZ)<6&&Math.abs(R-S.lastR)<12&&frac===S.lastFrac&&dyaw<.17&&Math.abs(half-S.lastHalf)<.05)return;
+ S.lastX=p.x;S.lastZ=p.z;S.lastR=R;S.lastFrac=frac;S.lastYaw=yaw;S.lastHalf=half;S.runs++;let drawn=0,total=0;
+ for(let ei=S.list.length-1;ei>=0;ei--){const e=S.list[ei],m=e.m;
+  let attached=false;for(let q=m;q;q=q.parent)if(q===scene){attached=true;break;}
+  const A=m.instanceMatrix.array;
+  // Başqa kod bu toplunu yenidən yazıbsa və ya səhnədən çıxıbsa: əl çəkilir
+  if(!attached||A.length!==e.src.length||m.count!==e.k||(e.k>0&&Math.abs(A[12]+A[13]*3+A[14]*7-e.sig)>1e-3)){S.list.splice(ei,1);if(attached)S.skip.add(m);continue;}
+  const C=e.col?m.instanceColor.array:null,src=e.src,thin=e.heavy&&frac<1;let k=0;
+  for(let i=0;i<e.n;i++){const dx=e.px[i]-p.x,dz=e.pz[i]-p.z,d2=dx*dx+dz*dz;if(d2>R2)continue;
+   if(d2>625){if(dx*fx+dz*fz<cosH*Math.sqrt(d2))continue;                       // konusdan kənar
+    if(thin&&((i*.61803398875)%1)>(d2>3600?frac*.6:frac))continue;}              // ağır kollar uzaqda seyrəlir
+   const s=i*16,d=k*16;for(let j=0;j<16;j++)A[d+j]=src[s+j];if(C){C[k*3]=e.col[i*3];C[k*3+1]=e.col[i*3+1];C[k*3+2]=e.col[i*3+2];}k++;}
+  m.count=k;e.k=k;e.sig=k>0?A[12]+A[13]*3+A[14]*7:0;
+  if(k>0){m.instanceMatrix.updateRange.offset=0;m.instanceMatrix.updateRange.count=k*16;m.instanceMatrix.needsUpdate=true;if(C){m.instanceColor.updateRange.offset=0;m.instanceColor.updateRange.count=k*3;m.instanceColor.needsUpdate=true;}}
+  drawn+=k;total+=e.n;}
+ S.drawn=drawn;S.total=total;
+}
+/* Relyef: yalnız görmə radiusundakı xanalar çəkilir (1600×1600 m torun 122 min üçbucağı həmişə çəkilirdi) */
+const groundCullV90={ready:false,ok:false,full:null,dyn:null,cols:0,rows:0,xs:null,zs:null,lastX:1e9,lastZ:1e9,lastR:-1,active:false,tris:0};
+function groundCullInitV90(){
+ const G=groundCullV90;G.ready=true;const g=groundMesh&&groundMesh.geometry,P=g&&g.parameters;if(!g||!g.index||!P)return;
+ const cols=P.widthSegments,rows=P.heightSegments,pos=g.attributes.position;if(!(cols>0&&rows>0)||pos.count!==(cols+1)*(rows+1)||g.index.count!==cols*rows*6)return;
+ G.cols=cols;G.rows=rows;G.xs=new Float32Array(cols+1);G.zs=new Float32Array(rows+1);
+ for(let i=0;i<=cols;i++)G.xs[i]=pos.getX(i);for(let j=0;j<=rows;j++)G.zs[j]=pos.getZ(j*(cols+1));
+ G.full=g.index;G.dyn=new THREE.BufferAttribute(new Uint32Array(cols*rows*6),1);G.dyn.setUsage(THREE.DynamicDrawUsage);G.ok=true;
+}
+function groundCullTickV90(){
+ const G=groundCullV90;if(!G.ready)groundCullInitV90();if(!G.ok)return;
+ const g=groundMesh.geometry,cap=viewV90.cap;
+ if(!(cap<1e6)){if(G.active){g.setIndex(G.full);G.active=false;G.lastR=-1;}return;}
+ const p=camHolder.position,R=cap+55;
+ if(G.active&&Math.hypot(p.x-G.lastX,p.z-G.lastZ)<18&&R===G.lastR)return;
+ G.lastX=p.x;G.lastZ=p.z;G.lastR=R;const R2=(R+10)*(R+10),xs=G.xs,zs=G.zs,cols=G.cols,rows=G.rows,g1=cols+1,I=G.dyn.array;let n=0;
+ for(let iy=0;iy<rows;iy++){const cz=(zs[iy]+zs[iy+1])*.5-p.z;if(cz*cz>R2)continue;
+  for(let ix=0;ix<cols;ix++){const cx=(xs[ix]+xs[ix+1])*.5-p.x;if(cx*cx+cz*cz>R2)continue;
+   const a=ix+g1*iy,b=ix+g1*(iy+1),c=ix+1+g1*(iy+1),d=ix+1+g1*iy;I[n++]=a;I[n++]=b;I[n++]=d;I[n++]=b;I[n++]=c;I[n++]=d;}}
+ G.dyn.updateRange.offset=0;G.dyn.updateRange.count=n;G.dyn.needsUpdate=true;
+ if(!G.active){g.setIndex(G.dyn);G.active=true;}
+ g.setDrawRange(0,n);G.tris=n/3;
+}
+function staticCullTickV90(){
+ if(!flowV42.started||flowV42.restoring||journeying)return;const S=staticCullV90;
+ if(elapsed-S.scanT>6||elapsed<S.scanT){S.scanT=elapsed;const n=S.list.length;staticCullScanV90();if(S.list.length!==n)S.lastX=1e9;}
+ staticCullRunV90(false);
+ safeV90('ground',groundCullTickV90);
+}
+// Relyef, fəsil və yükləmə bu topluları yenidən yaza bilər: əvvəlcə orijinal vəziyyət qaytarılır
+for(const name of ['reshapeTerrainV37','refreshValleysV37','refreshScenicGrounding','setSeason','pruneValleyDecorV43']){
+ if(typeof window[name]==='function'){const c=window[name];window[name]=function(){safeV90('reset',staticCullResetV90);return c.apply(this,arguments);};}
+}
+restoreV42=(c=>async function(d){safeV90('resetR',staticCullResetV90);staticCullV90.skip.clear();return c.apply(this,arguments);})(restoreV42);
+
+/* ---------- 3) Sıx meşə: qismən yükləmə, kiçik radius ---------- */
+updateDeepForestV46=function(dt,force=false){
+ const F=deepForestV46,J=deepJobV86;
+ if(!F.ready){if(F.pendingBuild&&!journeying&&flowV42.started){F.pendingBuild=false;buildDeepForestV46();}J.phase=0;return;}
+ if(F.rebuildDue>0){F.rebuildDue-=dt;if(F.rebuildDue<=0&&!journeying){buildDeepForestV46();J.phase=0;return;}}
+ if(force&&J.phase!==0)J.phase=0;
+ if(J.phase===0){
+  const p=camHolder.position,R=Math.min(LOW_POWER?150:225,Math.max(70,viewRadiusV90()+30))*viewV90.deepMul;
+  F.cd-=dt;if(!force&&F.cd>0&&F.biome===activeBiome&&Math.hypot(p.x-F.lastX,p.z-F.lastZ)<12&&Math.abs(R-F.lastR)<15)return;
+  F.cd=1.1;F.lastX=p.x;F.lastZ=p.z;F.lastR=R;F.biome=activeBiome;J.phase=1;J.i=0;J.changed=!!force;J.px=p.x;J.pz=p.z;J.R2=R*R;J.n=F.trees.length;J.jobs++;
+ }
+ if(J.phase===1){
+  if(J.n!==F.trees.length){J.phase=0;return;}
+  const T=F.trees,slices=force?1:(LOW_POWER?6:3),step=Math.ceil(J.n/slices)||1,end=Math.min(J.n,J.i+step);
+  for(let k=J.i;k<end;k++){const t=T[k];t.on=!t.hidden&&deepLayerOnV46(t.layer);const dx=t.x-J.px,dz=t.z-J.pz,want=t.on&&dx*dx+dz*dz<J.R2;if(want!==t.drawn){t.drawn=want;J.changed=true;}}
+  J.i=end;if(J.i<J.n)return;
+  if(!J.changed){J.phase=0;return;}
+  if(!F.backrefV48){for(const t of F.trees)for(const pc of t.pieces)pc.tree=t;F.backrefV48=true;}
+  J.bk=[...F.buckets.values()];J.bi=0;J.phase=2;
+ }
+ if(J.phase===2){
+  const per=force?99:(LOW_POWER?2:3);let done=0;
+  while(J.bi<J.bk.length&&done<per){const b=J.bk[J.bi++];let k=0;for(const pc of b.items)if(pc.tree&&pc.tree.drawn)b.mesh.setMatrixAt(k++,pc.m);b.mesh.count=k;
+   const im=b.mesh.instanceMatrix;if(k>0){im.updateRange.offset=0;im.updateRange.count=k*16;im.needsUpdate=true;}   // yalnız çəkilən hissə GPU-ya gedir
+   done++;}
+  if(J.bi>=J.bk.length){J.phase=0;J.bk=null;}
+ }
+};
+
+/* ---------- 4) Uzaq heyvan qənaəti bütün növlərə ---------- */
+function lodExemptV90(a){return lodExemptV81(a)||a.boss||a.alphaLionV77||a.bossTigerV84||a.bossRetreatV84||a.nightSaberV39||a.wildOstrichV44||a.giantQuillV45||a.catAttackV62||(a.stunV53>0)||a.raptorV55&&a.packV55&&a.packV55.warned;}
+const lodStatV90={skips:0,updates:0};
+updateWildOstrichV44=(c=>function(a,dt){
+ if(dt>0&&a&&a.root&&!lodExemptV90(a)){
+  const d2=lodDist2V81(a),q=a.root.position;
+  if(d2>=lodV81.near2){
+   const n=d2<lodV81.far2?2:3;if(a.lodPhaseV81===undefined)a.lodPhaseV81=(Math.random()*3)|0;
+   const L=a.lodV89||(a.lodV89={px:q.x,pz:q.z,dx:0,dz:0,fresh:false});
+   if(((lodV81.frame+a.lodPhaseV81)%n)!==0){
+    if(L.fresh){L.dx=q.x-L.px;L.dz=q.z-L.pz;L.fresh=false;if(L.dx*L.dx+L.dz*L.dz>1.44||!Number.isFinite(L.dx+L.dz)){L.dx=0;L.dz=0;}}
+    if(L.dx||L.dz){const nx=q.x+L.dx,nz=q.z+L.dz;
+     if(!wildlifeBlockedV39(a,nx,nz)){const g0=terrainHeightAt(q.x,q.z);q.x=nx;q.z=nz;q.y+=terrainHeightAt(nx,nz)-g0;}else{L.dx=0;L.dz=0;}}
+    lodStatV90.skips++;return true;
+   }
+   L.px=q.x;L.pz=q.z;L.fresh=true;lodStatV90.updates++;
+  }else if(a.lodV89){a.lodV89.fresh=false;a.lodV89.dx=0;a.lodV89.dz=0;}
+ }
+ return c.apply(this,arguments);
+})(updateWildOstrichV44);
+
+/* ---------- 5) Pauza menyusu telefona sığır ---------- */
+safeV90('css',()=>{const st=document.createElement('style');st.textContent=
+ /* V93: :not([hidden]) — əks halda bu !important qayda [hidden]-i üstələyir və pauza paneli həmişə görünür */
+ '#pausePanel42:not([hidden]){display:block!important;overflow-y:auto!important;overflow-x:hidden!important;padding:16px 12px!important;-webkit-overflow-scrolling:touch}'+
+ '#pausePanel42 .panel42{margin:0 auto;max-width:100%;box-sizing:border-box;overflow:hidden;padding:18px 14px}'+
+ '#pausePanel42 .panel42>button{width:min(290px,100%)!important;box-sizing:border-box}'+
+ '#gfx80,#anim85,#perf86{width:100%;box-sizing:border-box}'+
+ '#gfx80 .s,#anim85 .s{display:flex!important;flex-wrap:nowrap!important;gap:5px;width:100%}'+
+ '#gfx80 .s button,#anim85 .s button{flex:1 1 0!important;width:auto!important;min-width:0!important;min-height:40px!important;padding:8px 4px!important;margin:0!important;display:block!important;font-size:11px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}'+
+ '#gfx80 .i,#anim85 .i{word-break:break-word}'+
+ '#perf86{display:flex;flex-wrap:wrap;gap:6px;align-items:center}#perf86 span{flex:1 1 100%;word-break:break-word;text-align:left}'+
+ '#perf86 button{width:auto!important;min-height:32px!important;padding:5px 14px!important;margin:0!important;display:inline-block!important;flex:0 0 auto;font-size:10px!important}';
+ document.head.appendChild(st);});
+updateBlockyUiV85=(c=>function(){const r=c.apply(this,arguments);const b=document.querySelector('#anim85 [data-b85="1"]');if(b&&b.textContent!=='🧱 Blocky')b.textContent='🧱 Blocky';return r;})(updateBlockyUiV85);
+
+/* ---------- 6) PERF sətri: real kadr vaxtı, FPS, üçbucaq, çağırış ---------- */
+const frameStatV90={last:0,sum:0,n:0,tris:0,calls:0,worst:0};
+tick=(c=>function(){
+ const now=performance.now(),d=now-frameStatV90.last;frameStatV90.last=now;
+ if(flowV42.started&&!flowV42.paused&&!flowV42.restoring&&!journeying&&d>0&&d<1000&&elapsed>8){frameStatV90.sum+=d;frameStatV90.n++;if(d>frameStatV90.worst)frameStatV90.worst=d;}
+ const r=c.apply(this,arguments);
+ if((frameV89.n&31)===0){frameStatV90.tris=renderer.info.render.triangles;frameStatV90.calls=renderer.info.render.calls;}
+ return r;
+})(tick);
+perfLineV86=(c=>function(){const S=frameStatV90,base=c.apply(this,arguments);if(!S.n)return base;const avg=S.sum/S.n;
+ return 'AVG '+avg.toFixed(0)+' ms ('+(1000/avg).toFixed(0)+' FPS) · tris '+Math.round(S.tris/1000)+'k · calls '+S.calls+' · static '+staticCullV90.drawn+'/'+staticCullV90.total+' · '+base;})(perfLineV86);
+safeV90('perfReset',()=>{const box=document.getElementById('perf86');if(box){const b=box.querySelector('button');if(b)b.addEventListener('click',()=>{frameStatV90.sum=0;frameStatV90.n=0;frameStatV90.worst=0;setTimeout(updatePerfUiV86,0);});}});
+
+/* ---------- Bağlantılar ---------- */
+applyLevelV80=(c=>function(level){const r=c.apply(this,arguments);safeV90('view',()=>setViewLevelV90(level));return r;})(applyLevelV80);
+updateAnimals=(c=>function(dt){const r=c.apply(this,arguments);if(dt>0)safeV90('static',staticCullTickV90);return r;})(updateAnimals);
+safeV90('init',()=>setViewLevelV90(gfxV80.level||(LOW_POWER?'medium':'high')));
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v90={view:()=>({...viewV90,radius:Math.round(viewRadiusV90()),fogFar:Math.round(scene.fog.far)}),stat:()=>({meshes:staticCullV90.list.length,drawn:staticCullV90.drawn,total:staticCullV90.total,runs:staticCullV90.runs,skipped:staticCullV90.skip.size}),lod:()=>({...lodStatV90}),frame:()=>({avg:frameStatV90.n?+(frameStatV90.sum/frameStatV90.n).toFixed(1):0,tris:frameStatV90.tris,calls:frameStatV90.calls}),reset:()=>staticCullResetV90(),line:()=>perfLineV86()};
+/* /V90 */
+
+
+/* ============================================================
+   V91 — TELEFONDA YÜNGÜL HEYVAN MODELLƏRİ + YÜKLƏMƏ EKRANI.
+   Hədəf: orta telefonda Medium/Low pillədə axıcı oyun. V90-dan sonra darboğaz çəkiliş çağırışlarıdır:
+   hər tüklü studiya heyvanı ~35 çağırış (27 hissə + 8 tük qatı), adi heyvanlar oynaq başına bir neçə
+   material = bir neçə çağırış.
+   1) "Lite" rejim (telefonda Low və Medium; masaüstündə Low): heyvan hissələrinin rəngi təpələrə
+      köçürülür və hər oynaqdakı bütün hissələr TƏK mesh + TƏK ortaq material olur. Naxışlı
+      toxumalar (pələng zolağı, zebra), şəffaf, ikitərəfli və parlayan (gecə gözləri) hissələr
+      toxunulmaz qalır.
+   2) Studiya modelləri Lite rejimdə tüksüz qurulur, qulaq/ləkə kimi xırda oynaqlar gövdəyə
+      birləşir; ayaq, diz, boyun, baş, quyruq, çənə, buynuz oynaqları və animasiya qalır.
+   2b) Lite rejimdə quyruğun uc seqmentləri, topuqlar və qulaqlar qonşu oynağa birləşir (aslan 24 → 13).
+   2c) Qamış topaları Lite rejimdə tək mesh olur (66 topa 203 çağırış edirdi), uzaqdakılar gizlənir;
+      biçiləndə ayrı gövdələr geri qayıdır ki, yığılma animasiyası dəyişməsin.
+   3) Yükləmə ekranı: oyun başlayanda meşə, shader və şablonlar qurulana qədər "Loading" zolağı
+      göstərilir (əvvəl bu 1–6 saniyə donma kimi görünürdü).
+   ============================================================ */
+const errOnceV91=new Set();
+function safeV91(name,fn){try{return fn();}catch(e){if(!errOnceV91.has(name)){errOnceV91.add(name);console.warn('V91 '+name,e);}}}
+function liteV91(){const l=gfxV80.level||(LOW_POWER?'medium':'high');return LOW_POWER?l!=='high':l==='low';}
+const bakeV91={mat:new THREE.MeshLambertMaterial({vertexColors:true}),KEY:{},means:new Map(),obc:THREE.Material.prototype.onBeforeCompile,groups:0,parts:0,studio:0};
+bakeV91.mat.name='bakedV91';
+// Ümumi tük toxumasının orta parlaqlığı (rəng toxumasız köçürüləndə eyni tonda qalsın)
+function texMeanV91(tex){
+ if(!tex)return 1;let v=bakeV91.means.get(tex);if(v!==undefined)return v;v=1;
+ try{const img=tex.image;if(img&&img.width){const c=document.createElement('canvas');c.width=c.height=16;const g=c.getContext('2d');g.drawImage(img,0,0,16,16);const d=g.getImageData(0,0,16,16).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]+d[i+1]+d[i+2];v=s/(256*3*255);}}catch(e){v=1;}
+ bakeV91.means.set(tex,v);return v;
+}
+function bakeMapOkV91(map){return !map||map===faunaFurTexture||map===V78.bump;}
+function bakeEligibleV91(mat,geo){
+ if(!mat||Array.isArray(mat)||!mat.isMeshLambertMaterial||mat===bakeV91.mat)return false;
+ if(mat.transparent||mat.side!==THREE.FrontSide||mat.flatShading||mat.wireframe||mat.alphaTest>0||mat.onBeforeCompile!==bakeV91.obc)return false;
+ if(!bakeMapOkV91(mat.map)||mat.alphaMap||mat.emissiveMap)return false;
+ if(mat.emissive&&(mat.emissive.r+mat.emissive.g+mat.emissive.b)>.02&&(mat.emissiveIntensity===undefined?1:mat.emissiveIntensity)>=.5)return false;   // parlayan gözlər qalır
+ const A=geo&&geo.attributes;if(!A||!A.position||!A.normal||A.position.isInterleavedBufferAttribute||A.normal.isInterleavedBufferAttribute||A.position.itemSize!==3||A.normal.itemSize!==3)return false;
+ if(geo.morphAttributes&&Object.keys(geo.morphAttributes).length)return false;
+ return true;
+}
+// parts: [{g:geometry, mat:material, M:Matrix4}] → position + normal + color
+function mergeBakedV91(parts){
+ let total=0;for(const p of parts)total+=p.g.index?p.g.index.count:p.g.attributes.position.count;
+ const op=new Float32Array(total*3),on=new Float32Array(total*3),oc=new Float32Array(total*3),m3=mergeV89.m3;let off=0;
+ for(const p of parts){const g=p.g,A=g.attributes,M=p.M.elements,P=A.position.array,Nn=A.normal.array,I=g.index?g.index.array:null,n=I?I.length:A.position.count;
+  m3.getNormalMatrix(p.M);const N=m3.elements,mat=p.mat,f=texMeanV91(mat.map);let cr=mat.color.r*f,cg=mat.color.g*f,cb=mat.color.b*f;
+  if(mat.emissive){const ei=mat.emissiveIntensity===undefined?1:mat.emissiveIntensity;cr=Math.min(1,cr+mat.emissive.r*ei);cg=Math.min(1,cg+mat.emissive.g*ei);cb=Math.min(1,cb+mat.emissive.b*ei);}
+  const CA=(mat.vertexColors&&A.color&&!A.color.isInterleavedBufferAttribute)?A.color:null,C=CA?CA.array:null,cs=CA?CA.itemSize:3;
+  const flip=p.M.determinant()<0;   // mənfi miqyas: üçbucağın 2-ci və 3-cü təpəsi yer dəyişir
+  for(let i=0;i<n;i++){const r=i%3,ii=flip?(r===1?i+1:r===2?i-1:i):i,v=I?I[ii]:ii,j=v*3,o=(off+i)*3,x=P[j],y=P[j+1],z=P[j+2];
+   op[o]=M[0]*x+M[4]*y+M[8]*z+M[12];op[o+1]=M[1]*x+M[5]*y+M[9]*z+M[13];op[o+2]=M[2]*x+M[6]*y+M[10]*z+M[14];
+   const a=Nn[j],b=Nn[j+1],c=Nn[j+2],nx=N[0]*a+N[3]*b+N[6]*c,ny=N[1]*a+N[4]*b+N[7]*c,nz=N[2]*a+N[5]*b+N[8]*c,l=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;on[o]=nx/l;on[o+1]=ny/l;on[o+2]=nz/l;
+   if(C){const q=v*cs;oc[o]=cr*C[q];oc[o+1]=cg*C[q+1];oc[o+2]=cb*C[q+2];}else{oc[o]=cr;oc[o+1]=cg;oc[o+2]=cb;}}
+  off+=n;}
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(op,3));geo.setAttribute('normal',new THREE.BufferAttribute(on,3));geo.setAttribute('color',new THREE.BufferAttribute(oc,3));
+ geo.userData.ownedV43=true;bakeV91.groups++;bakeV91.parts+=parts.length;return geo;
+}
+// V89 birləşdiricisi də güzgülənmiş hissələri düzgün çevirir
+mergeGroupV89=function(parts,attrs){
+ let total=0;
+ for(const m of parts){const g=m.geometry,A=g&&g.attributes;if(!A||!A.position)return null;
+  for(const k of attrs){const a=A[k];if(!a||a.isInterleavedBufferAttribute||a.itemSize!==(k==='uv'?2:3))return null;}
+  total+=g.index?g.index.count:A.position.count;}
+ const out={};for(const k of attrs)out[k]=new Float32Array(total*(k==='uv'?2:3));
+ const op=out.position,on=out.normal||null,ou=out.uv||null,oc=out.color||null,m3=mergeV89.m3;let off=0;
+ for(const m of parts){m.updateMatrix();const g=m.geometry,A=g.attributes,M=m.matrix.elements,P=A.position.array,I=g.index?g.index.array:null,n=I?I.length:A.position.count;
+  const Nn=on?A.normal.array:null,U=ou?A.uv.array:null,C=oc?A.color.array:null;m3.getNormalMatrix(m.matrix);const N=m3.elements,flip=m.matrix.determinant()<0;
+  for(let i=0;i<n;i++){const r=i%3,ii=flip?(r===1?i+1:r===2?i-1:i):i,v=I?I[ii]:ii,j=v*3,o=(off+i)*3,x=P[j],y=P[j+1],z=P[j+2];
+   op[o]=M[0]*x+M[4]*y+M[8]*z+M[12];op[o+1]=M[1]*x+M[5]*y+M[9]*z+M[13];op[o+2]=M[2]*x+M[6]*y+M[10]*z+M[14];
+   if(on){const a=Nn[j],b=Nn[j+1],c=Nn[j+2],nx=N[0]*a+N[3]*b+N[6]*c,ny=N[1]*a+N[4]*b+N[7]*c,nz=N[2]*a+N[5]*b+N[8]*c,l=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;on[o]=nx/l;on[o+1]=ny/l;on[o+2]=nz/l;}
+   if(ou){const q=(off+i)*2;ou[q]=U[v*2];ou[q+1]=U[v*2+1];}
+   if(oc){oc[o]=C[j];oc[o+1]=C[j+1];oc[o+2]=C[j+2];}}
+  off+=n;}
+ const geo=new THREE.BufferGeometry();for(const k of attrs)geo.setAttribute(k,new THREE.BufferAttribute(out[k],k==='uv'?2:3));geo.userData.ownedV43=true;mergeV89.fast++;return geo;
+};
+/* ---------- 1) Birləşdiricilər: Lite rejimdə material sərhədi olmadan ---------- */
+compactRigV43=function(root,keep=new Set()){
+ if(!root)return;
+ if(skinWillReplaceV89(root)&&root.userData.compactLaterV89===undefined){root.userData.compactLaterV89=elapsed;root.userData.compactKeepV89=keep;mergeV89.deferred++;return;}
+ if(blockyV85.on&&!root.userData.blockyV85)safeV91('box43',()=>boxifyV85(root));
+ for(const child of [...root.children])if(child.isGroup)compactRigV43(child,keep);
+ const lite=liteV91()&&!blockyV85.on,groups=new Map();
+ for(const m of root.children){if(!m.isMesh||m.isInstancedMesh||keep.has(m)||m.name||Array.isArray(m.material)||m.material.transparent)continue;
+  const key=(lite&&bakeEligibleV91(m.material,m.geometry))?bakeV91.KEY:m.material;const list=groups.get(key)||[];list.push(m);groups.set(key,list);}
+ for(const [key,parts] of groups){if(parts.length<2)continue;let geo,material;
+  if(key===bakeV91.KEY){geo=mergeBakedV91(parts.map(m=>{m.updateMatrix();return {g:m.geometry,mat:m.material,M:m.matrix};}));material=bakeV91.mat;}
+  else{const hasUV=parts.every(m=>m.geometry&&m.geometry.attributes.uv),hasC=parts.every(m=>m.geometry&&m.geometry.attributes.color&&m.geometry.attributes.color.itemSize===3);
+   if(key.vertexColors&&!hasC)continue;                       // rəngi təpələrdə olan material: rəng atributu itməməlidir
+   const attrs=['position','normal'];if(hasUV)attrs.push('uv');if(hasC)attrs.push('color');geo=mergeGroupV89(parts,attrs)||slowMergeV89(parts,attrs);material=key;}
+  const mesh=new THREE.Mesh(geo,material);mesh.castShadow=!LOW_POWER;root.add(mesh);for(const m of parts)root.remove(m);
+ }
+};
+compactRigV54=function(node,keep){
+ if(!node)return;
+ if(blockyV85.on&&!node.userData.blockyV85)safeV91('box54',()=>boxifyV85(node));
+ for(const c of [...node.children])if(c.children&&c.children.length&&!c.isInstancedMesh)compactRigV54(c,keep);
+ const lite=liteV91()&&!blockyV85.on,groups=new Map();
+ for(const m of node.children){
+  if(!m.isMesh||m.isInstancedMesh||m.isSkinnedMesh||keep.has(m)||m.name||m.children.length||Array.isArray(m.material)||!m.visible)continue;
+  if(Object.keys(m.userData).length||m.onBeforeRender!==defaultBeforeRenderV54||!m.geometry||!m.geometry.attributes.position)continue;
+  const g=m.geometry;if(g.morphAttributes&&Object.keys(g.morphAttributes).length)continue;
+  const attrs=['position','normal','uv','color'].filter(k=>g.attributes[k]);if(!attrs.includes('normal'))continue;
+  const bake=lite&&bakeEligibleV91(m.material,g);
+  const sig=(bake?'BAKE':m.material.uuid+'|'+attrs.join(','))+'|'+(m.castShadow?1:0)+(m.receiveShadow?1:0)+'|'+m.renderOrder;
+  let l=groups.get(sig);if(!l)groups.set(sig,l={attrs,list:[],bake});l.list.push(m);
+ }
+ for(const {attrs,list,bake} of groups.values()){
+  if(list.length<2)continue;
+  const geo=bake?mergeBakedV91(list.map(m=>{m.updateMatrix();return {g:m.geometry,mat:m.material,M:m.matrix};})):(mergeGroupV89(list,attrs)||slowMergeV89(list,attrs));geo.computeBoundingSphere();
+  const mesh=new THREE.Mesh(geo,bake?bakeV91.mat:list[0].material);mesh.castShadow=list[0].castShadow;mesh.receiveShadow=list[0].receiveShadow;mesh.renderOrder=list[0].renderOrder;
+  node.add(mesh);for(const m of list)node.remove(m);
+ }
+};
+/* ---------- 1b) Lite: xırda oynaqlar (quyruq ucu, topuq, qulaq) qonşu oynağa birləşir ---------- */
+function flattenJointV91(j){
+ const p=j.parent;if(!p)return;j.updateMatrix();
+ for(const c of [...j.children]){c.updateMatrix();const M=new THREE.Matrix4().multiplyMatrices(j.matrix,c.matrix);j.remove(c);M.decompose(c.position,c.quaternion,c.scale);p.add(c);}
+ bakeV91.flat=(bakeV91.flat||0)+1;
+}
+function liteFlattenV91(a){
+ if(a.flatV91||!a.root||a.root.userData.noOptV78||a.root.userData.skinV78)return;a.flatV91=true;
+ const rig=a.root.userData.v34Rig||{},tails=Array.isArray(a.tailJoints)?a.tailJoints:rig.tailJoints,ankles=rig.ankles||a.ankles,ears=rig.ears||a.ears;
+ if(Array.isArray(tails)&&tails.length>3)for(let i=tails.length-1;i>=2;i--){const j=tails[i];if(j&&j.isObject3D&&j.parent===tails[i-1])flattenJointV91(j);}
+ if(Array.isArray(ankles))for(const j of ankles)if(j&&j.isObject3D&&j.parent&&!j.isMesh)flattenJointV91(j);
+ if(Array.isArray(ears))for(const j of ears)if(j&&j.isObject3D&&j.parent&&!j.isMesh&&!(j.userData&&j.userData.proxyV78))flattenJointV91(j);
+}
+optimizeAnimalV43=(c=>function(a){if(a&&!a.optimizedV43&&!a.flatV91&&liteV91()&&!blockyV85.on)safeV91('flat43',()=>liteFlattenV91(a));return c.apply(this,arguments);})(optimizeAnimalV43);
+optimizeCreatureV54=(c=>function(x){if(x&&!x.optV54&&!x.flatV91&&x.root&&liteV91()&&!blockyV85.on)safeV91('flat54',()=>liteFlattenV91(x));return c.apply(this,arguments);})(optimizeCreatureV54);
+/* ---------- 1c) Qamış topaları: Lite rejimdə hər topa tək mesh (66 topa 203 çağırış edirdi) ---------- */
+const reedLiteV91={idx:0,merged:0,restored:0,t:0};
+function reedMergeV91(r){
+ if(r.mergedV91||r.bundling||!r.alive||!r.root||!r.stalks||r.stalks.length<2)return false;
+ const parts=r.stalks.map(s=>s.mesh).filter(m=>m&&m.isMesh&&m.parent===r.root);if(parts.length<2)return false;
+ for(const s of r.stalks)if(s.mesh)s.mesh.rotation.z=s.baseZ;      // sakit vəziyyət
+ const mat=parts[0].material;if(parts.some(m=>m.material!==mat))return false;
+ const hasUV=parts.every(m=>m.geometry.attributes.uv),hasC=parts.every(m=>m.geometry.attributes.color&&m.geometry.attributes.color.itemSize===3);
+ const attrs=['position','normal'];if(hasUV)attrs.push('uv');if(hasC)attrs.push('color');
+ const geo=mergeGroupV89(parts,attrs);if(!geo)return false;
+ const mesh=new THREE.Mesh(geo,mat);mesh.castShadow=parts[0].castShadow;mesh.receiveShadow=parts[0].receiveShadow;mesh.name='reedLiteV91';
+ for(const m of parts)r.root.remove(m);r.root.add(mesh);r.mergedV91=mesh;r.phaseV91=Math.random()*6.3;reedLiteV91.merged++;return true;
+}
+function reedRestoreV91(r){
+ const mesh=r.mergedV91;if(!mesh)return;r.mergedV91=null;r.root.remove(mesh);mesh.geometry.dispose();r.root.rotation.z=0;r.root.rotation.x=0;
+ for(const s of r.stalks)if(s.mesh&&!s.mesh.parent)r.root.add(s.mesh);reedLiteV91.restored++;
+}
+bundleReed=(c=>function(r){if(r&&r.mergedV91)safeV91('reedRestore',()=>reedRestoreV91(r));return c.apply(this,arguments);})(bundleReed);
+function reedLiteTickV91(dt){
+ if(typeof reeds==='undefined'||!reeds.length)return;const lite=liteV91(),p=camHolder.position,L=reedLiteV91;
+ if(!lite){if(L.merged>L.restored)for(const r of reeds)if(r.mergedV91){reedRestoreV91(r);r.root.visible=true;}return;}
+ // kadrda ən çox 4 topa birləşdirilir
+ let n=0;for(let k=0;k<reeds.length&&n<4;k++){L.idx=(L.idx+1)%reeds.length;const r=reeds[L.idx];if(!r.mergedV91&&!r.bundling&&r.alive&&reedMergeV91(r))n++;}
+ const amp=.03+windStrengthV40()*.8,far=LOW_POWER?(gfxV80.level==='low'?60:85):140,far2=far*far;L.t+=dt;const check=L.t>.5;if(check)L.t=0;
+ for(const r of reeds){if(!r.mergedV91||r.bundling)continue;
+  if(check){const dx=r.x-p.x,dz=r.z-p.z;r.root.visible=dx*dx+dz*dz<far2;}
+  if(r.root.visible)r.root.rotation.z=Math.sin(elapsed*1.6+r.phaseV91)*amp;}
+}
+/* ---------- 2) Studiya şablonları: Lite rejimdə tüksüz, oynaq başına bir mesh ---------- */
+function bakeStudioV91(model){
+ const u=model.userData,keep=new Set([model]),add=o=>{if(o&&o.isObject3D)keep.add(o);};
+ if(u.legs)for(const k in u.legs){const L=u.legs[k];if(L)for(const kk in L)add(L[kk]);}
+ add(u.neckPivot);add(u.headPivot);add(u.tailPivot);add(u.jawPivot);add(u.antlersGroup);add(u.maneGroup);
+ const furs=[];model.traverse(o=>{if(o.isInstancedMesh)furs.push(o);});for(const f of furs)if(f.parent)f.parent.remove(f);
+ for(const J of keep){const parts=[];
+  const walk=(n,M)=>{for(const c of [...n.children]){if(keep.has(c))continue;c.updateMatrix();const Mc=new THREE.Matrix4().multiplyMatrices(M,c.matrix);
+   if(c.isMesh){
+    if(bakeEligibleV91(c.material,c.geometry)){parts.push({g:c.geometry,mat:c.material,M:Mc});n.remove(c);}
+    else if(n!==J){n.remove(c);Mc.decompose(c.position,c.quaternion,c.scale);J.add(c);}}
+   if(c.children.length)walk(c,Mc);}};
+  walk(J,new THREE.Matrix4());
+  if(parts.length){const mesh=new THREE.Mesh(mergeBakedV91(parts),bakeV91.mat);mesh.castShadow=!LOW_POWER;J.add(mesh);}}
+ bakeV91.studio++;
+}
+buildTemplateV89=function(kind,pal){
+ let model;if(kind==='deer')model=createDeerModelV78(pal);else if(kind==='bison')model=createBisonModelV78(pal);else if(kind==='bear')model=createBearModelV78(pal);else if(kind==='wolf')model=createWolfModelV78(pal);else model=createRoeDeerModelV78(pal);
+ let ok=true;model.traverse(o=>{if(!(o.isMesh||o.type==='Group'||o.type==='Object3D'))ok=false;});if(!ok)return null;
+ if(liteV91())bakeStudioV91(model);else compactRigV43(model);
+ model.traverse(o=>{if(o.isMesh&&o.geometry){o.geometry.userData.shared=true;o.geometry.userData.ownedV43=false;}});
+ tplV89.builds++;return model;
+};
+tplKeyV89=(c=>function(E){return (liteV91()?'L|':'F|')+c.apply(this,arguments);})(tplKeyV89);
+// Pillə dəyişəndə: yeni doğulanlar yeni üslubda olur (mövcud heyvanlar olduğu kimi qalır)
+
+/* ---------- 3) Yükləmə ekranı ---------- */
+const loadV91={el:null,bar:null,txt:null,active:false,t0:0,ready:-1,frames:0,shown:0};
+function showLoadV91(){
+ let el=loadV91.el;
+ if(!el){const st=document.createElement('style');st.textContent='#load91{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse at 50% 35%,#24402d,#0a1112);color:#EDE3C4;font:800 13px system-ui;letter-spacing:.14em;transition:opacity .45s;touch-action:none}#load91 b{font:900 30px system-ui;letter-spacing:.08em;color:#FFE3B0}#load91 i{display:block;width:min(260px,70vw);height:8px;border-radius:6px;background:rgba(255,255,255,.14);overflow:hidden}#load91 i s{display:block;height:100%;width:6%;background:linear-gradient(90deg,#d4b27a,#ffe3b0);border-radius:6px;transition:width .35s}#load91 span{opacity:.85}';document.head.appendChild(st);
+  el=document.createElement('div');el.id='load91';el.innerHTML='<b>WILD VALLEY</b><i><s></s></i><span>Building the valley…</span>';document.body.appendChild(el);loadV91.el=el;loadV91.bar=el.querySelector('s');loadV91.txt=el.querySelector('span');}
+ el.style.display='flex';el.style.opacity='1';el.style.pointerEvents='auto';loadV91.bar.style.width='8%';loadV91.txt.textContent='Building the valley…';loadV91.shown++;
+}
+function hideLoadV91(){const el=loadV91.el;loadV91.active=false;if(!el)return;loadV91.bar.style.width='100%';el.style.opacity='0';el.style.pointerEvents='none';setTimeout(()=>{if(!loadV91.active)el.style.display='none';},480);}
+function loadTickV91(){
+ const L=loadV91;if(!L.active)return;L.frames++;
+ const warm=prewarmV56.done,forest=deepForestV46.ready,now=performance.now();
+ const pct=!warm&&!forest?22:(warm&&forest?(L.ready<0?86:96):60),txt=!forest?'Growing the forest…':!warm?'Waking the wildlife…':'Almost there…';
+ if(L.bar.style.width!==pct+'%')L.bar.style.width=pct+'%';if(L.txt.textContent!==txt)L.txt.textContent=txt;
+ if(warm&&forest&&L.ready<0)L.ready=L.frames;
+ if((L.ready>=0&&L.frames-L.ready>=10)||now-L.t0>9000||L.frames>600)hideLoadV91();
+}
+beginV42=(c=>async function(...a){
+ if(flowV42.restoring)return c.apply(this,a);
+ safeV91('loadShow',showLoadV91);
+ // ekranın çəkilməsi üçün iki kadr (gizli pəncərədə rAF işləmir: 150 ms ehtiyat)
+ await new Promise(r=>{let done=false;const go=()=>{if(!done){done=true;r();}};requestAnimationFrame(()=>requestAnimationFrame(go));setTimeout(go,150);});
+ let r;try{r=await c.apply(this,a);}catch(e){hideLoadV91();throw e;}
+ if(flowV42.started){loadV91.active=true;loadV91.t0=performance.now();loadV91.frames=0;loadV91.ready=-1;}else hideLoadV91();
+ return r;
+})(beginV42);
+tick=(c=>function(){const r=c.apply(this,arguments);if(loadV91.active)safeV91('loadTick',loadTickV91);return r;})(tick);
+updateAnimals=(c=>function(dt){const r=c.apply(this,arguments);if(dt>0)safeV91('reeds',()=>reedLiteTickV91(dt));return r;})(updateAnimals);
+restoreV42=(c=>async function(d){reedLiteV91.idx=0;return c.apply(this,arguments);})(restoreV42);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v91={lite:()=>liteV91(),bake:()=>({groups:bakeV91.groups,parts:bakeV91.parts,studio:bakeV91.studio,flat:bakeV91.flat||0,reeds:reedLiteV91.merged-reedLiteV91.restored}),load:()=>({active:loadV91.active,shown:loadV91.shown,frames:loadV91.frames,display:loadV91.el?loadV91.el.style.display:null}),
+ calls:a=>{let meshes=0,inst=0,mats=new Set();a.root.traverse(o=>{if(o.isInstancedMesh)inst++;else if(o.isMesh&&o.visible){meshes++;mats.add(o.material);}});return {meshes,inst,mats:mats.size};}};
+/* /V91 */
+
+
+/* ============================================================
+   V92 — MÜHİT SƏSİ VƏ MUSİQİ, ÇƏTİNLİK SEÇİMİ, İLK DƏQİQƏLƏRİN BƏLƏDÇİLİYİ.
+   (Rəqib analizinə görə çatışmayan "standart" şeylər.)
+   1) Səs: hamısı prosedur (fayl yoxdur). Külək (hava gücünə görə), yağış, gündüz quş cikkiltisi,
+      gecə cırcırama, su kənarında çay səsi; sakit generativ musiqi (gündüz isti, gecə tünd,
+      təhlükədə alçaq gərginlik tonu). Pauza menyusunda üç səs sürgüsü: Music, Nature, Effects.
+      Bütün köhnə effektlər ortaq şinə yönləndirilir ki, Effects sürgüsü hamısına təsir etsin.
+   2) Çətinlik: Peaceful / Normal / Hard — başlanğıc ekranında və pauza menyusunda.
+        Peaceful: gecə yırtıcıları, boss və basqınlar gəlmir; alınan zərər ×0.35, vurulan ×1.5,
+                  enerji sərfi ×0.6. Bələdçinin "gecə pələngi" addımı pələngsiz tamamlanır.
+        Hard:     alınan zərər ×1.4, vurulan ×0.85, enerji sərfi ×1.25.
+      Saxlancda qalır.
+   3) Bələdçi: bir addımda 45 s irəliləyiş olmasa həmin addım üçün ətraflı ipucu çıxır (110 s-də
+      bir də), addım dəyişəndə qısa səs.
+   ============================================================ */
+const errOnceV92=new Set();
+function safeV92(name,fn){try{return fn();}catch(e){if(!errOnceV92.has(name)){errOnceV92.add(name);console.warn('V92 '+name,e);}}}
+
+/* ---------- 1) Səs şinləri ---------- */
+const audioV92={ctx:null,master:null,sfx:null,amb:null,mus:null,vol:{mus:.45,amb:.7,sfx:1},ready:false,
+ wind:null,rain:null,river:null,cricket:null,t:0,birdT:2,chordT:0,chordI:0,pluckT:5,tense:null,tenseG:null,live:0,started:0};
+safeV92('volLoad',()=>{const s=JSON.parse(localStorage.getItem('wvAudioV92')||'null');if(s&&typeof s==='object')for(const k of ['mus','amb','sfx'])if(Number.isFinite(s[k]))audioV92.vol[k]=Math.max(0,Math.min(1,s[k]));});
+const connectCoreV92=AudioNode.prototype.connect;
+AudioNode.prototype.connect=function(dest,...rest){
+ // Birbaşa çıxışa qoşulan hər köhnə effekt "Effects" şininə yönəlir
+ try{if(dest&&AC&&dest===AC.destination&&!this.directV92){const A=audioV92;if(A.ctx===AC&&A.sfx)return connectCoreV92.call(this,A.sfx,...rest);}}catch(e){}
+ return connectCoreV92.call(this,dest,...rest);
+};
+function audioInitV92(){
+ const A=audioV92;if(A.ready&&A.ctx===AC)return true;if(!AC)return false;const a=AC;
+ A.ctx=a;A.master=a.createGain();A.master.directV92=true;A.master.gain.value=1;connectCoreV92.call(A.master,a.destination);
+ A.sfx=a.createGain();A.sfx.gain.value=A.vol.sfx;A.sfx.directV92=true;connectCoreV92.call(A.sfx,A.master);
+ A.amb=a.createGain();A.amb.gain.value=0;A.amb.directV92=true;connectCoreV92.call(A.amb,A.master);
+ A.mus=a.createGain();A.mus.gain.value=0;A.mus.directV92=true;connectCoreV92.call(A.mus,A.master);
+ // daimi səs-küy qatları (səviyyə 0-dan başlayır)
+ const layer=(kind,rate,type,freq,q)=>{const s=noiseSrcV54(kind,rate,true),f=a.createBiquadFilter(),g=a.createGain();f.type=type;f.frequency.value=freq;f.Q.value=q;g.gain.value=0;s.connect(f);f.connect(g);g.connect(A.amb);s.start(a.currentTime,Math.random()*1.2);return {s,f,g};};
+ A.wind=layer('brown',.9,'bandpass',420,.6);A.rain=layer('white',1,'highpass',1800,.4);A.river=layer('pink',1,'bandpass',950,.9);
+ // cırcırama: 4.3 kHz ton, iki LFO ilə kəsik-kəsik
+ {const o=a.createOscillator(),g=a.createGain(),l1=a.createOscillator(),l1g=a.createGain(),out=a.createGain();o.type='sine';o.frequency.value=4300;g.gain.value=0;l1.type='square';l1.frequency.value=17;l1g.gain.value=.5;
+  l1.connect(l1g);l1g.connect(g.gain);o.connect(g);out.gain.value=0;g.connect(out);out.connect(A.amb);o.start();l1.start();A.cricket={o,g,out};}
+ A.ready=true;A.started=a.currentTime;return true;
+}
+function setVolV92(k,v,save=true){const A=audioV92;A.vol[k]=Math.max(0,Math.min(1,v));if(A.ready&&k==='sfx')A.sfx.gain.setTargetAtTime(A.vol.sfx,A.ctx.currentTime,.05);
+ if(save){try{localStorage.setItem('wvAudioV92',JSON.stringify(A.vol));}catch(e){}}}
+function rampV92(param,v,tc=.6){try{param.setTargetAtTime(v,audioV92.ctx.currentTime,tc);}catch(e){}}
+function nearWaterV92(){const p=camHolder.position;for(const [dx,dz] of [[0,0],[7,0],[-7,0],[0,7],[0,-7],[12,0],[-12,0],[0,12],[0,-12]])if(onWaterAt(p.x+dx,p.z+dz))return Math.hypot(dx,dz)<1?1:Math.hypot(dx,dz)<8?.7:.4;return 0;}
+function chirpV92(){
+ const A=audioV92,a=A.ctx,t=a.currentTime,n=2+((Math.random()*3)|0),base=2400+Math.random()*2200,pan=a.createStereoPanner?a.createStereoPanner():null,out=a.createGain();out.gain.value=(season==='winter'?.018:.04)*(.6+Math.random()*.6);
+ if(pan){pan.pan.value=Math.random()*1.6-.8;out.connect(pan);pan.connect(A.amb);}else out.connect(A.amb);
+ for(let i=0;i<n;i++){const o=a.createOscillator(),g=a.createGain(),s=t+i*(.09+Math.random()*.07),d=.05+Math.random()*.06;o.type='sine';o.frequency.setValueAtTime(base*(1+Math.random()*.15),s);o.frequency.exponentialRampToValueAtTime(base*(1.25+Math.random()*.5),s+d);
+  g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(1,s+.012);g.gain.exponentialRampToValueAtTime(.0001,s+d);o.connect(g);g.connect(out);o.start(s);o.stop(s+d+.03);}
+}
+/* ---------- Musiqi: yavaş akkord yastığı + seyrək notlar ---------- */
+const CHORDS_DAY_V92=[[220,261.63,329.63],[174.61,220,261.63],[196,246.94,293.66],[261.63,329.63,392]];          // Am F G C
+const CHORDS_NIGHT_V92=[[110,164.81,261.63],[146.83,174.61,220],[130.81,164.81,196],[110,164.81,220]];           // Am Dm C/E Am (alçaq)
+const PENTA_V92=[440,523.25,587.33,659.25,783.99,880];
+function padV92(freqs,dur,level){
+ const A=audioV92,a=A.ctx,t=a.currentTime,lp=a.createBiquadFilter(),out=a.createGain();lp.type='lowpass';lp.frequency.value=900;lp.Q.value=.3;out.gain.value=level;lp.connect(out);out.connect(A.mus);
+ for(const f of freqs)for(const det of [-4,5]){const o=a.createOscillator(),g=a.createGain();o.type=det<0?'sine':'triangle';o.frequency.value=f;o.detune.value=det;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.16,t+3.2);g.gain.setValueAtTime(.16,t+dur-4);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(lp);o.start(t);o.stop(t+dur+.1);A.live++;o.onended=()=>{A.live--;};}
+}
+function pluckV92(){
+ const A=audioV92,a=A.ctx,t=a.currentTime,f=PENTA_V92[(Math.random()*PENTA_V92.length)|0]*(Math.random()<.3?.5:1),o=a.createOscillator(),g=a.createGain();
+ o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.09,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+2.4);o.connect(g);g.connect(A.mus);o.start(t);o.stop(t+2.5);
+}
+function audioTickV92(dt){
+ const A=audioV92;if(!AC||AC.state!=='running'){return;}if(!audioInitV92())return;
+ const active=flowV42.started&&!flowV42.paused&&!gameOver&&!journeying;
+ rampV92(A.amb.gain,active?A.vol.amb:0,.4);rampV92(A.mus.gain,active?A.vol.mus:(flowV42.started?A.vol.mus*.35:0),.8);
+ if(!active)return;
+ A.t+=dt;if(A.t<.4)return;const step=A.t;A.t=0;
+ const night=isNight(),k=weather.kind,sheltered=protectedByShelter(),wet=season!=='winter'&&(k==='rain'||k==='storm'||k==='megaStorm'||k==='megaTornado'||(k==='hurricane'&&hurricaneIsNear()));
+ const w=(typeof windV51!=='undefined'?windV51.strength*windV51.gust:.15);
+ rampV92(A.wind.g.gain,Math.min(.5,.025+w*.34)*(sheltered?.55:1),.7);rampV92(A.wind.f.frequency,300+w*520,.9);
+ rampV92(A.rain.g.gain,wet?(k==='rain'?.11:.19)*(sheltered?.6:1):0,.8);
+ rampV92(A.river.g.gain,nearWaterV92()*.09*(season==='winter'?.5:1),.9);
+ const calm=k==='clear'||k==='fog'||k==='wind';
+ rampV92(A.cricket.out.gain,night&&season!=='winter'&&calm?.022:0,1.2);
+ if(!night&&calm){A.birdT-=step;if(A.birdT<=0){A.birdT=(season==='winter'?5:1.4)+Math.random()*4.5;safeV92('chirp',chirpV92);}}
+ // musiqi
+ if(A.vol.mus>.01){
+  const danger=combatNearV42();
+  A.chordT-=step;if(A.chordT<=0&&A.live<14){const set=night||danger?CHORDS_NIGHT_V92:CHORDS_DAY_V92;A.chordI=(A.chordI+1)%set.length;const dur=danger?9:15;A.chordT=dur-4.5;safeV92('pad',()=>padV92(set[A.chordI],dur,danger?.5:.42));}
+  A.pluckT-=step;if(A.pluckT<=0){A.pluckT=(night?9:5)+Math.random()*7;if(!danger)safeV92('pluck',pluckV92);}
+ }
+}
+
+/* ---------- 2) Çətinlik ---------- */
+const DIFF_V92={peaceful:{label:'Peaceful',taken:.35,dealt:1.5,energy:.6,calm:true,info:'No night predators, bosses or raids · damage taken ×0.35'},
+ normal:{label:'Normal',taken:1,dealt:1,energy:1,calm:false,info:'The intended survival experience'},
+ hard:{label:'Hard',taken:1.4,dealt:.85,energy:1.25,calm:false,info:'Damage taken ×1.4 · weaker hits · faster energy drain'}};
+const diffV92={mode:'normal'};
+safeV92('diffLoad',()=>{const m=localStorage.getItem('wvDifficultyV92');if(DIFF_V92[m])diffV92.mode=m;});
+function diffCfgV92(){return DIFF_V92[diffV92.mode]||DIFF_V92.normal;}
+function setDifficultyV92(mode,toast=true){
+ if(!DIFF_V92[mode])return;diffV92.mode=mode;try{localStorage.setItem('wvDifficultyV92',mode);}catch(e){}
+ safeV92('diffUi',updateDiffUiV92);
+ if(mode==='peaceful'&&flowV42.started)safeV92('calm',()=>{for(const e of [...enemies])if(e&&e.root)removeEnemy(e);for(const a of [...animals])if(a.nightSaberV39||a.bossTigerV84||a.alphaTigerV72)removeAnimal(a);});
+ if(toast&&flowV42.started){showEvent('⚖️ Difficulty: '+DIFF_V92[mode].label+' · '+DIFF_V92[mode].info,3200);flowV42.saveDue=1;}
+}
+hurtPlayer=(c=>function(amount,...r){const k=diffCfgV92().taken;let a=amount;if(k!==1&&a>0)a=Math.max(1,Math.round(a*k));return c.call(this,a,...r);})(hurtPlayer);
+hitAnimal=(c=>function(a,dmg,...r){const k=diffCfgV92().dealt;if(k!==1){const base=dmg||AXE_TIERS[axeTier].dmg;dmg=Math.max(1,Math.round(base*k));}return c.call(this,a,dmg,...r);})(hitAnimal);
+hitEnemy=(c=>function(e,dmg,...r){const k=diffCfgV92().dealt;if(k!==1){const base=dmg||AXE_TIERS[axeTier].dmg;dmg=Math.max(1,Math.round(base*k));}return c.call(this,e,dmg,...r);})(hitEnemy);
+spendEnergyV47=(c=>function(n){return c.call(this,n*diffCfgV92().energy);})(spendEnergyV47);
+// Peaceful: gecə yırtıcıları, bosslar və basqınlar doğulmur
+function calmV92(){return diffCfgV92().calm;}
+spawnEnemy=(c=>function(){if(calmV92())return;return c.apply(this,arguments);})(spawnEnemy);
+spawnWolfPack=(c=>function(){if(calmV92())return;return c.apply(this,arguments);})(spawnWolfPack);
+spawnNightTiger=(c=>function(){if(calmV92()){flowV42.firstNightSeen=true;return false;}return c.apply(this,arguments);})(spawnNightTiger);
+spawnAlphaTigerV72=(c=>function(){if(calmV92())return false;return c.apply(this,arguments);})(spawnAlphaTigerV72);
+spawnAlphaBoss=(c=>function(){if(calmV92())return;return c.apply(this,arguments);})(spawnAlphaBoss);
+spawnOstrichRaidV44=(c=>function(){if(calmV92())return false;return c.apply(this,arguments);})(spawnOstrichRaidV44);
+spawnEagleFlockV77=(c=>function(force){if(calmV92()&&!force)return 0;return c.apply(this,arguments);})(spawnEagleFlockV77);
+spawnEagleAttack=(c=>function(){if(calmV92())return;return c.apply(this,arguments);})(spawnEagleAttack);
+startStampedeV69=(c=>function(force){if(calmV92()&&!force)return false;return c.apply(this,arguments);})(startStampedeV69);
+snapshotV42=(c=>function(){const d=c.apply(this,arguments);d.difficultyV92=diffV92.mode;return d;})(snapshotV42);
+restoreV42=(c=>async function(d){const r=await c.apply(this,arguments);safeV92('diffRestore',()=>{if(d&&DIFF_V92[d.difficultyV92])setDifficultyV92(d.difficultyV92,false);});return r;})(restoreV42);
+/* ---------- UI: başlanğıc ekranı + pauza menyusu ---------- */
+function diffRowHtmlV92(){return '<div class="t">DIFFICULTY</div><div class="s">'+Object.keys(DIFF_V92).map(k=>'<button type="button" data-d92="'+k+'">'+DIFF_V92[k].label+'</button>').join('')+'</div><div class="i"></div>';}
+function updateDiffUiV92(){document.querySelectorAll('.diff92').forEach(box=>{box.querySelectorAll('[data-d92]').forEach(b=>b.classList.toggle('on',b.dataset.d92===diffV92.mode));const i=box.querySelector('.i');if(i)i.textContent=diffCfgV92().info;});}
+function buildUiV92(){
+ if(!document.getElementById('css92')){const st=document.createElement('style');st.id='css92';st.textContent=
+  '.diff92,#snd92{width:100%;max-width:330px;box-sizing:border-box;text-align:left;margin:6px auto 2px}.diff92 .t,#snd92 .t{font:800 10px system-ui;letter-spacing:1.5px;color:#D9C9A8;margin-bottom:5px}'+
+  '.diff92 .s{display:flex!important;gap:5px;width:100%}.diff92 .s button{flex:1 1 0!important;width:auto!important;min-width:0!important;min-height:40px!important;margin:0!important;padding:8px 4px!important;display:block!important;border-radius:9px;border:1px solid rgba(255,214,160,.35);background:rgba(255,214,160,.1);color:#FFE7BD;font:800 11px system-ui!important;touch-action:manipulation;box-sizing:border-box}'+
+  '.diff92 .s button.on{background:rgba(255,196,110,.5);color:#1E1408}.diff92 .i{font:600 10px/1.35 system-ui;color:#BFD3D9;margin-top:5px;min-height:14px}'+
+  '#snd92 label{display:flex;align-items:center;gap:8px;font:700 11px system-ui;color:#EDE3C4;margin:4px 0}#snd92 label span{flex:0 0 58px}#snd92 input{flex:1 1 auto;min-width:0;height:26px;accent-color:#E0B36A;touch-action:pan-x}';
+  document.head.appendChild(st);}
+ // başlanğıc ekranı
+ const start=document.getElementById('start'),nb=document.getElementById('new42');
+ if(start&&nb&&!start.querySelector('.diff92')){const box=document.createElement('div');box.className='diff92';box.innerHTML=diffRowHtmlV92();start.insertBefore(box,document.getElementById('continue42')||nb);}
+ // pauza menyusu
+ const panel=document.querySelector('#pausePanel42 .panel42');
+ if(panel){const anchor=document.getElementById('gfx80')||panel.querySelector('small');
+  if(!panel.querySelector('.diff92')){const box=document.createElement('div');box.className='diff92';box.innerHTML=diffRowHtmlV92();panel.insertBefore(box,anchor||null);}
+  if(!document.getElementById('snd92')){const box=document.createElement('div');box.id='snd92';box.innerHTML='<div class="t">SOUND</div>'+[['mus','Music'],['amb','Nature'],['sfx','Effects']].map(([k,l])=>'<label><span>'+l+'</span><input type="range" min="0" max="100" step="5" data-v92="'+k+'"></label>').join('');
+   panel.insertBefore(box,anchor||null);
+   box.addEventListener('input',e=>{const k=e.target&&e.target.dataset&&e.target.dataset.v92;if(k)setVolV92(k,e.target.value/100);});
+   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});}
+ }
+ document.querySelectorAll('#snd92 input').forEach(inp=>{inp.value=Math.round(audioV92.vol[inp.dataset.v92]*100);});
+ if(!buildUiV92.bound){buildUiV92.bound=true;document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('[data-d92]');if(!b)return;e.stopPropagation();setDifficultyV92(b.dataset.d92,true);});}
+ updateDiffUiV92();
+}
+setPausedV42=(c=>function(v,...r){const x=c.call(this,v,...r);if(v)safeV92('pauseUi',buildUiV92);return x;})(setPausedV42);
+safeV92('ui',buildUiV92);
+
+/* ---------- 3) Bələdçi: ilişəndə ətraflı ipucu ---------- */
+const TIPS_V92=[
+ ()=>isTouch?'💡 Put your left thumb on the lower-left circle and drag it. Drag anywhere on the right side to look around.':'💡 Use W A S D to walk and move the mouse to look around.',
+ ()=>isTouch?'💡 Walk up to a tree until it fills the screen, keep the trunk in the centre and tap AXE several times. Wood drops on the ground — walk over it.':'💡 Walk up to a tree, keep the trunk in the centre and left-click several times. Walk over the wood to collect it.',
+ ()=>'💡 You need 12 wood. Stand on flat, dry ground away from trees and water, then use the HOUSE button.',
+ ()=>'💡 Collect 5 more wood, walk inside your shelter until the roof is above you, then light the FIRE.',
+ ()=>'💡 Night is coming. Follow the arrow back into your shelter and keep the fire fed with wood.',
+ ()=>'💡 Stay next to your fire. Add wood when the flames get small — dawn is not far.',
+ ()=>'💡 Reeds are the tall thin plants with brown tops near water. Aim at them and use the AXE.',
+ ()=>isTouch?'💡 Choose the BOW in the weapon menu. Sneak within 20 m of a rabbit or deer, hold ATTACK to aim, release to shoot.':'💡 Press X for the BOW. Sneak within 20 m of a rabbit or deer, hold left-click to aim, release to shoot.',
+ ()=>'💡 Walk over the meat to pick it up, stand next to a burning fire and use the MEAT button.'
+];
+const tipV92={step:-1,t:0,shown:0};
+function stepChimeV92(){try{sPick(700);setTimeout(()=>{try{sPick(940);}catch(e){}},120);}catch(e){}}
+function tipTickV92(dt){
+ if(!actionAllowedV42()||flowV42.step>=9){tipV92.step=flowV42.step;return;}
+ if(tipV92.step!==flowV42.step){if(tipV92.step>=0&&flowV42.step>tipV92.step)safeV92('chime',stepChimeV92);tipV92.step=flowV42.step;tipV92.t=0;tipV92.shown=0;return;}
+ tipV92.t+=dt;const due=tipV92.shown===0?45:tipV92.shown===1?110:Infinity;
+ if(tipV92.t>=due&&TIPS_V92[flowV42.step]){tipV92.shown++;showEvent(TIPS_V92[flowV42.step](),7000);}
+}
+
+/* ---------- Bağlantılar ---------- */
+tick=(c=>function(){const r=c.apply(this,arguments);safeV92('audio',()=>audioTickV92(1/30));return r;})(tick);
+updateAnimals=(c=>function(dt){const r=c.apply(this,arguments);if(dt>0)safeV92('tips',()=>tipTickV92(dt));return r;})(updateAnimals);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v92={audio:()=>({state:AC&&AC.state,ready:audioV92.ready,vol:{...audioV92.vol},live:audioV92.live,wind:audioV92.wind?+audioV92.wind.g.gain.value.toFixed(3):null,amb:audioV92.amb?+audioV92.amb.gain.value.toFixed(3):null,mus:audioV92.mus?+audioV92.mus.gain.value.toFixed(3):null}),
+ diff:()=>diffV92.mode,setDiff:m=>setDifficultyV92(m,false),tip:()=>({...tipV92}),forceTip:()=>{tipV92.t=999;},init:()=>audioInitV92(),tickAudio:n=>{for(let i=0;i<n;i++)audioTickV92(.5);}};
+/* /V92 */
+
+/* ============================================================
+   V94 — PEACEFUL REJİMİ: SAKİT MƏŞĞULİYYƏTLƏR (yalnız Peaceful çətinliyində işləyir,
+   Normal/Hard-a heç nə əlavə etmir).
+   1) Göbələk yığmaq: 6 növ (Porcini, Chanterelle, Russula, Morel — yalnız yazda, Fly agaric —
+      zəhərli, yalnız baxılır, Moonglow — yalnız gecə, işıq saçır). Oyunçunun ətrafında 9 m-lik
+      xanalarda sabit yerlərdə bitir, yağışdan sonra iki dəfə çox çıxır, yığılandan ~6 dəq sonra
+      yenidən bitir. Kontekst düyməsi 🍄 PICK (G). Səbətdə 3 göbələk + od = 🍲 SOUP.
+   2) Oturmaq: yerində dayananda 🧘 SIT düyməsi. Oturanda kamera enir, HUD solur, can/enerji yavaş
+      bərpa olur. 14 s oturanda "sakit an" yazılır: gün batımı, gün doğumu, ulduzlar, od başı,
+      dam altında yağış, su kənarı, qar, sakit istirahət. Gün batımı/doğumunda oturanda vaxt
+      yavaşıyır ki, mənzərə uzun çəksin.
+   3) Jurnal: 📖 dəftərinə "PEACEFUL JOURNAL" bölməsi (göbələklər + anlar).
+   4) Atmosfer: gecə atəşböcəkləri, gündüz havada süzən toxumlar (bir Points obyekti, 1 draw call).
+   ============================================================ */
+const errOnceV94=new Set();
+function safeV94(name,fn){try{return fn();}catch(e){if(!errOnceV94.has(name)){errOnceV94.add(name);console.warn('V94 '+name,e);}}}
+function peaceOnV94(){return calmV92();}
+
+const MUSH_V94={
+ porcini:{name:'Porcini',cap:0x8A5A33,food:true,hint:'common · near trees',sr:1.5,sh:.16,cr:.15,ch:.09},
+ chanterelle:{name:'Chanterelle',cap:0xF2A93B,food:true,hint:'common · golden caps',sr:1.15,sh:.12,cr:.13,ch:.04},
+ russula:{name:'Russula',cap:0xC8506A,food:true,hint:'uncommon · rosy caps',sr:1,sh:.15,cr:.125,ch:.05},
+ morel:{name:'Morel',cap:0xB89866,food:true,hint:'spring only',sr:1.1,sh:.1,cr:.065,ch:.2},
+ flyagaric:{name:'Fly agaric',cap:0xD8281E,food:false,hint:'red with white dots',sr:1,sh:.2,cr:.15,ch:.085,dots:true},
+ moonglow:{name:'Moonglow',cap:0x9FF0FF,food:true,hint:'glows · night only',sr:.7,sh:.17,cr:.085,ch:.07,glow:true}
+};
+const MOMENT_V94={
+ sunset:['🌅','Sunset','Watching the sunset','sit at dusk'],
+ sunrise:['🌄','Sunrise','Watching the sunrise','sit at dawn'],
+ stars:['✨','Stargazing','Looking at the stars','sit on a calm night'],
+ fire:['🔥','Campfire','Resting by the fire','sit by a fire'],
+ rain:['🌧️','Rain on the roof','Listening to the rain','sit under a roof in rain'],
+ water:['🌊','Waterside','Resting by the water','sit by water'],
+ snow:['❄️','Snowfall','Watching the snow','sit in winter'],
+ meadow:['🌿','Quiet rest','Resting','sit anywhere']
+};
+const peaceV94={mush:{},basket:0,moments:{},last:{},soups:0,hint:0,done:false};
+function peaceCountV94(){return Object.keys(MUSH_V94).filter(k=>peaceV94.mush[k]>0).length+Object.keys(MOMENT_V94).filter(k=>peaceV94.moments[k]>0).length;}
+const PEACE_TOTAL_V94=Object.keys(MUSH_V94).length+Object.keys(MOMENT_V94).length;
+function peaceDoneV94(){
+ if(peaceV94.done||peaceCountV94()<PEACE_TOTAL_V94)return;peaceV94.done=true;flowV42.saveDue=1;
+ setTimeout(()=>{showEvent('🕊️ Valley at peace · every mushroom found and every quiet moment lived',5200);safeV94('chime',()=>chimeV94(3));},3200);
+}
+function chimeV94(n=2){const f=[523.25,659.25,783.99];for(let i=0;i<n;i++)setTimeout(()=>{try{sPick(f[i%3]*.75);}catch(e){}},i*170);}
+
+/* ---------- 1) Göbələklər ---------- */
+const mushV94={cell:9,R:36,max:54,cache:new Map(),picked:new Map(),active:[],t:0,rainBoost:0,nearHint:false,built:false,
+ stems:null,caps:null,glow:null,dots:null,m:new THREE.Matrix4(),q:new THREE.Quaternion(),v:new THREE.Vector3(),s:new THREE.Vector3(),c:new THREE.Color(),up:new THREE.Vector3(0,1,0)};
+const DOT_DIRS_V94=[[.0,.0],[.62,.4],[.62,2.5],[.62,4.6],[1.05,1.4],[1.05,3.5],[1.05,5.6]].map(([th,ph])=>[Math.sin(th)*Math.cos(ph),Math.cos(th),Math.sin(th)*Math.sin(ph)]);
+function mushBuildV94(){
+ const M=mushV94;if(M.built)return;M.built=true;
+ const stemG=new THREE.CylinderGeometry(.04,.055,1,6,1);stemG.translate(0,.5,0);
+ const capG=new THREE.SphereGeometry(1,9,4,0,Math.PI*2,0,Math.PI/2);
+ const dotG=new THREE.SphereGeometry(1,5,3);
+ const mk=(g,mat,n)=>{const o=new THREE.InstancedMesh(g,mat,n);o.instanceMatrix.setUsage(THREE.DynamicDrawUsage);o.frustumCulled=false;o.castShadow=false;o.receiveShadow=false;o.count=0;o.visible=false;o.name='mushV94';scene.add(o);return o;};
+ M.stems=mk(stemG,new THREE.MeshLambertMaterial({color:0xEFE6D2}),M.max);
+ M.caps=mk(capG,new THREE.MeshLambertMaterial({color:0xFFFFFF}),M.max);
+ M.glow=mk(capG,new THREE.MeshBasicMaterial({color:0x9FF0FF}),M.max);
+ M.dots=mk(dotG,new THREE.MeshLambertMaterial({color:0xFFFDF2}),M.max*DOT_DIRS_V94.length);
+ // r128-də setColorAt buferi o anki count ilə yaradır (count=0 → boş bufer → qara papaq): buferi özümüz tam ölçüdə yaradırıq.
+ M.caps.instanceColor=new THREE.BufferAttribute(new Float32Array(M.max*3).fill(1),3);M.caps.instanceColor.setUsage(THREE.DynamicDrawUsage);
+}
+function mushCellV94(cx,cz){
+ const M=mushV94,key=cx+','+cz;let c=M.cache.get(key);if(c!==undefined)return c;
+ c=null;const roll=skyHash(cx,cz,9401);
+ if(roll<.42){
+  const x=(cx+.15+skyHash(cx,cz,9402)*.7)*M.cell,z=(cz+.15+skyHash(cx,cz,9403)*.7)*M.cell;
+  let ok=Math.hypot(x,z-6)>7;
+  if(ok){const reg=regionAtV48(x,z);if(reg==='mountain'||reg==='plateau'||reg==='border')ok=false;}
+  if(ok&&(onWaterAt(x,z)||greatWaterAtV48(x,z)||solidAtV48(x,z,1)||inLandmarkZone(x,z)||roadDistanceAt(x,z)<1.8||blocked(x,z)))ok=false;
+  if(ok){
+   const r=skyHash(cx,cz,9404),kind=r<.12?'moonglow':r<.24?'morel':r<.38?'flyagaric':r<.56?'russula':r<.78?'chanterelle':'porcini';
+   const n=1+Math.floor(skyHash(cx,cz,9405)*2.999),items=[];
+   for(let i=0;i<n;i++){const a=skyHash(cx+i*7,cz,9406)*6.283,d=i===0?0:.22+skyHash(cx,cz+i*5,9407)*.3;
+    items.push({dx:Math.cos(a)*d,dz:Math.sin(a)*d,s:(i===0?1.0:.72)+skyHash(cx+i,cz+i,9408)*.32,rot:skyHash(cx-i,cz+i*3,9409)*6.283,y:null});}
+   c={key,x,z,roll,kind,n,items,d:0,admired:false};
+  }
+ }
+ if(M.cache.size>4000)M.cache.clear();
+ M.cache.set(key,c);return c;
+}
+function mushHideV94(){const M=mushV94;if(!M.built)return;for(const o of [M.stems,M.caps,M.glow,M.dots]){o.count=0;o.visible=false;}M.active.length=0;}
+function mushRefreshV94(){
+ const M=mushV94;if(!peaceOnV94()||!flowV42.started||journeying){mushHideV94();return;}
+ mushBuildV94();
+ const p=camHolder.position,cs=M.cell,R=M.R,night=isNight()||gameHourFloat()>=20.4,prob=(M.rainBoost>0?.42:.2)*(season==='winter'?.4:1);
+ const list=[];
+ for(let cx=Math.floor((p.x-R)/cs);cx<=Math.floor((p.x+R)/cs);cx++)for(let cz=Math.floor((p.z-R)/cs);cz<=Math.floor((p.z+R)/cs);cz++){
+  const c=mushCellV94(cx,cz);if(!c||c.roll>prob)continue;
+  if(c.kind==='moonglow'&&!night)continue;if(c.kind==='morel'&&season!=='spring')continue;
+  const until=M.picked.get(c.key);if(until!==undefined){if(elapsed<until)continue;M.picked.delete(c.key);c.admired=false;}
+  c.d=Math.hypot(c.x-p.x,c.z-p.z);if(c.d<=R)list.push(c);
+ }
+ list.sort((a,b)=>a.d-b.d);
+ let ns=0,nc=0,ng=0,nd=0;M.active.length=0;
+ const m=M.m,q=M.q,v=M.v,s=M.s;
+ for(const c of list){
+  if(ns+c.n>M.max)break;M.active.push(c);const S=MUSH_V94[c.kind];
+  for(const it of c.items){
+   const x=c.x+it.dx,z=c.z+it.dz;if(it.y===null)it.y=terrainHeightAt(x,z);
+   const y=it.y-.02,k=it.s,sh=S.sh*k,cr=S.cr*k,ch=S.ch*k;
+   q.setFromAxisAngle(M.up,it.rot);
+   m.compose(v.set(x,y,z),q,s.set(S.sr*k,sh,S.sr*k));M.stems.setMatrixAt(ns++,m);
+   m.compose(v.set(x,y+sh-.012,z),q,s.set(cr,ch,cr));
+   if(S.glow)M.glow.setMatrixAt(ng++,m);
+   else{M.caps.setMatrixAt(nc,m);const t=.86+((it.rot*3.7)%1)*.2;M.c.setHex(S.cap).multiplyScalar(t);M.caps.setColorAt(nc,M.c);nc++;}
+   if(S.dots)for(const d of DOT_DIRS_V94){m.compose(v.set(x+d[0]*cr*.97,y+sh-.012+d[1]*ch*.97,z+d[2]*cr*.97),q,s.set(.02*k,.012*k,.02*k));M.dots.setMatrixAt(nd++,m);}
+  }
+ }
+ const fin=(o,n)=>{o.count=n;o.visible=n>0;o.instanceMatrix.needsUpdate=true;};
+ fin(M.stems,ns);fin(M.caps,nc);fin(M.glow,ng);fin(M.dots,nd);if(M.caps.instanceColor)M.caps.instanceColor.needsUpdate=true;
+}
+function nearestMushV94(maxD){
+ const p=camHolder.position;let best=null,bd=maxD;
+ for(const c of mushV94.active){if(c.admired)continue;const d=Math.hypot(c.x-p.x,c.z-p.z);if(d<bd){bd=d;best=c;}}
+ return best;
+}
+function mushHudV94(){
+ let el=document.getElementById('slot-mush94');
+ if(!el){const tally=document.querySelector('.tally');if(!tally)return;el=document.createElement('div');el.className='slot';el.id='slot-mush94';el.setAttribute('aria-label','Mushrooms');el.innerHTML='<span style="font-size:14px">🍄</span><b>0</b>';tally.appendChild(el);}
+ el.style.display=peaceV94.basket>0?'flex':'none';el.querySelector('b').textContent=peaceV94.basket;
+}
+function pickMushV94(c){
+ if(!c)return;const S=MUSH_V94[c.kind],first=!peaceV94.mush[c.kind];
+ peaceV94.mush[c.kind]=(peaceV94.mush[c.kind]||0)+c.n;
+ const entry=first?' · new journal entry ('+peaceCountV94()+'/'+PEACE_TOTAL_V94+')':'';
+ if(S.food){
+  mushV94.picked.set(c.key,elapsed+300+skyHash(c.n,peaceV94.basket,9410)*150);
+  peaceV94.basket+=c.n;addEnergyV47(3*c.n);
+  showEvent('🍄 '+c.n+' × '+S.name+' picked · basket '+peaceV94.basket+(peaceV94.basket>=3&&!peaceV94.soups?' · cook 🍲 SOUP at a fire':'')+entry,2800);
+ }else{
+  c.admired=true;mushV94.picked.set(c.key,elapsed+300);
+  showEvent('🍄 '+S.name+' · beautiful but poisonous — sketched in your journal and left to grow'+entry,3000);
+ }
+ safeV94('psfx',()=>{sRustle();sPick(first?980:820);});
+ flowV42.saveDue=1;mushRefreshV94();mushHudV94();peaceDoneV94();
+}
+function cookSoupV94(){
+ if(peaceV94.basket<3)return;peaceV94.basket-=3;peaceV94.soups++;
+ playerHealth=Math.min(100,playerHealth+35);updateHealth();addEnergyV47(45);
+ safeV94('ssfx',()=>chimeV94(2));showEvent('🍲 Mushroom soup · warm and filling · +35 health, +45 energy',2800);
+ mushHudV94();flowV42.saveDue=1;
+}
+function mushTickV94(dt){
+ const M=mushV94,k=weather.kind;
+ if(season!=='winter'&&(k==='rain'||k==='storm'||k==='megaStorm'))M.rainBoost=260;else if(M.rainBoost>0)M.rainBoost-=dt;
+ M.t-=dt;if(M.t>0)return;M.t=.7;mushRefreshV94();
+ if(!M.nearHint&&M.active.length&&M.active[0].d<11&&actionAllowedV42()&&flowV42.step>=1){M.nearHint=true;
+  if(!Object.keys(peaceV94.mush).length)showEvent('🍄 Mushrooms nearby · walk up to them and '+(isTouch?'tap PICK':'press G'),4200);}
+}
+
+/* ---------- 2) Oturmaq və sakit anlar ---------- */
+const sitV94={on:false,k:0,still:0,scene:'',t:0,heal:0,px:null,pz:0,flash:0,ui:null,glow:null,btn:null,btnHtml:'',last:''};
+function sceneV94(){
+ const h=gameHourFloat(),k=weather.kind,wet=season!=='winter'&&(k==='rain'||k==='storm'||k==='megaStorm');
+ const severe=k==='storm'||k==='megaStorm'||k==='hail'||k==='tornado'||k==='megaTornado'||k==='hurricane'||k==='blizzard'||k==='gale';
+ const list=[];
+ if(wet&&protectedByShelter())list.push('rain');
+ if(!severe&&!wet){if(h>=16.9&&h<20.1)list.push('sunset');if(h>=5.4&&h<8)list.push('sunrise');}
+ if(nearestFireDist()<5)list.push('fire');
+ if((h>=20.6||h<5.2)&&!severe&&!wet)list.push('stars');
+ if(season==='winter'&&!severe)list.push('snow');
+ if(nearWaterV92()>=.7)list.push('water');
+ list.push('meadow');
+ // Bu gün artıq yaşanmış an keçilir: oturmağa davam etdikcə növbəti uyğun an sayılır (gün batımı → od başı → …).
+ for(const m of list)if(peaceV94.last[m]!==nightsSurvived)return m;
+ return list[0];
+}
+const ROUGH_V94=['rain','storm','megaStorm','hail','tornado','megaTornado','hurricane','blizzard','gale'];
+function goldenV94(){const h=gameHourFloat();if(ROUGH_V94.includes(weather.kind))return false;return (h>=16.9&&h<20.1)||(h>=5.4&&h<8);}
+function canSitV94(){const p=camHolder.position;return !swimV67.on&&!onWaterAt(p.x,p.z);}
+function sitDownV94(){
+ if(sitV94.on||!canSitV94())return;sitV94.on=true;sitV94.scene='';sitV94.t=0;sitV94.heal=0;
+ safeV94('sitsfx',()=>sRustle());
+ if(peaceV94.hint<2){peaceV94.hint=2;showEvent('🧘 You sit down · stay a while to rest. Move to stand up.',3200);}
+}
+function standV94(){if(!sitV94.on)return;sitV94.on=false;sitV94.still=0;}
+function sitToggleV94(){if(sitV94.on)standV94();else if(sitReadyV94())sitDownV94();safeV94('sitUi',sitUiV94);}
+function sitReadyV94(){return peaceOnV94()&&actionAllowedV42()&&!buildMode&&!mountedV49&&canSitV94();}
+function sitUiV94(){
+ const S=sitV94;
+ if(!S.ui){
+  S.btn=document.createElement('button');S.btn.id='sitbtn94';S.btn.hidden=true;S.btn.setAttribute('aria-label','Sit down or stand up');document.body.appendChild(S.btn);
+  S.btn.addEventListener('touchstart',e=>{if(e.cancelable)e.preventDefault();e.stopPropagation();sitToggleV94();},{passive:false});
+  S.btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();sitToggleV94();});
+  addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='KeyI'||(e.code==='KeyG'&&!actV50.mode&&performance.now()-(sitV94.actAt||0)>600))sitToggleV94();});
+  const st=document.createElement('style');st.id='css94';st.textContent=
+   '#sit94{position:fixed;left:50%;top:calc(158px + var(--top42,0px));transform:translateX(-50%);z-index:30;pointer-events:none;max-width:min(230px,62vw);padding:7px 12px 8px;border-radius:12px;background:rgba(18,24,22,.62);color:#FFF1CF;font:700 11px system-ui,sans-serif;text-align:center;opacity:0;transition:opacity .7s;white-space:nowrap}'+
+   '#sit94.on{opacity:1}#sit94 i{display:block;height:3px;margin-top:6px;border-radius:2px;background:rgba(255,241,207,.22);overflow:hidden}#sit94 u{display:block;height:100%;width:0;background:#F2C35A;transition:width .4s linear}'+
+   '#sit94.done u{background:#9FE0A8}'+
+   '#sitbtn94{position:fixed;right:62px;bottom:calc(297px + var(--bottom42,0px));min-width:44px;height:44px;border-radius:12px;border:1px solid #d4c18c88;background:rgba(40,34,26,.86);color:#FFF1CF;font:800 10px system-ui;z-index:31;padding:0 7px;display:flex;align-items:center;gap:4px;touch-action:manipulation}'+
+   '#sitbtn94 span{font-size:18px}#sitbtn94[hidden]{display:none}#sitbtn94.on{background:rgba(52,78,60,.9);border-color:#9FE0A8}'+
+   '@media(max-height:500px) and (orientation:landscape){#sitbtn94{right:290px;bottom:calc(69px + var(--bottom42,0px))}#sit94{top:calc(58px + var(--top42,0px))}}'+
+   '#glow94{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:0;transition:opacity 2.2s;background:radial-gradient(ellipse 120% 70% at 50% 18%,rgba(255,176,96,.30),rgba(255,140,90,.10) 45%,rgba(0,0,0,0) 72%)}'+
+   'body.sit94 #hud>.tally,body.sit94 #objective,body.sit94 #weather,body.sit94 #season,body.sit94 #timebar,body.sit94 #cross,body.sit94 #campaign,body.sit94 #guide42{filter:opacity(.28);transition:filter .9s}'+
+   '#nat94{margin-top:12px;border-top:1px solid #d4c18c33;padding-top:9px}#nat94 .h{display:flex;gap:8px;align-items:baseline;margin:0 0 6px}#nat94 .h b{font-size:13px;letter-spacing:.08em;flex:1}#nat94 .g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}'+
+   '#nat94 .dot{display:inline-block;width:20px;height:13px;border-radius:12px 12px 3px 3px;margin:5px 0 4px;border:1px solid #0006}';
+  document.head.appendChild(st);
+  S.ui=document.createElement('div');S.ui.id='sit94';S.ui.setAttribute('role','status');S.ui.innerHTML='<span></span><i><u></u></i>';document.body.appendChild(S.ui);
+  S.glow=document.createElement('div');S.glow.id='glow94';document.body.appendChild(S.glow);
+ }
+ const on=S.on&&actionAllowedV42(),showBtn=sitReadyV94()&&(S.on||S.still>1.1),bh=showBtn?(S.on?'<span>🚶</span><b>STAND</b>':'<span>🧘</span><b>SIT</b>'):'';
+ if(S.btn.hidden!==!showBtn)S.btn.hidden=!showBtn;if(showBtn&&S.btnHtml!==bh){S.btnHtml=bh;S.btn.innerHTML=bh;S.btn.classList.toggle('on',S.on);}
+ S.ui.classList.toggle('on',on);document.body.classList.toggle('sit94',on);
+ const warm=on&&goldenV94();S.glow.style.opacity=warm?'1':'0';
+ if(!on)return;
+ const M=MOMENT_V94[S.scene]||MOMENT_V94.meadow,done=peaceV94.last[S.scene]===nightsSurvived,txt=M[0]+' '+(done?M[1]+' · calm':M[2]+'…'),key=txt+(done?1:0);
+ if(S.last!==key){S.last=key;S.ui.firstChild.textContent=txt;S.ui.classList.toggle('done',done);}
+ S.ui.querySelector('u').style.width=(done?100:Math.min(100,S.t/14*100)).toFixed(0)+'%';
+}
+function momentV94(sc){
+ const M=MOMENT_V94[sc];if(!M||peaceV94.last[sc]===nightsSurvived)return;
+ peaceV94.last[sc]=nightsSurvived;const first=!peaceV94.moments[sc];peaceV94.moments[sc]=(peaceV94.moments[sc]||0)+1;
+ playerHealth=Math.min(100,playerHealth+20);updateHealth();addEnergyV47(35);
+ safeV94('msfx',()=>chimeV94(first?3:2));
+ showEvent(M[0]+' '+M[1]+' · you feel calm · +20 health, +35 energy'+(first?' · new journal entry ('+peaceCountV94()+'/'+PEACE_TOTAL_V94+')':''),3600);
+ flowV42.saveDue=1;peaceDoneV94();
+}
+function sitTickV94(dt){
+ const S=sitV94,p=camHolder.position;
+ let sp=0;if(S.px!==null)sp=Math.hypot(p.x-S.px,p.z-S.pz)/Math.max(dt,.001);S.px=p.x;S.pz=p.z;
+ const ok=peaceOnV94()&&actionAllowedV42()&&!buildMode&&!mountedV49;
+ S.still=ok&&sp<.25?S.still+dt:0;
+ if(S.on&&(!ok||sp>.6||!canSitV94()))standV94();
+ S.k+=((S.on?1:0)-S.k)*Math.min(1,dt*4.5);if(S.k<.003)S.k=0;
+ if(S.on){
+  const sc=sceneV94();if(sc!==S.scene){S.scene=sc;S.t=0;}
+  S.t+=dt;S.heal+=dt;
+  if(S.heal>=1){S.heal-=1;if(playerHealth<100){playerHealth=Math.min(100,playerHealth+2);updateHealth();}addEnergyV47(2.5);}
+  // qızıl saatda oturanda vaxt yavaşıyır (dayT .05 sərhədindən uzaqda — gecə sayğacına toxunmur)
+  if(goldenV94()&&dayT>.075&&dayT<.66)dayT=Math.max(.075,dayT-dt/DAY.length*.55);
+  if(S.t>=14)momentV94(sc);
+ }
+ sitUiV94();
+ // ilk bələdçi ipucu
+ if(peaceV94.hint<1&&ok&&flowV42.step>=1){S.flash+=dt;if(S.flash>22){peaceV94.hint=1;flowV42.saveDue=1;
+  showEvent('🕊️ Peaceful valley · look for mushrooms 🍄 in the grass, and stand still, then '+(isTouch?'tap':'press I for')+' 🧘 SIT to watch the sunset, the stars or your fire',6500);}}
+}
+hurtPlayer=(c=>function(){if(sitV94.on)standV94();return c.apply(this,arguments);})(hurtPlayer);
+// Oturanda kamera enir: yalnız çəkiliş anında, oyun məntiqi göz hündürlüyünü olduğu kimi görür.
+renderer.render=(c=>function(sc,cam){
+ const off=cam===camera&&sitV94.k>0?sitV94.k*.82:0;
+ if(!off)return c.apply(this,arguments);
+ camera.position.y-=off;try{return c.apply(this,arguments);}finally{camera.position.y+=off;}
+})(renderer.render);
+
+/* ---------- Kontekst düyməsi ---------- */
+// Od başında düymə həmişə silah təklifi ilə (FIRE CANNON / EXPLOSIVE TRAP) tutulur — Peaceful-da göbələk və şorba ondan üstündür.
+actionModeV50=(core=>function(){
+ const m=core();if(m&&m!=='cannonV73'&&m!=='bombV76')return m;
+ if(!peaceOnV94()||!actionAllowedV42()||buildMode||mountedV49)return m;
+ if(nearestMushV94(2.3))return 'mushV94';
+ if(peaceV94.basket>=3&&nearestFireDist()<4.5)return 'soupV94';
+ return m;
+})(actionModeV50);
+updateActionV50=(core=>function(dt,force){
+ core(dt,force);const mode=actV50.mode;let L=null;
+ if(mode==='mushV94'){const c=nearestMushV94(2.6);L=['🍄',c&&!MUSH_V94[c.kind].food?'LOOK':'PICK'];}
+ else if(mode==='soupV94')L=['🍲','SOUP'];
+ if(L){const h='<span>'+L[0]+'</span><b>'+L[1]+'</b>';if(actV50.html!==h){actV50.html=h;document.getElementById('act50').innerHTML=h;}}
+})(updateActionV50);
+actionButtonV50=(core=>function(){
+ const m=actV50.mode;if(m)sitV94.actAt=performance.now();
+ if(m==='mushV94'){safeV94('pick',()=>pickMushV94(nearestMushV94(2.6)));updateActionV50(0,true);return;}
+ if(m==='soupV94'){safeV94('soup',cookSoupV94);updateActionV50(0,true);return;}
+ return core.apply(this,arguments);
+})(actionButtonV50);
+
+/* ---------- 3) Jurnal ---------- */
+function journalHtmlV94(){
+ const hex=n=>'#'+n.toString(16).padStart(6,'0');
+ const mush=Object.keys(MUSH_V94).map(k=>{const S=MUSH_V94[k],n=peaceV94.mush[k]||0;
+  return n?'<div class="b57'+(k==='moonglow'||k==='morel'?' r':'')+'"><span class="dot" style="background:'+hex(S.cap)+'"></span><b>'+S.name+'</b><small>'+(S.food?n+' picked':'poisonous')+'</small></div>'
+   :'<div class="b57 no"><span>❔</span><b>???</b><small>'+S.hint+'</small></div>';}).join('');
+ const mom=Object.keys(MOMENT_V94).map(k=>{const M=MOMENT_V94[k],n=peaceV94.moments[k]||0;
+  return n?'<div class="b57"><span>'+M[0]+'</span><b>'+M[1]+'</b><small>'+n+' × calm</small></div>':'<div class="b57 no"><span>❔</span><b>???</b><small>'+M[3]+'</small></div>';}).join('');
+ return '<div class="h"><b>🕊️ PEACEFUL JOURNAL</b><span>'+peaceCountV94()+'/'+PEACE_TOTAL_V94+'</span></div><div class="g">'+mush+'</div><div class="g">'+mom+'</div>'+
+  '<small>'+(peaceOnV94()?'Mushrooms grow in the grass and double after rain · 3 mushrooms + a fire = 🍲 soup · stand still, then 🧘 SIT.':'Switch to Peaceful difficulty in the pause menu to forage and sit.')+'</small>';
+}
+openBookV57=(c=>function(){
+ const r=c.apply(this,arguments);
+ safeV94('journal',()=>{const box=document.getElementById('book57box');if(!box)return;let el=document.getElementById('nat94');
+  const show=peaceOnV94()||peaceCountV94()>0;
+  if(!el){el=document.createElement('div');el.id='nat94';box.appendChild(el);}
+  el.hidden=!show;if(show)el.innerHTML=journalHtmlV94();});
+ return r;
+})(openBookV57);
+
+/* ---------- 4) Atəşböcəkləri və süzən toxumlar ---------- */
+const airV94={max:90,n:0,pts:null,pos:null,col:null,bx:null,by:null,bz:null,ph:null,t:0,amp:0,ready:false};
+function airBuildV94(){
+ const A=airV94;if(A.ready)return;A.ready=true;const n=A.max;
+ A.pos=new Float32Array(n*3);A.col=new Float32Array(n*3);A.bx=new Float32Array(n);A.by=new Float32Array(n);A.bz=new Float32Array(n);A.ph=new Float32Array(n);
+ for(let i=0;i<n;i++){A.bx[i]=1e9;A.ph[i]=Math.random()*6.283;}
+ const cv=document.createElement('canvas');cv.width=cv.height=32;const g=cv.getContext('2d'),gr=g.createRadialGradient(16,16,0,16,16,16);
+ gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.35,'rgba(255,255,255,.55)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,32,32);
+ const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(A.pos,3));geo.setAttribute('color',new THREE.BufferAttribute(A.col,3));
+ A.pts=new THREE.Points(geo,new THREE.PointsMaterial({size:.34,map:new THREE.CanvasTexture(cv),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,vertexColors:true,sizeAttenuation:true,fog:false}));
+ A.pts.frustumCulled=false;A.pts.visible=false;A.pts.name='airV94';scene.add(A.pts);
+}
+function airTickV94(dt){
+ const A=airV94,k=weather.kind;
+ const calmAir=peaceOnV94()&&flowV42.started&&!journeying&&season!=='winter'&&!ROUGH_V94.includes(k);
+ A.amp+=((calmAir?1:0)-A.amp)*Math.min(1,dt*.8);
+ if(A.amp<.02){if(A.pts)A.pts.visible=false;return;}
+ airBuildV94();A.t+=dt;
+ const lvl=gfxV80.level==='auto'?gfxV80.autoLevel:gfxV80.level,n=Math.min(A.max,lvl==='low'?(LOW_POWER?20:36):lvl==='medium'?(LOW_POWER?34:60):(LOW_POWER?48:90));
+ const p=camHolder.position,h=gameHourFloat(),nf=h>=20.6||h<4.8?1:h>=19.2?(h-19.2)/1.4:h<5.6?(5.6-h)/.8:0,t=A.t;
+ let respawn=3;
+ for(let i=0;i<n;i++){
+  const dx=A.bx[i]-p.x,dz=A.bz[i]-p.z;
+  if(dx*dx+dz*dz>256&&respawn>0){respawn--;const a=Math.random()*6.283,r=3+Math.random()*11;A.bx[i]=p.x+Math.cos(a)*r;A.bz[i]=p.z+Math.sin(a)*r;A.by[i]=terrainHeightAt(A.bx[i],A.bz[i])+.35+Math.random()*1.9;}
+  const ph=A.ph[i],o=i*3;
+  A.pos[o]=A.bx[i]+Math.sin(t*.5+ph)*.7;A.pos[o+1]=A.by[i]+Math.sin(t*.8+ph*2)*.28;A.pos[o+2]=A.bz[i]+Math.cos(t*.4+ph*1.3)*.7;
+  const blink=Math.max(0,Math.sin(t*(1.3+(ph%1))+ph*7)),fly=(.1+.9*blink*blink)*nf,seed=(.2+.1*Math.sin(t*1.7+ph*5))*(1-nf),a=A.amp;
+  A.col[o]=(fly*.85+seed)*a;A.col[o+1]=(fly+seed)*a;A.col[o+2]=(fly*.42+seed*.85)*a;
+ }
+ const geo=A.pts.geometry;geo.setDrawRange(0,n);geo.attributes.position.needsUpdate=true;geo.attributes.color.needsUpdate=true;A.pts.visible=true;A.n=n;
+}
+
+/* ---------- Saxlanc və bağlantılar ---------- */
+snapshotV42=(c=>function(){const d=c.apply(this,arguments);d.peaceV94={mush:peaceV94.mush,basket:peaceV94.basket,moments:peaceV94.moments,last:peaceV94.last,soups:peaceV94.soups,hint:peaceV94.hint,done:peaceV94.done};return d;})(snapshotV42);
+restoreV42=(c=>async function(d){
+ const r=await c.apply(this,arguments);
+ safeV94('restore',()=>{
+  const s=d&&d.peaceV94,num=(o)=>{const out={};if(o&&typeof o==='object')for(const k in o)if(Number.isFinite(o[k]))out[k]=o[k];return out;};
+  peaceV94.mush=num(s&&s.mush);peaceV94.moments=num(s&&s.moments);peaceV94.last=num(s&&s.last);
+  peaceV94.basket=s&&Number.isFinite(s.basket)?Math.max(0,s.basket|0):0;peaceV94.soups=s&&Number.isFinite(s.soups)?s.soups|0:0;peaceV94.hint=s&&Number.isFinite(s.hint)?s.hint|0:0;peaceV94.done=!!(s&&s.done);
+  mushV94.picked.clear();mushV94.cache.clear();mushV94.t=0;standV94();sitV94.k=0;mushHudV94();
+ });
+ return r;
+})(restoreV42);
+regroundStaticV44=(c=>function(){const r=c.apply(this,arguments);mushV94.cache.clear();mushV94.t=0;return r;})(regroundStaticV44);
+updateAnimals=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ if(dt>0){safeV94('sitT',()=>sitTickV94(dt));safeV94('mushT',()=>mushTickV94(dt));safeV94('airT',()=>airTickV94(dt));}
+ return r;
+})(updateAnimals);
+// Başlanğıc ekranında seçilən çətinlik CONTINUE-dan sonra saxlancdakı ilə əvəz olunurdu: seçim qalır.
+let startPickV94='';
+restoreV42=(c=>async function(d){const r=await c.apply(this,arguments);safeV94('keepPick',()=>{if(startPickV94&&DIFF_V92[startPickV94]&&diffV92.mode!==startPickV94){setDifficultyV92(startPickV94,false);flowV42.saveDue=1;}startPickV94='';});return r;})(restoreV42);
+setDifficultyV92=(c=>function(mode,toast){if(toast!==false&&!flowV42.started&&DIFF_V92[mode])startPickV94=mode;const r=c.apply(this,arguments);mushV94.t=0;if(!peaceOnV94()){standV94();safeV94('hide',mushHideV94);}return r;})(setDifficultyV92);
+DIFF_V92.peaceful.info='No night predators, bosses or raids · damage taken ×0.35 · forage mushrooms, sit and watch the sky';
+safeV94('diffUi',updateDiffUiV92);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v94={
+ state:()=>JSON.parse(JSON.stringify(peaceV94)),
+ mush:()=>({active:mushV94.active.length,stems:mushV94.stems?mushV94.stems.count:0,caps:mushV94.caps?mushV94.caps.count:0,glow:mushV94.glow?mushV94.glow.count:0,dots:mushV94.dots?mushV94.dots.count:0,kinds:mushV94.active.map(c=>c.kind+':'+c.d.toFixed(1)),cache:mushV94.cache.size,rain:mushV94.rainBoost}),
+ nearest:()=>{const c=mushV94.active.find(c=>!c.admired);return c?{x:c.x,z:c.z,kind:c.kind,n:c.n,d:c.d}:null;},
+ refresh:()=>{mushV94.t=0;mushRefreshV94();},rain:v=>{mushV94.rainBoost=v;},
+ sit:()=>({on:sitV94.on,k:+sitV94.k.toFixed(2),still:+sitV94.still.toFixed(2),scene:sitV94.scene,t:+sitV94.t.toFixed(1)}),
+ sitDown:()=>sitDownV94(),stand:()=>standV94(),scene:()=>sceneV94(),
+ air:()=>({n:airV94.n,amp:+airV94.amp.toFixed(2),visible:!!(airV94.pts&&airV94.pts.visible)}),
+ mode:()=>actionModeV50(),press:()=>actionButtonV50()
+};
+/* /V94 */
+
+/* ============================================================
+   V95 — İLK TESTER RƏYİ: UI/UX KEÇİDİ.
+   "Tapşırıq pəncərələri oyunu örtür, bəzi HUD yazıları üst-üstə düşür."
+   1) Tapşırıq paneli yığcam zolağa çevrildi: bir sətir (başlıq + irəliləyiş), bələdçi aktiv olanda
+      ikinci sətirdə ox + məsafə. Tam mətn yalnız oyunçu zolağa və ya 🧭 düyməsinə toxunanda açılır
+      (əvvəl hər addımda 8–10 s və hər 1–3 dəqiqədən bir böyük pəncərə özü çıxırdı).
+      Təlim addımlarında (0–8) zolaq daim görünür, sonra yalnız bələdçi dövründə.
+   2) Üst-üstə düşmələr:
+      - "✓ Saved" yazısı temperatur sətrinin üstünə düşürdü → pauza düyməsinin altına (sağ yuxarı).
+      - Saat yazısı resurs zolağı genişlənəndə onun üstünə düşürdü → mövsüm zolağının sağına.
+      - Landscape: tapşırıq paneli xəritə və dəftər düymələrini örtürdü → düymə sırasının altına;
+        od ipucu CHOP oxunun üstünə düşürdü → sola çəkildi.
+      - Hava, saat və saxlanc yazılarına kölgə: açıq fonda oxunmurdu.
+   ============================================================ */
+const errOnceV95=new Set();
+function safeV95(name,fn){try{return fn();}catch(e){if(!errOnceV95.has(name)){errOnceV95.add(name);console.warn('V95 '+name,e);}}}
+const guideV95={full:false,step:-2,prog:null,cd:0};
+
+safeV95('css',()=>{const st=document.createElement('style');st.id='css95';st.textContent=
+ '#guide42.mini95{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:0;width:auto;min-width:0;max-width:min(300px,calc(100vw - 128px));max-height:none;overflow:hidden;padding:6px 10px;border-radius:11px;background:rgba(17,28,26,.74);border-color:#879d7566;box-shadow:none;pointer-events:auto;cursor:pointer;touch-action:manipulation}'+
+ '#guide42.mini95 #guideClose42,#guide42.mini95 #guideText42,#guide42.mini95 #guideWay42{display:none}'+
+ '#guide42.mini95 #guideTitle42{flex:1 1 0;min-width:0;padding:0;font-size:10.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+ '#guideProg95{display:none}#guide42.mini95 #guideProg95{display:block;flex:0 0 auto;font:800 10px/1.35 system-ui,sans-serif;color:#F2C35A;white-space:nowrap}#guide42.mini95 #guideProg95:empty{display:none}'+
+ '#guide42.mini95 #guideNav42{flex:1 1 100%;margin:4px 0 0;padding:4px 0 0;border-top:1px solid #ffffff1c;font-size:9px;gap:6px}'+
+ '#guide42.mini95 #guideArrow42{width:14px;height:14px}'+
+ '#guide42.flash95{animation:flash95 1.4s ease-out}@keyframes flash95{0%{box-shadow:0 0 0 2px #F2C35A,0 0 18px #F2C35Aaa}100%{box-shadow:0 0 0 0 #F2C35A00,0 0 0 #F2C35A00}}'+
+ '#save42{left:auto;right:10px;top:calc(56px + var(--top42));text-align:right;max-width:46vw}'+
+ '#weather,#clocktime,#save42{text-shadow:0 1px 2px #000,0 0 5px rgba(0,0,0,.8)}'+
+ '@media(max-height:500px) and (orientation:landscape){'+
+  '#save42{right:114px;top:calc(24px + var(--top42));max-width:30vw}'+
+  '#guide42{left:auto;right:10px;top:calc(114px + var(--top42));width:250px;max-height:calc(100vh - 214px)}'+
+  '#guide42.mini95{width:auto;max-width:250px;max-height:none}'+
+  '#firehint{right:86px}'+
+ '}';
+ document.head.appendChild(st);});
+
+/* ---------- 1) Yığcam tapşırıq zolağı ---------- */
+renderGuideV42=(c=>function(){
+ const r=c.apply(this,arguments);
+ safeV95('guide',()=>{
+  const g=document.getElementById('guide42'),title=document.getElementById('guideTitle42');if(!g||!title)return;
+  if(!guideV95.prog){const p=document.createElement('span');p.id='guideProg95';title.insertAdjacentElement('afterend',p);guideV95.prog=p;}
+  const att=guideVisibleV42();if(!att)guideV95.full=false;
+  const full=att&&guideV95.full,i=flowV42.step,base=flowV42.started&&!flowV42.paused&&!flowV42.restoring&&!gameOver,show=base&&(att||i<9);
+  g.classList.toggle('mini95',!full);g.style.display=show?(full?'block':'flex'):'none';
+  let detail='';
+  if(!full){
+   const s=STEPS_V42[i];
+   if(i===0)detail=Math.min(6,Math.floor(flowV42.distance))+'/6 m';else if(i===1)detail=Math.min(12,woodCollected)+'/12';else if(i===6)detail=Math.min(6,reedCollected)+'/6';
+   if(s&&title.textContent!==s.title)title.textContent=s.title;
+  }
+  if(guideV95.prog.textContent!==detail)guideV95.prog.textContent=detail;
+  if(guideV95.step!==i){if(guideV95.step>-2&&show){g.classList.remove('flash95');void g.offsetWidth;g.classList.add('flash95');}guideV95.step=i;}
+ });
+ return r;
+})(renderGuideV42);
+// 🧭 düyməsinin köhnə işləyicisi (sonradan təyin olunur) "görünürsə gizlət, yoxsa göstər" edir. Yığcam zolaq
+// daim göründüyü üçün düymə indi tam mətni açıb-bağlamalıdır: toxunuşu qeyd edib show/hide-ı ona görə yönləndiririk.
+function taskTapV95(){return performance.now()-(guideV95.tap||0)<800;}
+hideGuideV42=(c=>function(){
+ if(taskTapV95()&&!guideV95.full){guideV95.tap=0;guideV95.full=true;return showGuideV42(12);}
+ guideV95.full=false;return c.apply(this,arguments);
+})(hideGuideV42);
+showGuideV42=(c=>function(){if(taskTapV95()){guideV95.tap=0;guideV95.full=true;}return c.apply(this,arguments);})(showGuideV42);
+function expandGuideV95(){if(!actionAllowedV42())return;closeCompactPanelsV42();guideV95.full=true;showGuideV42(12);}
+safeV95('bind',()=>{
+ const g=document.getElementById('guide42'),t=document.getElementById('task42');
+ if(g){
+  g.addEventListener('touchstart',e=>{if(!g.classList.contains('mini95')||e.target.closest('#guideClose42'))return;if(e.cancelable)e.preventDefault();e.stopPropagation();expandGuideV95();},{passive:false});
+  g.addEventListener('click',e=>{if(!g.classList.contains('mini95')||e.target.closest('#guideClose42'))return;e.preventDefault();expandGuideV95();});
+ }
+ if(t)for(const ev of ['pointerdown','touchstart','mousedown','click'])t.addEventListener(ev,()=>{guideV95.tap=performance.now();},{capture:true,passive:true});
+});
+
+/* ---------- 2) Saat yazısı mövsüm zolağının sağında ---------- */
+function hudLayoutV95(){
+ const s=document.getElementById('season'),c=document.getElementById('clocktime');if(!s||!c)return;
+ const r=s.getBoundingClientRect();
+ if(r.width<4||getComputedStyle(s).display==='none'){if(c.style.position){c.style.position='';c.style.left='';c.style.top='';c.style.right='';c.style.width='';c.style.transform='';}return;}
+ const L=Math.round(r.right+7)+'px',T=Math.round(r.top+(r.height-c.offsetHeight)/2)+'px';
+ if(c.style.position!=='fixed'){c.style.position='fixed';c.style.right='auto';c.style.width='max-content';c.style.transform='none';}if(c.style.left!==L)c.style.left=L;if(c.style.top!==T)c.style.top=T;
+}
+updateAnimals=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ guideV95.cd-=dt>0?dt:.02;if(guideV95.cd<=0){guideV95.cd=.5;safeV95('layout',hudLayoutV95);}
+ return r;
+})(updateAnimals);
+addEventListener('resize',()=>{guideV95.cd=0;setTimeout(()=>safeV95('layout',hudLayoutV95),60);});
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v95={guide:()=>({full:guideV95.full,mini:document.getElementById('guide42').classList.contains('mini95'),display:document.getElementById('guide42').style.display,left:guideCycleV42.left}),expand:()=>expandGuideV95(),layout:()=>hudLayoutV95()};
+/* /V95 */
 
 updateObjective();
 updateHealth();
