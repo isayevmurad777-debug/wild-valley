@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V95</title>
+<title>Wild Valley — Survival · V97</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V95</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V97</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V95</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V97</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -4718,7 +4718,7 @@ function chooseWeaponFromSettings(btn){
 }
 
 function startDraw(){
-  if(!actionAllowedV42()||flowV42.step<6)return;
+  if(!actionAllowedV42()||flowV42.step<1)return;
   if (drawT >= 0) return;
   if (weaponMode==='bow'   && inv.reed >= BOW.cost) drawT = 0;
   if (weaponMode==='spear' && inv.wood >= SPEAR.woodCost) drawT = 0;
@@ -11997,7 +11997,7 @@ const STEPS_V42=[
 ];
 function actionAllowedV42(){return flowV42.started&&!flowV42.paused&&!flowV42.restoring&&!gameOver&&!journeying;}
 function keyAllowedV42(code){
- const limits={KeyE:3,KeyH:2,KeyX:6,KeyC:8,KeyG:9,KeyZ:9,KeyY:9,KeyL:9,KeyV:9,KeyB:9,KeyP:9,KeyQ:9,KeyF:9,KeyR:9};
+ const limits={KeyE:3,KeyH:2,KeyX:1,KeyC:3,KeyG:9,KeyZ:9,KeyY:9,KeyL:9,KeyV:9,KeyB:9,KeyP:9,KeyQ:9,KeyF:9,KeyR:9};
  return !(code in limits)||flowV42.step>=limits[code];
 }
 function clearInputV42(){ecologyV42.lastStep=null;document.getElementById("noise42").hidden=true;for(const id of ['worldPin42','controlCue42','swipeCue42','guideNav42']){const el=document.getElementById(id);if(el)el.hidden=true;}for(const k of Object.keys(keys))delete keys[k];move.x=move.y=0;stickId=lookId=null;knob.style.left=knob.style.top='32px';painting=false;drawT=-1;swingT=-1;pause=0;iceV.x=iceV.z=0;}
@@ -12067,7 +12067,7 @@ function renderGuideV42(){
  let detail='';if(i===0)detail=' · '+Math.min(6,Math.floor(flowV42.distance))+'/6 m';if(i===1)detail=' · '+Math.min(12,woodCollected)+"/12 wood";if(i===6)detail=' · '+Math.min(6,reedCollected)+'/6';
  if(s){title.textContent=s.title+detail;document.getElementById('guideText42').textContent=s.why;document.getElementById('guideWay42').textContent=s.hint();}
  else{const stage=CAMPAIGN_STAGES[campaignStageIndex()];title.textContent="Day "+campaignDay()+' · '+stage.valley;document.getElementById('guideText42').textContent=stage.task;document.getElementById('guideWay42').textContent=!flowV42.strongHome?"Next: build a strong house with 36 stone.":flowV42.eventsSurvived<1?"Next: survive your first major weather event.":"Keep your camp ready. New valleys unlock with time and skills.";}
- const controls={swing:1,housebtn:2,housechip:2,firebtn:3,bowbtn:6,meatbtn:8,meatchip:8,buildbtn:9,placebtn:9,rmbtn:9,axechip:9,trapchip:9,settingsbtn:9,rodchip:9,meteorchip:9,meteorbtn:9,lightningchip:9};
+ const controls={swing:1,housebtn:2,housechip:2,firebtn:3,bowbtn:1,meatbtn:3,meatchip:3,buildbtn:9,placebtn:9,rmbtn:9,axechip:9,trapchip:9,settingsbtn:9,rodchip:9,meteorchip:9,meteorbtn:9,lightningchip:9};
  for(const [id,at]of Object.entries(controls)){const el=document.getElementById(id);if(el){el.classList.toggle('learn-hidden42',i<at||(['housebtn','housechip'].includes(id)&&i>2&&i<9));el.classList.toggle('learn-current42',guideVisibleV42()&&id===coachControlV42()?.[0]);}}
  document.querySelectorAll('.housechoice').forEach(el=>el.classList.toggle('learn-hidden42',i<9&&el.dataset.house!=='starter'));
 }
@@ -16739,7 +16739,7 @@ releaseArrow=function(){
 const startDrawCoreV53=startDraw;
 startDraw=function(){
  if(slingOnV53()){
-  if(!actionAllowedV42()||flowV42.step<6||drawT>=0)return;
+  if(!actionAllowedV42()||flowV42.step<1||drawT>=0)return;
   if((inv.stone||0)>=1)drawT=0;else showEvent("🪨 No stones · mine rocks for slingshot ammo",1500);
   return;
  }
@@ -16811,7 +16811,7 @@ function craftOrEquipV53(kind){
   addWood(-C.wood);addStone(-C.stone);inv[key]=1;sBreak();flowV42.saveDue=1;
   showEvent(xb?"🔩🏹 CROSSBOW CRAFTED · 7 damage, flat fast bolts that pierce 2 targets · uses reeds as bolts":"✌️🪨 SLINGSHOT CRAFTED · silent, quick, stuns animals · uses stones",3600);
  }
- if(flowV42.step<6){showEvent("🔒 Learn the bow first",1500);return;}
+ if(flowV42.step<1){showEvent("🔒 Learn the bow first",1500);return;}
  weaponMode='bow';eliteWeapon=key;drawT=-1;applyWeapon();sPick(640);
  showEvent(xb?"🔩 Crossbow selected · tap FIRE to shoot":"🪨 Slingshot selected · hold and release",1500);
 }
@@ -19864,7 +19864,7 @@ function craftScopeBowV63(){
   addWood(-C.wood);addStone(-C.stone);inv.scopeBowV63=1;sBreak();flowV42.saveDue=1;
   showEvent("🔭🏹 SCOPED BOW CRAFTED · 3.5× zoom, fast flat arrows — a full draw drops a roe deer in one shot",3600);
  }
- if(flowV42.step<6){showEvent("🔒 Learn the bow first",1500);return;}
+ if(flowV42.step<1){showEvent("🔒 Learn the bow first",1500);return;}
  weaponMode='bow';eliteWeapon='scopeBowV63';drawT=-1;applyWeapon();sPick(760);
  if(!scopeV63.hint){scopeV63.hint=true;setTimeout(()=>showEvent("🔭 Hold to draw: the scope zooms in. For running animals put the cross on the yellow ◆ lead mark",3400),1700);}
 }
@@ -29993,6 +29993,262 @@ updateAnimals=(c=>function(dt){
 addEventListener('resize',()=>{guideV95.cd=0;setTimeout(()=>safeV95('layout',hudLayoutV95),60);});
 if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v95={guide:()=>({full:guideV95.full,mini:document.getElementById('guide42').classList.contains('mini95'),display:document.getElementById('guide42').style.display,left:guideCycleV42.left}),expand:()=>expandGuideV95(),layout:()=>hudLayoutV95()};
 /* /V95 */
+
+/* ============================================================
+   V96 — TELEFON SINAĞINDAN ÜÇ QEYD.
+   1) "High keçəndə yer ağ olur": V90 relyef kəsimi Low/Medium-dan High-a keçəndə tam indeksi qaytarır,
+      amma drawRange köhnə (qısa) sayda qalırdı → relyefin yalnız ilk sətirləri çəkilirdi, qalan yer boş.
+   2) "Uzaqdan ağaclar dağların üstündə havadadır": Low/Medium-da relyef yalnız görmə radiusunda
+      çəkilirdi, uzaq dağdakı ağaclar isə çəkilirdi. İndi radiusdan kənar relyef 4×4 xanalıq iri
+      dördbucaqlarla (cəmi ≤ ~7.7 min üçbucaq) çəkilir: dağların silueti və üstündəki ağaclar yerindədir.
+   3) Səs: yarpaq xışıltısı qatı (külək və yaxın ağaclara görə); "sistem" səsləri yumşaldıldı —
+      yığma/bildiriş "düt"ü (sPick: yuxarı sürüşən sinus) taxta "tık"a, sincabın elektron "düt-düt"ü
+      qısa cırıltılara, hinduşka səsi boğuq tona çevrildi; yeni heyvan görəndə səs yerinə səhifə xışıltısı.
+   ============================================================ */
+const errOnceV96=new Set();
+function safeV96(name,fn){try{return fn();}catch(e){if(!errOnceV96.has(name)){errOnceV96.add(name);console.warn('V96 '+name,e);}}}
+
+/* ---------- 1–2) Relyef kəsimi ---------- */
+const farGroundV96={k:4,blocks:null,coarse:0};
+function farGroundInitV96(){
+ const G=groundCullV90,cols=G.cols,rows=G.rows,k=farGroundV96.k,B=[];
+ for(let iy=0;iy<rows;iy+=k){const iy2=Math.min(rows,iy+k);for(let ix=0;ix<cols;ix+=k){const ix2=Math.min(cols,ix+k);
+  B.push(ix,iy,ix2,iy2,Math.min(G.xs[ix],G.xs[ix2]),Math.max(G.xs[ix],G.xs[ix2]),Math.min(G.zs[iy],G.zs[iy2]),Math.max(G.zs[iy],G.zs[iy2]));}}
+ farGroundV96.blocks=B;
+}
+groundCullTickV90=function(){
+ const G=groundCullV90;if(!G.ready)groundCullInitV90();if(!G.ok)return;
+ const g=groundMesh.geometry,cap=viewV90.cap;
+ if(!(cap<1e6)){if(G.active||g.index!==G.full||g.drawRange.count!==Infinity){g.setIndex(G.full);g.setDrawRange(0,Infinity);G.active=false;G.lastR=-1;}return;}
+ const p=camHolder.position,R=cap+55;
+ if(G.active&&Math.hypot(p.x-G.lastX,p.z-G.lastZ)<18&&R===G.lastR)return;
+ if(!farGroundV96.blocks)farGroundInitV96();
+ G.lastX=p.x;G.lastZ=p.z;G.lastR=R;
+ const R2=(R+10)*(R+10),g1=G.cols+1,I=G.dyn.array,B=farGroundV96.blocks;let n=0,coarse=0;
+ for(let i=0;i<B.length;i+=8){
+  const ix=B[i],iy=B[i+1],ix2=B[i+2],iy2=B[i+3];
+  const dx=Math.max(B[i+4]-p.x,0,p.x-B[i+5]),dz=Math.max(B[i+6]-p.z,0,p.z-B[i+7]);
+  if(dx*dx+dz*dz>R2){   // bütöv blok radiusdan kənardadır: bir iri dördbucaq
+   const a=ix+g1*iy,b=ix+g1*iy2,c=ix2+g1*iy2,d=ix2+g1*iy;I[n++]=a;I[n++]=b;I[n++]=d;I[n++]=b;I[n++]=c;I[n++]=d;coarse++;
+  }else for(let y=iy;y<iy2;y++)for(let x=ix;x<ix2;x++){
+   const a=x+g1*y,b=x+g1*(y+1),c=x+1+g1*(y+1),d=x+1+g1*y;I[n++]=a;I[n++]=b;I[n++]=d;I[n++]=b;I[n++]=c;I[n++]=d;}
+ }
+ G.dyn.updateRange.offset=0;G.dyn.updateRange.count=n;G.dyn.needsUpdate=true;
+ if(!G.active){g.setIndex(G.dyn);G.active=true;}
+ g.setDrawRange(0,n);G.tris=n/3;farGroundV96.coarse=coarse;
+};
+
+/* ---------- 3) Səs ---------- */
+let quietPickV96=0;
+function pageRustleV96(){
+ const a=actx(),t=a.currentTime,n=noiseSrcV54('pink',1.2,false),f=a.createBiquadFilter(),g=a.createGain();
+ f.type='highpass';f.frequency.value=2200;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.05,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+.2);
+ n.connect(f);f.connect(g);g.connect(a.destination);n.start(t,Math.random()*.8,.22);
+}
+// Yığma / bildiriş: yuxarı sürüşən sinus "düt" əvəzinə alçaq, qısa taxta "tık" (ton hündürlüyü yenə fərqlənir).
+sPick=function(pitch){
+ if(quietPickV96>0){safeV96('page',pageRustleV96);return;}
+ const a=actx(),t=a.currentTime,p=Number.isFinite(pitch)?pitch:800,f=Math.max(300,Math.min(760,p*.62));
+ const o=a.createOscillator(),lp=a.createBiquadFilter(),g=a.createGain();
+ o.type='triangle';o.frequency.setValueAtTime(f*1.015,t);o.frequency.exponentialRampToValueAtTime(f,t+.05);
+ lp.type='lowpass';lp.frequency.value=1500;lp.Q.value=.3;
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.15,t+.006);g.gain.exponentialRampToValueAtTime(.0008,t+.24);
+ o.connect(lp);lp.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.26);
+ safeV96('tok',()=>{const n=noiseSrcV54('pink',1,false),bp=a.createBiquadFilter(),ng=a.createGain();bp.type='bandpass';bp.frequency.value=1700;bp.Q.value=.9;
+  ng.gain.setValueAtTime(.07,t);ng.gain.exponentialRampToValueAtTime(.0005,t+.035);n.connect(bp);bp.connect(ng);ng.connect(a.destination);n.start(t,Math.random()*.8,.05);});
+};
+bookSeeV57=(c=>function(){quietPickV96++;try{return c.apply(this,arguments);}finally{quietPickV96--;}})(bookSeeV57);
+critterSoundV52=(c=>function(kind){
+ if(kind==='chatter')return safeV96('chatter',()=>{   // sincab: 5–6 qısa quru "çk"
+  const a=actx(),t=a.currentTime,cnt=5+((Math.random()*2)|0);
+  for(let i=0;i<cnt;i++){const at=t+i*(.055+Math.random()*.02),n=noiseSrcV54('white',1,false),bp=a.createBiquadFilter(),g=a.createGain();
+   bp.type='bandpass';bp.frequency.value=2600+Math.random()*900;bp.Q.value=2.2;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.05*(1-i*.1),at+.004);g.gain.exponentialRampToValueAtTime(.0001,at+.035);
+   n.connect(bp);bp.connect(g);g.connect(a.destination);n.start(at,Math.random()*.8,.05);}
+ });
+ if(kind==='gobble')return safeV96('gobble',()=>{   // hinduşka: kvadrat dalğa əvəzinə boğuq, titrək ton
+  const a=actx(),t=a.currentTime,o=a.createOscillator(),lp=a.createBiquadFilter(),g=a.createGain();
+  o.type='triangle';o.frequency.setValueAtTime(380,t);for(let i=0;i<6;i++)o.frequency.linearRampToValueAtTime(i%2?300:420,t+(i+1)*.045);
+  lp.type='lowpass';lp.frequency.value=900;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.045,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.3);
+  o.connect(lp);lp.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.34);
+ });
+ return c.apply(this,arguments);
+})(critterSoundV52);
+
+// Yarpaq xışıltısı: zolaq süzgəcli səs-küy, külək əsdikcə dalğalanır, ağac yaxınlığında güclənir.
+const leafV96={t:0,g:0,f:0};
+function leafTickV96(dt){
+ const A=audioV92;if(!A.ready||!AC||AC.state!=='running')return;
+ if(!A.leafV96||A.leafCtxV96!==A.ctx){
+  const a=A.ctx,s=noiseSrcV54('white',.8,true),hp=a.createBiquadFilter(),bp=a.createBiquadFilter(),g=a.createGain();
+  hp.type='highpass';hp.frequency.value=1500;bp.type='bandpass';bp.frequency.value=3200;bp.Q.value=.6;g.gain.value=0;
+  s.connect(hp);hp.connect(bp);bp.connect(g);g.connect(A.amb);s.start(a.currentTime,Math.random()*1.2);A.leafV96={s,bp,g};A.leafCtxV96=a;
+ }
+ const L=leafV96;L.t+=dt;if(L.t<.35)return;const step=L.t;L.t=0;
+ const active=flowV42.started&&!flowV42.paused&&!gameOver&&!journeying;
+ if(!active){rampV92(A.leafV96.g.gain,0,.3);return;}
+ const p=camHolder.position;let near=0;
+ for(const t of trees){if(t.falling)continue;const d=Math.hypot(t.x-p.x,t.z-p.z);if(d<16)near+=d<7?1:.45;if(near>=3)break;}
+ const treeF=Math.min(1,.22+near*.3);
+ L.f+=step;const gust=.5+.5*Math.sin(L.f*.43+Math.sin(L.f*.17)*2.1);
+ const w=(typeof windV51!=='undefined'?windV51.strength*windV51.gust:.15);
+ const lvl=Math.min(.2,(.03+w*.45)*treeF*(.35+.65*gust))*(season==='winter'?.3:1)*(protectedByShelter()?.5:1);
+ rampV92(A.leafV96.g.gain,lvl,.9);rampV92(A.leafV96.bp.frequency,2500+gust*1400+w*600,1.1);L.g=lvl;
+}
+tick=(c=>function(){const r=c.apply(this,arguments);safeV96('leaf',()=>leafTickV96(1/30));return r;})(tick);
+
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v96={
+ ground:()=>({active:groundCullV90.active,tris:groundCullV90.tris,coarse:farGroundV96.coarse,draw:groundMesh.geometry.drawRange.count,full:groundMesh.geometry.index===groundCullV90.full,idx:groundMesh.geometry.index.count}),
+ leaf:()=>({level:+leafV96.g.toFixed(4),node:!!audioV92.leafV96,gain:audioV92.leafV96?+audioV92.leafV96.g.gain.value.toFixed(4):null}),
+ pick:p=>sPick(p),chatter:()=>critterSoundV52('chatter'),gobble:()=>critterSoundV52('gobble')
+};
+/* /V96 */
+
+/* ============================================================
+   V97 — OX ERKƏN AÇILIR, GECƏ SƏMASI.
+   1) Ox əvvəl yalnız ilk gecədən sonra (addım 7) açılırdı. İndi ilk addımdan (6 m gəzmək) sonra açılır:
+      düymə/X, çəkmə, sapand/arbalet/optik ox kilidləri 6 → 1 (fayl daxilində yerində dəyişiklik),
+      üstəlik 6 başlanğıc ox verilir (qamış dərsi sayğacına yazılmır). Ət bişirmək də od dərsindən
+      (addım 4) açılır ki, erkən ovlanan ət əldə qalmasın.
+   2) Gecə səması:
+      - Sıx ulduz sahəsi (telefonda 2600, masaüstündə 5200): parlaqlıq/ölçü paylanması, rəng temperaturu,
+        hər ulduzun öz sayrışması, yarısı Süd Yolu zolağı boyunca. Ulduzlar buludun arxasında gizlənir
+        (hər kadr bir hissəsi üçün bulud örtüyü hesablanır) — əvvəl bütün səma birdən solurdu.
+      - Yüngül buludda (adi "clear" hava) səma artıq yarı solğun deyil.
+      - Planetlər yenidən: halqalı qaz nəhəngi (Kassini boşluqlu halqa), peyki olan buz planeti,
+        kiçik qırmızı planet; hər birində yumşaq hale. Ayın yolundan kənara köçürüldü.
+   ============================================================ */
+const errOnceV97=new Set();
+function safeV97(name,fn){try{return fn();}catch(e){if(!errOnceV97.has(name)){errOnceV97.add(name);console.warn('V97 '+name,e);}}}
+
+/* ---------- 1) Ox dəsti ---------- */
+const bowV97={kit:false,t:0,wait:-1};
+function bowKitTickV97(dt){
+ const B=bowV97;if(B.kit||!actionAllowedV42())return;
+ if(flowV42.step>=6){B.kit=true;return;}
+ if(flowV42.step<1)return;
+ if(B.wait<0)B.wait=4;                       // "✓ Completed!" bildirişi oxunsun
+ B.wait-=dt;if(B.wait>0)return;
+ B.kit=true;flowV42.saveDue=1;
+ if(inv.reed<6){const n=6-inv.reed;addReed(n);reedCollected=Math.max(0,reedCollected-n);updateObjective();}
+ safeV97('kitHud',()=>{if(typeof updateWeaponHud==='function')updateWeaponHud();});
+ showEvent('🏹 Bow unlocked · '+(isTouch?'tap the 🏹 button':'press X')+' to switch weapons · '+inv.reed+' arrows ready (arrows are made from reeds)',5600);
+}
+snapshotV42=(c=>function(){const d=c.apply(this,arguments);d.bowKitV97=bowV97.kit;return d;})(snapshotV42);
+restoreV42=(c=>async function(d){const r=await c.apply(this,arguments);bowV97.kit=!!(d&&d.bowKitV97)||flowV42.step>=6;bowV97.wait=-1;return r;})(restoreV42);
+
+/* ---------- 2) Gecə səması ---------- */
+nightVisibilityV42=function(){
+ const night=dayT>.58?Math.min(1,(dayT-.58)/.14):dayT<.06?Math.min(1,(.06-dayT)/.05):0;
+ if(['storm','megaStorm','hail','tornado','megaTornado','hurricane','blizzard'].includes(weather.kind))return 0;
+ const clear=Math.pow(THREE.MathUtils.clamp(1-(skyCloudCover-.4)/.45,0,1),1.3);
+ return night*clear*(1-skyStormBlend)*(weather.kind==='fog'?.15:1);
+};
+const skyV97={ready:false,stars:null,n:0,cursor:0,R:815,planets:[],pivots:[]};
+function starFieldV97(){
+ const S=skyV97,n=LOW_POWER?2600:5200,R=S.R,H=nightHashV42;
+ const pos=new Float32Array(n*3),col=new Float32Array(n*3),phase=new Float32Array(n),size=new Float32Array(n),occ=new Float32Array(n).fill(1),c=new THREE.Color();
+ const lane=new THREE.Vector3(.5,.28,.82).normalize(),t1=new THREE.Vector3(0,1,0).cross(lane).normalize(),t2=lane.clone().cross(t1).normalize(),d=new THREE.Vector3();
+ const pal=[[0xBFD8FF,.3],[0xFFFFFF,.3],[0xFFEFCF,.24],[0xFFC98E,.11],[0xFF9E7C,.05]];
+ let i=0,k=0;
+ while(i<n&&k<n*30){
+  k++;const s=k*7.13;
+  if(H(s+1)<.5){const a=H(s+2)*6.283,off=(H(s+3)+H(s+4)+H(s+5)-1.5)*.17;d.copy(t1).multiplyScalar(Math.cos(a)).addScaledVector(t2,Math.sin(a)).addScaledVector(lane,off).normalize();}
+  else{const a=H(s+2)*6.283,y=.05+H(s+3)*.95,r=Math.sqrt(1-y*y);d.set(Math.cos(a)*r,y,Math.sin(a)*r);}
+  if(d.y<.05)continue;
+  pos[i*3]=d.x*R;pos[i*3+1]=d.y*R;pos[i*3+2]=d.z*R;
+  let pr=H(s+6),hex=pal[0][0];for(const [h,w] of pal){if(pr<w){hex=h;break;}pr-=w;}
+  const bright=.5+Math.pow(H(s+7),2)*.5;c.setHex(hex).multiplyScalar(bright);c.toArray(col,i*3);
+  phase[i]=H(s+8)*6.283;size[i]=1.8+Math.pow(H(s+9),4)*3+(bright>.85?.9:0);i++;
+ }
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute('position',new THREE.BufferAttribute(pos.subarray(0,i*3),3));geo.setAttribute('color',new THREE.BufferAttribute(col.subarray(0,i*3),3));
+ geo.setAttribute('phase',new THREE.BufferAttribute(phase.subarray(0,i),1));geo.setAttribute('starSize',new THREE.BufferAttribute(size.subarray(0,i),1));
+ const occAttr=new THREE.BufferAttribute(occ.subarray(0,i),1);occAttr.setUsage(THREE.DynamicDrawUsage);geo.setAttribute('occ',occAttr);
+ const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,depthTest:true,vertexColors:true,blending:THREE.AdditiveBlending,uniforms:{time:{value:0},opacity:{value:0},px:{value:1}},
+  vertexShader:'attribute float phase;attribute float starSize;attribute float occ;uniform float time;uniform float px;varying vec3 hue;varying float amp;void main(){hue=color;float tw=.7+.3*sin(time*(.9+fract(phase*3.7)*2.4)+phase);amp=tw*occ*smoothstep(.04,.2,normalize(position).y);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);gl_PointSize=starSize*px;}',
+  fragmentShader:'uniform float opacity;varying vec3 hue;varying float amp;void main(){float r=length(gl_PointCoord-.5)*2.0;if(r>1.0)discard;float glow=pow(1.0-r,1.6);float core=1.0-smoothstep(0.0,.55,r);gl_FragColor=vec4(hue,opacity*amp*min(1.0,glow*.9+core));}'});
+ S.stars=new THREE.Points(geo,mat);S.stars.frustumCulled=false;S.stars.name='starsV97';S.n=i;
+}
+function starOccTickV97(){
+ const S=skyV97,st=S.stars,occ=st.geometry.attributes.occ,P=st.geometry.attributes.position.array,n=S.n,R=S.R;
+ const rot=st.rotation.y,cs=Math.cos(rot),sn=Math.sin(rot),cover=skyCloudCover,lo=.70-cover*.42,hi=.84-cover*.42,kk=Math.min(1,cover*4)*.96,chunk=LOW_POWER?220:480,A=occ.array;
+ for(let j=0;j<chunk;j++){
+  const i=S.cursor=(S.cursor+1)%n,x0=P[i*3]/R,y=P[i*3+1]/R,z0=P[i*3+2]/R,x=x0*cs+z0*sn,z=-x0*sn+z0*cs,h=Math.max(.12,y);
+  const u=x/h*.085+elapsed*.00065,v=z/h*.085+elapsed*.00018;
+  const nn=sampleSkyNoise(u,v,0)*.58+sampleSkyNoise(u*2+.17,v*2+.17,1)*.28+sampleSkyNoise(u*4+.31,v*4+.31,2)*.14;
+  A[i]=1-kk*THREE.MathUtils.smoothstep(nn,lo,hi);
+ }
+ occ.needsUpdate=true;
+}
+function planetV97(o){
+ const g=new THREE.Group(),extras=[];
+ const shader=(light,dark,bands)=>new THREE.ShaderMaterial({transparent:true,depthWrite:true,depthTest:true,
+  uniforms:{opacity:{value:0},lightColor:{value:new THREE.Color(light)},darkColor:{value:new THREE.Color(dark)},bands:{value:bands},sunDir:{value:new THREE.Vector3(-.6,.38,.7).normalize()}},
+  vertexShader:'varying vec3 norm;varying vec3 vn;void main(){norm=normal;vn=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:'uniform float opacity;uniform float bands;uniform vec3 lightColor;uniform vec3 darkColor;uniform vec3 sunDir;varying vec3 norm;varying vec3 vn;void main(){vec3 n=normalize(norm);vec3 v=normalize(vn);'+
+   'float swirl=sin(n.x*7.0+n.z*5.0)*.35+sin(n.x*17.0-n.z*13.0)*.12;float b=.5+.5*sin((n.y+swirl*.09)*bands);float b2=.5+.5*sin((n.y-swirl*.05)*bands*2.3+1.7);'+
+   'vec3 col=mix(darkColor,lightColor,smoothstep(.1,.9,b*.7+b2*.3));float day=smoothstep(-.3,.55,dot(v,sunDir));float limb=pow(max(0.0,v.z),.45);'+
+   'vec3 c=col*(.14+.86*day)*(.5+.5*limb);float rim=pow(1.0-max(0.0,v.z),3.0);c+=lightColor*rim*.4*day;gl_FragColor=vec4(c,opacity);}'});
+ const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:softStarTexture,color:o.glow,transparent:true,opacity:0,depthWrite:false,depthTest:true,fog:false,blending:THREE.AdditiveBlending}));
+ glow.scale.setScalar(o.r*(o.ring?7.5:5.4));glow.renderOrder=0;g.add(glow);extras.push({m:glow.material,k:o.glowK||.5});
+ const mat=shader(o.light,o.dark,o.bands);
+ const sphere=new THREE.Mesh(new THREE.SphereGeometry(o.r,LOW_POWER?22:36,LOW_POWER?14:24),mat);sphere.renderOrder=1;g.add(sphere);
+ const materials=[mat];
+ if(o.ring){
+  const r0=o.r*1.42,r1=o.r*2.55,geo=new THREE.RingGeometry(r0,r1,LOW_POWER?56:96,LOW_POWER?20:28),p=geo.attributes.position,cols=new Float32Array(p.count*3);
+  for(let i=0;i<p.count;i++){
+   const f=(Math.hypot(p.getX(i),p.getY(i))-r0)/(r1-r0);
+   let b=f<.16?.22:f<.54?.95:f<.62?.03:f<.93?.6:.18;b*=.84+.16*Math.sin(f*58)+.0;b*=THREE.MathUtils.smoothstep(f,0,.05)*(1-THREE.MathUtils.smoothstep(f,.94,1));
+   cols[i*3]=.98*b;cols[i*3+1]=.84*b;cols[i*3+2]=.6*b;
+  }
+  geo.setAttribute('color',new THREE.BufferAttribute(cols,3));
+  const rm=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide,transparent:true,opacity:0,depthWrite:false,depthTest:true,fog:false,blending:THREE.AdditiveBlending});
+  const ring=new THREE.Mesh(geo,rm);ring.rotation.x=1.22;ring.rotation.z=.28;ring.renderOrder=2;g.add(ring);materials.push(rm);
+ }
+ let pivot=null;
+ if(o.moon){
+  pivot=new THREE.Group();pivot.rotation.z=.3;const mm=shader(0xE4E2DA,0x8E8A82,3);
+  const m=new THREE.Mesh(new THREE.SphereGeometry(o.r*.2,12,8),mm);m.position.set(o.r*2.5,0,0);m.renderOrder=1;pivot.add(m);g.add(pivot);extras.push({m:mm,k:1,uniform:true});
+ }
+ g.position.set(o.pos[0],o.pos[1],o.pos[2]);if(o.tilt)g.rotation.z=o.tilt;
+ return {group:g,materials,ringed:!!o.ring,extrasV97:extras,pivotV97:pivot};
+}
+function upgradeNightV97(){
+ const S=skyV97,s=nightDetailsV42;if(S.ready||!s.ready||!s.group)return;S.ready=true;
+ starFieldV97();s.group.add(S.stars);
+ for(const p of s.planets){s.group.remove(p.group);p.group.traverse(o=>{if(o.geometry)o.geometry.dispose();});}
+ s.planets=[
+  planetV97({r:17,light:0xF4DCA8,dark:0x9A6E44,bands:21,ring:true,glow:0xFFD9A0,glowK:.34,pos:[-560,300,250],tilt:.18}),
+  planetV97({r:11,light:0xBFEAF2,dark:0x2F5C96,bands:9,glow:0x8FD4FF,glowK:.5,moon:true,pos:[470,400,380]}),
+  planetV97({r:6,light:0xF0A070,dark:0x8A3E2A,bands:5,glow:0xFF9A6A,glowK:.55,pos:[-150,310,640]})
+ ];
+ for(const p of s.planets)s.group.add(p.group);
+}
+updateNightDetailsV42=(c=>function(){
+ const r=c.apply(this,arguments);
+ safeV97('night',()=>{
+  const s=nightDetailsV42,S=skyV97;if(!s.ready)return;if(!S.ready)upgradeNightV97();
+  if(!s.group.visible||!S.stars)return;
+  const a=s.alpha;s.stars.visible=false;
+  const u=S.stars.material.uniforms;u.time.value=elapsed;u.opacity.value=a;u.px.value=Math.max(.75,renderer.getPixelRatio());S.stars.rotation.y=elapsed*.00045;
+  starOccTickV97();
+  s.band.material.uniforms.opacity.value=a*.58*THREE.MathUtils.clamp(1-(skyCloudCover-.38)*2.4,0,1);
+  for(const p of s.planets){
+   if(!p.extrasV97)continue;const fade=p.group.visible?p.materials[0].uniforms.opacity.value:0;
+   for(const e of p.extrasV97){if(e.uniform)e.m.uniforms.opacity.value=fade*e.k;else e.m.opacity=fade*e.k;}
+   if(p.pivotV97)p.pivotV97.rotation.y=elapsed*.06;
+  }
+ });
+ return r;
+})(updateNightDetailsV42);
+updateStars=(c=>function(){const r=c.apply(this,arguments);if(skyV97.stars)stars.visible=false;return r;})(updateStars);
+
+updateAnimals=(c=>function(dt){const r=c.apply(this,arguments);if(dt>0)safeV97('bowKit',()=>bowKitTickV97(dt));return r;})(updateAnimals);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v97={
+ sky:()=>({ready:skyV97.ready,stars:skyV97.n,alpha:+nightDetailsV42.alpha.toFixed(2),vis:+nightVisibilityV42().toFixed(2),planets:nightDetailsV42.planets.map(p=>({vis:p.group.visible,op:+p.materials[0].uniforms.opacity.value.toFixed(2)})),oldStars:stars.visible,v42Stars:nightDetailsV42.stars&&nightDetailsV42.stars.visible}),
+ bow:()=>({kit:bowV97.kit,step:flowV42.step,reed:inv.reed,keyX:keyAllowedV42('KeyX'),keyC:keyAllowedV42('KeyC'),btnHidden:document.getElementById('bowbtn').classList.contains('learn-hidden42'),weapon:weaponMode})
+};
+/* /V97 */
 
 updateObjective();
 updateHealth();
