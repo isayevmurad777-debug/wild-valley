@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V97</title>
+<title>Wild Valley — Survival · V98</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V97</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V98</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V97</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V98</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -8100,7 +8100,7 @@ function updateAnimals(dt){
     // Bizon yalnız payızda və ya vurulandan sonra aqressivdir; digər fəsillərdə sakit otlayır.
     if (a.bison && !a.enraged){
       const trueBison=!a.hippo&&!a.rhino&&!a.mammoth&&!a.dinosaur&&!a.boar;
-      if (dist < ECOLOGY.mammothAlertRadius+1.5){
+      if (bisonAlertV98(a,dist,dt,trueBison)){
         enrageBisonHerd(a);sGrowl();
       } else {
         a.wander += (Math.random()-0.5)*dt*(trueBison?.34:.22);
@@ -10210,7 +10210,7 @@ function closeHouseMenu(){
   if (menu) menu.classList.remove('on');
 }
 function toggleHouseMenu(){
-  if(!actionAllowedV42()||flowV42.step<9)return;
+  if(!actionAllowedV42()||flowV42.step<3)return;
   const menu=document.getElementById('housemenu');
   if (!menu) return;
   updateHouseMenu();
@@ -12068,8 +12068,8 @@ function renderGuideV42(){
  if(s){title.textContent=s.title+detail;document.getElementById('guideText42').textContent=s.why;document.getElementById('guideWay42').textContent=s.hint();}
  else{const stage=CAMPAIGN_STAGES[campaignStageIndex()];title.textContent="Day "+campaignDay()+' · '+stage.valley;document.getElementById('guideText42').textContent=stage.task;document.getElementById('guideWay42').textContent=!flowV42.strongHome?"Next: build a strong house with 36 stone.":flowV42.eventsSurvived<1?"Next: survive your first major weather event.":"Keep your camp ready. New valleys unlock with time and skills.";}
  const controls={swing:1,housebtn:2,housechip:2,firebtn:3,bowbtn:1,meatbtn:3,meatchip:3,buildbtn:9,placebtn:9,rmbtn:9,axechip:9,trapchip:9,settingsbtn:9,rodchip:9,meteorchip:9,meteorbtn:9,lightningchip:9};
- for(const [id,at]of Object.entries(controls)){const el=document.getElementById(id);if(el){el.classList.toggle('learn-hidden42',i<at||(['housebtn','housechip'].includes(id)&&i>2&&i<9));el.classList.toggle('learn-current42',guideVisibleV42()&&id===coachControlV42()?.[0]);}}
- document.querySelectorAll('.housechoice').forEach(el=>el.classList.toggle('learn-hidden42',i<9&&el.dataset.house!=='starter'));
+ for(const [id,at]of Object.entries(controls)){const el=document.getElementById(id);if(el){el.classList.toggle('learn-hidden42',i<at);el.classList.toggle('learn-current42',guideVisibleV42()&&id===coachControlV42()?.[0]);}}
+ document.querySelectorAll('.housechoice').forEach(el=>el.classList.toggle('learn-hidden42',i<3&&el.dataset.house!=='starter'));
 }
 function updateFlowV42(dt){
  flowV42.seconds+=dt;flowV42.sinceDamage+=dt;flowV42.checkpointCd=Math.max(0,flowV42.checkpointCd-dt);
@@ -30249,6 +30249,220 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v97={
  bow:()=>({kit:bowV97.kit,step:flowV42.step,reed:inv.reed,keyX:keyAllowedV42('KeyX'),keyC:keyAllowedV42('KeyC'),btnHidden:document.getElementById('bowbtn').classList.contains('learn-hidden42'),weapon:weaponMode})
 };
 /* /V97 */
+
+/* ============================================================
+   V98 — TELEFON SINAĞI (şəlalə yanında "error", bizon, ev düyməsi, silah düymələri, şimşək).
+   1) Dayanıqlılıq. Əsas dövrdə (tick) bir mərhələ xəta atanda V68 qoruyucusu oyunu davam etdirirdi,
+      amma həmin kadrda xətadan SONRAKI bütün mərhələlər atlanırdı: heyvanlar yerində donur,
+      relyef kəsimi köhnə yerdə qalır (uzaqlaşanda yer iri müstəvilərlə / deşiklərlə görünür).
+      İndi hər mərhələ ayrıca qorunur (biri xəta atsa qalanları işləyir), relyef kəsimi dövrün
+      sonunda da çağırılır, koordinatı pozulmuş heyvan silinir. Xətalar yadda saxlanır və pauza
+      menyusunda DIAGNOSTICS bölməsində göstərilir (COPY ilə köçürmək olur).
+   2) Bizon: yalnız toxunacaq qədər yaxın gələndə (payızda bir az uzaqdan) və ya vurulanda hücum edir;
+      çata bilməyəndə, ilişəndə, oyunçu hündürə qalxanda və ya ~15 s-dən sonra əl çəkir.
+   3) Ev düyməsi təlimin 4–9-cu addımlarında gizli idi və basanda heç nə etmirdi — indi ilk
+      sığınacaqdan sonra həmişə açıqdır. "Gecəni sığınacaqda keçir" addımı 2 gecədən sonra özü keçilir.
+   4) Silah dəyişmə düyməsi hücum düyməsindən uzaqlaşdırıldı (təsadüfi toxunuş olmasın).
+   5) Şimşək tam qırmızı (göydə və yerə düşəndə), yerdə qığılcım partlayışı; fırtına daha tez-tez;
+      payızda küləklə uçan yarpaq dəstələri.
+   ============================================================ */
+const errOnceV98=new Set();
+function safeV98(name,fn){try{return fn();}catch(e){if(!errOnceV98.has(name)){errOnceV98.add(name);console.warn('V98 '+name,e);}}}
+
+/* ---------- 1) Mərhələlərin ayrıca qorunması + xəta jurnalı ---------- */
+const errLogV98={list:[],count:0,saveCd:0,sanCd:0};
+safeV98('logLoad',()=>{const s=JSON.parse(localStorage.getItem('wvErrLogV98')||'null');if(Array.isArray(s))errLogV98.list=s.filter(x=>x&&typeof x.msg==='string').slice(-12).map(x=>({...x,old:true}));});
+function logErrV98(stage,e){
+ const L=errLogV98;L.count++;const msg=String(e&&e.message||e).slice(0,160);
+ let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
+ if(!it){
+  let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V98'};
+  try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
+  L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
+ }
+ it.n++;
+ if(L.saveCd<=0){L.saveCd=240;try{localStorage.setItem('wvErrLogV98',JSON.stringify(L.list));}catch(_){}}else L.saveCd--;
+}
+function sanitizeAnimalsV98(){
+ for(const a of [...animals]){const q=a&&a.root&&a.root.position;
+  if(!q||!Number.isFinite(q.x)||!Number.isFinite(q.y)||!Number.isFinite(q.z)){try{removeAnimal(a);}catch(e){const i=animals.indexOf(a);if(i>=0)animals.splice(i,1);}}}
+}
+const STAGES_V98=['clampVisibility','habitatNoticeV38','schedulePorcupineV42','updateAimV37','updateAnimalTracks','updateAnimals','updateArrows','updateAvalanche','updateBirds','updateBloodMoonV36','updateBow','updateCampV35','updateCaveTreasures','updateCoachV42','updateCold','updateDirectorV42','updateEnemies','updateFangDrops','updateFires','updateFlowV42','updateFogEncounterV43','updateForestFloorV42','updateFruits','updateGrowing','updateHealthDrops','updateHerds','updateHuntingFog','updateMeatDrops','updateMeatHud','updateMeteorAxes','updateMeteorShards','updateNatureV36','updateOwls','updatePlayerElevation','updateResourceRespawns','updateRiverLife','updateRockfallsV40','updateScenicNature','updateSky','updateSnow','updateSpears','updateStars','updateStructureBuilds','updateSupplyCaches','updateSwampsV40','updateTimeHud','updateTraps','updateTreeRespawns','updateTreeWindV40','updateWeather','updateWorldEvents'];
+let stagesWrappedV98=0;
+for(const name of STAGES_V98){
+ if(typeof window[name]!=='function')continue;
+ const c=window[name];stagesWrappedV98++;
+ window[name]=function(){
+  try{return c.apply(this,arguments);}
+  catch(e){logErrV98(name,e);if(name==='updateAnimals'&&errLogV98.sanCd<=0){errLogV98.sanCd=60;safeV98('sanitize',sanitizeAnimalsV98);}}
+ };
+}
+tick=(c=>function(){
+ const n0=tickGuardV68.err.size;const r=c.apply(this,arguments);
+ if(tickGuardV68.err.size!==n0)safeV98('guardLog',()=>{logErrV98('tick',new Error([...tickGuardV68.err].pop()));});
+ if(errLogV98.sanCd>0)errLogV98.sanCd--;
+ // Relyef kəsimi heç vaxt köhnə yerdə qalmasın (updateAnimals zənciri kəsilsə belə).
+ if(flowV42.started&&!flowV42.restoring&&!journeying)safeV98('cullLate',staticCullTickV90);
+ return r;
+})(tick);
+function diagTextV98(){
+ const L=errLogV98.list;if(!L.length)return 'No errors recorded.';
+ return L.slice().reverse().map(x=>(x.old?'(earlier) ':'')+'['+x.stage+'] '+x.msg+' ×'+x.n+(x.day?' · day '+x.day+' '+x.hour+'h':'')+(x.pos?' · @'+x.pos.join(','):'')+(x.season?' · '+x.season:'')+(x.diff?' · '+x.diff:'')+(x.gfx?' · gfx '+x.gfx:'')+(x.stack?'\n   '+x.stack:'')).join('\n');
+}
+function buildDiagV98(){
+ const panel=document.querySelector('#pausePanel42 .panel42');if(!panel)return;
+ let box=document.getElementById('diag98');
+ if(!box){
+  const st=document.createElement('style');st.textContent='#diag98{width:100%;box-sizing:border-box;text-align:left;margin:8px auto 2px}#diag98 .t{font:800 10px system-ui;letter-spacing:1.5px;color:#D9C9A8;margin-bottom:5px;display:flex;align-items:center;gap:8px}#diag98 .t span{flex:1}#diag98 .t button{width:auto!important;min-height:30px!important;margin:0!important;padding:4px 10px!important;border-radius:8px;border:1px solid rgba(255,214,160,.35);background:rgba(255,214,160,.1);color:#FFE7BD;font:800 10px system-ui!important}#diag98 pre{margin:0;max-height:150px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:10px/1.35 ui-monospace,monospace;color:#BFD3D9;background:rgba(0,0,0,.25);border-radius:8px;padding:7px;user-select:text;-webkit-user-select:text}#diag98.bad pre{color:#FFC9B8}';
+  document.head.appendChild(st);
+  box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
+  panel.insertBefore(box,panel.querySelector('small'));
+  for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V98 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+   try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
+  document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
+ }
+ box.classList.toggle('bad',errLogV98.list.length>0);box.querySelector('pre').textContent=diagTextV98();
+}
+setPausedV42=(c=>function(v,...r){const x=c.call(this,v,...r);if(v)safeV98('diagUi',buildDiagV98);return x;})(setPausedV42);
+
+/* ---------- 2) Bizon ---------- */
+const bisonV98={warned:-99};
+function trueBisonV98(a){return !!(a&&a.bison&&!a.hippo&&!a.rhino&&!a.mammoth&&!a.dinosaur&&!a.boar);}
+// Əsas dövrdəki "9.5 m-dən yaxındırsa bütün sürü qəzəblənir" şərtinin yerinə çağırılır (yerində dəyişiklik).
+function bisonAlertV98(a,dist,dt,trueBison){
+ const near=ECOLOGY.mammothAlertRadius+1.5;
+ if(!trueBison||a.stampedeV69)return dist<near;
+ if((a.calmV98||0)>0){a.calmV98-=dt;return false;}
+ const autumn=season==='autumn';
+ if(dist<(autumn?6.5:animalContactDistance(a)+1.2))return true;   // yaz/yay: yalnız ~1 m qalanda
+ if(dist<near){
+  a.nearV98=(a.nearV98||0)+dt;
+  if(elapsed-bisonV98.warned>45){bisonV98.warned=elapsed;showEvent('🦬 Bison are watching you · keep a few steps away and they stay calm',3200);}
+  if(autumn&&a.nearV98>5)return true;
+ }else a.nearV98=0;
+ return false;
+}
+enrageBisonHerd=(c=>function(b){const r=c.apply(this,arguments);for(const o of animals)if(o.bison&&o.enraged&&!(o.rageT>0)){o.rageT=.01;o.stuckV98=0;o.lxV98=o.root.position.x;o.lzV98=o.root.position.z;}return r;})(enrageBisonHerd);
+hitAnimal=(c=>function(a){if(a&&a.bison){a.rageT=.01;a.calmV98=0;a.hitV98=elapsed;}return c.apply(this,arguments);})(hitAnimal);
+function bisonCalmTickV98(dt){
+ const p=camHolder.position,limit=diffCfgV92().calm?10:15;
+ for(const a of animals){
+  if(!trueBisonV98(a)||a.stampedeV69)continue;
+  if(!a.enraged){a.rageT=0;a.stuckV98=0;continue;}
+  const q=a.root.position,d=Math.hypot(p.x-q.x,p.z-q.z);
+  a.rageT=(a.rageT||0)+dt;a.chkV98=(a.chkV98||0)+dt;
+  if(a.chkV98>=1){const moved=Math.hypot(q.x-(a.lxV98===undefined?q.x:a.lxV98),q.z-(a.lzV98===undefined?q.z:a.lzV98));a.lxV98=q.x;a.lzV98=q.z;a.chkV98=0;a.stuckV98=moved<.6&&d>4.5?(a.stuckV98||0)+1:0;}
+  const high=p.y-q.y>3.2&&d>5,recentHit=a.hitV98!==undefined&&elapsed-a.hitV98<8;
+  if(d>30||a.stuckV98>=2||(high&&a.rageT>2.5)||(a.rageT>limit&&!recentHit)){
+   a.enraged=false;a.hornAttackV38=null;a.rageT=0;a.stuckV98=0;a.nearV98=0;a.calmV98=16;a.wander=Math.atan2(q.z-p.z,q.x-p.x);
+  }
+ }
+}
+
+/* ---------- 3) Ev düyməsi və ilişmiş təlim addımı ---------- */
+houseActionV42=(c=>function(){
+ if(actionAllowedV42()&&flowV42.step>=3&&flowV42.step<9){closeCompactPanelsV42();toggleHouseMenu();return;}
+ return c.apply(this,arguments);
+})(houseActionV42);
+function tutorialUnstickV98(){
+ if(flowV42.step===4&&nightsSurvived>=2&&(flowV42.nightShelter<6||!flowV42.firstNightSeen)){flowV42.firstNightSeen=true;flowV42.nightShelter=6;flowV42.saveDue=1;}
+}
+
+/* ---------- 4) Silah düymələrinin arası ---------- */
+safeV98('css',()=>{const st=document.createElement('style');st.id='css98';st.textContent=
+ '#bowbtn,#rmbtn{bottom:calc(119px + var(--bottom42))}#firebtn{bottom:calc(171px + var(--bottom42))}#meatbtn{bottom:calc(223px + var(--bottom42))}'+
+ '#horse49{bottom:calc(275px + var(--bottom42))}#firehint{bottom:calc(171px + var(--bottom42))}'+
+ '@media(min-height:501px){#gun73fire{bottom:calc(288px + env(safe-area-inset-bottom))!important}#gun73log{bottom:calc(350px + env(safe-area-inset-bottom))!important}#bomb76{bottom:calc(412px + env(safe-area-inset-bottom))!important}#sitbtn94{right:70px!important}}'+
+ '@media(max-height:500px) and (orientation:landscape){#horse49{bottom:calc(19px + var(--bottom42))}#firehint{bottom:calc(83px + var(--bottom42))}}';
+ document.head.appendChild(st);});
+
+/* ---------- 5) Qırmızı şimşək, fırtına, payız yarpaqları ---------- */
+let groundBoltV98=0;
+makeElectricLine=(c=>function(){const n0=electricBursts.length;const r=c.apply(this,arguments);if(groundBoltV98>0)for(let i=n0;i<electricBursts.length;i++){const b=electricBursts[i];if(b&&b.mat&&b.mat.color)b.mat.color.setHex(0xFF3A2C);}return r;})(makeElectricLine);
+addSkyBolt=(c=>function(points,life,width,crimson){
+ const n0=electricBursts.length;const r=c.apply(this,arguments);
+ for(let i=n0;i<electricBursts.length;i++){const b=electricBursts[i],li=i-n0;if(b&&b.mat&&b.mat.color)b.mat.color.setHex(li===0?0xFF6A52:li===1?0xFF2A20:0xB00E18);}
+ return r;
+})(addSkyBolt);
+safeV98('flashColor',()=>{flashLight.color.setHex(0xFF8A78);flashLight.groundColor.setHex(0x8A2A2A);groundGlowMatV84.color.setHex(0xFF4A38);});
+const sparksV98={n:54,pts:null,pos:null,vel:null,life:null,active:0};
+function sparksInitV98(){
+ const S=sparksV98;if(S.pts)return;S.pos=new Float32Array(S.n*3);S.vel=new Float32Array(S.n*3);S.life=new Float32Array(S.n);
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(S.pos,3));
+ S.pts=new THREE.Points(g,new THREE.PointsMaterial({color:0xFF5A3C,size:.26,map:softStarTexture,transparent:true,opacity:1,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true,fog:false}));
+ S.pts.frustumCulled=false;S.pts.visible=false;scene.add(S.pts);
+}
+function sparkBurstV98(x,y,z){
+ const S=sparksV98;sparksInitV98();let made=0;
+ for(let i=0;i<S.n&&made<18;i++){if(S.life[i]>0)continue;const a=Math.random()*6.283,sp=2.5+Math.random()*5.5;
+  S.pos[i*3]=x;S.pos[i*3+1]=y+.15;S.pos[i*3+2]=z;S.vel[i*3]=Math.cos(a)*sp;S.vel[i*3+1]=3+Math.random()*6;S.vel[i*3+2]=Math.sin(a)*sp;S.life[i]=.55+Math.random()*.5;made++;}
+ S.active=1;S.pts.visible=true;
+}
+function sparksTickV98(dt){
+ const S=sparksV98;if(!S.pts||!S.active)return;let live=0;
+ for(let i=0;i<S.n;i++){if(S.life[i]<=0){S.pos[i*3+1]=-999;continue;}S.life[i]-=dt;live++;S.vel[i*3+1]-=14*dt;
+  S.pos[i*3]+=S.vel[i*3]*dt;S.pos[i*3+1]+=S.vel[i*3+1]*dt;S.pos[i*3+2]+=S.vel[i*3+2]*dt;}
+ S.pts.geometry.attributes.position.needsUpdate=true;if(!live){S.active=0;S.pts.visible=false;}
+}
+executeGroundLightning=(c=>function(w){
+ groundBoltV98++;const n0=groundGlowsV84.length;let r;
+ try{r=c.apply(this,arguments);}finally{groundBoltV98--;}
+ safeV98('strikeFx',()=>{
+  for(let i=n0;i<groundGlowsV84.length;i++){const g=groundGlowsV84[i];if(g&&g.ring&&g.s&&g.s.material.color)g.s.material.color.setHex(0xFF3A2A);}
+  if(w&&Number.isFinite(w.x)&&Number.isFinite(w.z))sparkBurstV98(w.x,terrainHeightAt(w.x,w.z),w.z);
+ });
+ return r;
+})(executeGroundLightning);
+// Fırtınalar daha tez-tez: hər hava seçimində 24% ehtimalla birbaşa fırtına; fırtına içində şimşək ×1.3 sıx.
+chooseWeather=(c=>function(){
+ if(season!=='winter'&&flowV42.step>=6&&Math.random()<.24){const mega=campaignDay()>=4&&Math.random()<.35;setWeather(mega?'megaStorm':'storm',mega?30+Math.random()*12:22+Math.random()*12);return;}
+ return c.apply(this,arguments);
+})(chooseWeather);
+stormRateV45=(c=>function(){return c.apply(this,arguments)*1.3;})(stormRateV45);
+
+// Payız: küləklə uçan yarpaq dəstələri (bir InstancedMesh, yalnız dəstə uçanda çəkilir).
+const gustV98={n:LOW_POWER?22:36,mesh:null,data:[],cd:9,live:0,d:new THREE.Object3D(),c:new THREE.Color()};
+function gustInitV98(){
+ const G=gustV98;if(G.mesh)return;
+ const geo=new THREE.PlaneGeometry(.16,.11);
+ G.mesh=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0xFFFFFF,side:THREE.DoubleSide,fog:true}),G.n);
+ G.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);G.mesh.instanceColor=new THREE.BufferAttribute(new Float32Array(G.n*3).fill(1),3);
+ G.mesh.frustumCulled=false;G.mesh.castShadow=false;G.mesh.count=0;G.mesh.visible=false;G.mesh.name='gustV98';scene.add(G.mesh);
+ const pal=[0xE8862A,0xD9541E,0xF2B632,0xB5461C,0xE6A23A];
+ for(let i=0;i<G.n;i++){G.data.push({x:0,y:0,z:0,vx:0,vy:0,vz:0,t:0,ph:Math.random()*6.283,sp:3+Math.random()*5});G.c.setHex(pal[i%pal.length]);G.mesh.setColorAt(i,G.c);}
+ G.mesh.instanceColor.needsUpdate=true;
+}
+function gustStartV98(){
+ const G=gustV98;gustInitV98();const p=camHolder.position,ang=windV51.ang||0,wx=Math.cos(ang),wz=Math.sin(ang),sx=-wz,sz=wx,speed=5+Math.random()*3;
+ for(const L of G.data){const side=(Math.random()-.5)*22,back=9+Math.random()*9;
+  L.x=p.x-wx*back+sx*side;L.z=p.z-wz*back+sz*side;L.y=p.y+.6+Math.random()*4.2;L.vx=wx*speed*(.8+Math.random()*.5);L.vz=wz*speed*(.8+Math.random()*.5);L.vy=(Math.random()-.4)*.8;L.t=3.2+Math.random()*2.2;}
+ G.live=1;G.mesh.visible=true;
+}
+function gustTickV98(dt){
+ const G=gustV98,ok=season==='autumn'&&actionAllowedV42()&&!ROUGH_V94.includes(weather.kind);
+ if(!G.live){if(!ok)return;G.cd-=dt;if(G.cd<=0){G.cd=(weather.kind==='wind'?7:14)+Math.random()*12;gustStartV98();}return;}
+ let k=0;const d=G.d;
+ for(const L of G.data){if(L.t<=0)continue;L.t-=dt;L.x+=L.vx*dt;L.z+=L.vz*dt;L.y+=(L.vy+Math.sin(elapsed*2.3+L.ph)*.7)*dt;
+  const floor=terrainHeightAt(L.x,L.z)+.08;if(L.y<floor){L.y=floor;L.vx*=.9;L.vz*=.9;}
+  d.position.set(L.x,L.y,L.z);d.rotation.set(elapsed*L.sp+L.ph,elapsed*L.sp*.7,L.ph);const s=Math.min(1,L.t*2);d.scale.setScalar(s);d.updateMatrix();G.mesh.setMatrixAt(k++,d.matrix);}
+ G.mesh.count=k;G.mesh.instanceMatrix.needsUpdate=true;if(!k){G.live=0;G.mesh.visible=false;}
+}
+
+/* ---------- Bağlantılar ---------- */
+updateAnimals=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ if(dt>0){safeV98('bison',()=>bisonCalmTickV98(dt));safeV98('tut',tutorialUnstickV98);safeV98('sparks',()=>sparksTickV98(dt));safeV98('gust',()=>gustTickV98(dt));}
+ return r;
+})(updateAnimals);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v98={
+ stages:()=>stagesWrappedV98,errors:()=>JSON.parse(JSON.stringify(errLogV98.list)),diag:()=>diagTextV98(),
+ bison:()=>animals.filter(trueBisonV98).map(a=>({enraged:!!a.enraged,rageT:+(a.rageT||0).toFixed(1),calm:+(a.calmV98||0).toFixed(1),stuck:a.stuckV98||0,d:+Math.hypot(camHolder.position.x-a.root.position.x,camHolder.position.z-a.root.position.z).toFixed(1)})),
+ gust:()=>{gustStartV98();return gustV98.mesh.count;},sparks:()=>{const p=camHolder.position;sparkBurstV98(p.x,p.y,p.z-4);return sparksV98.active;},
+ strike:()=>{const p=camHolder.position;executeGroundLightning({x:p.x+3,z:p.z-6});return electricBursts.length;}
+};
+/* /V98 */
 
 updateObjective();
 updateHealth();
