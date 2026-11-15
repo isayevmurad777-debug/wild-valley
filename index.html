@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V100</title>
+<title>Wild Valley — Survival · V101</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V100</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V101</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V100</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V101</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V100'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V101'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V100 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V101 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -31052,6 +31052,28 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v100={
  errors:()=>[...errOnceV100]
 };
 /* /V100 */
+
+/* ============================================================
+   V101 — KÜLƏK SƏSİNDƏKİ CIZILTI ("həmişə / küləkdə").
+   Səbəb: qəhvəyi/çəhrayı küy buferi döngə ilə çalınır; buferin başı sonu ilə yumşaq birləşdirilib,
+   amma döngənin SON nöqtəsi buna uyğun qoyulmamışdı. Nəticədə hər dövrdə (külək qatında 3.3 s-dən bir)
+   siqnal birdən sıçrayırdı (0.28 — bufer içindəki ən böyük addımdan 3.5 dəfə çox) və "tıq" eşidilirdi.
+   Düzəliş: döngə birləşmə nöqtəsində bitir (loopEnd), keçid tikişsiz olur. Külək, çay, boran uğultusu,
+   uzaq gurultu və küydən düzələn bütün səslərə aiddir.
+   ============================================================ */
+const seamV101={fixed:0};
+function seamFixV101(s){
+ try{const b=s&&s.buffer;if(!b||!s.loop)return s;const f=Math.min(2000,b.length>>3);s.loopStart=0;s.loopEnd=(b.length-f)/b.sampleRate;seamV101.fixed++;}catch(e){}
+ return s;
+}
+noiseSrcV54=(c=>function(){return seamFixV101(c.apply(this,arguments));})(noiseSrcV54);
+// Artıq çalınan qatlar (səs sistemi bu blokdan əvvəl işə düşübsə) da düzəlsin.
+try{for(const k of ['wind','rain','river'])if(audioV92[k]&&audioV92[k].s)seamFixV101(audioV92[k].s);if(audioV92.leafV96&&audioV92.leafV96.s)seamFixV101(audioV92.leafV96.s);}catch(e){}
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v101={
+ seam:()=>({fixed:seamV101.fixed,wind:audioV92.wind?+audioV92.wind.s.loopEnd.toFixed(4):null,river:audioV92.river?+audioV92.river.s.loopEnd.toFixed(4):null,howl:howlV100.n?+howlV100.n.s.loopEnd.toFixed(4):null})
+};
+/* /V101 */
+
 
 
 
