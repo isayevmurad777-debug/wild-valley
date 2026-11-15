@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V99</title>
+<title>Wild Valley — Survival · V100</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V99</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V100</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V99</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V100</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V99'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V100'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V99 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V100 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -30804,6 +30804,255 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v99={
  errors:()=>[...errOnceV99]
 };
 /* /V99 */
+
+/* ============================================================
+   V100 — TELEFON SINAĞI (A53): cızıltı, hücumda musiqinin ləngiməsi, qış küləyi, sincab.
+   1) Cızıltı. Bütün səslərin cəmi çıxışda həddi aşanda kəsilirdi (köhnə radio kimi xırıltı):
+      indi son çıxışda limiter var. Döyüş musiqisinin "ağ küy" zərb alətləri (şaker, küy təbili)
+      çıxarıldı — təbillər tonal (yumşaq "dum"), fış-fış yoxdur.
+   2) Hücumda musiqi ləngiyirdi, çünki notlar kadr-kadr planlanırdı (kadr donanda not gecikir) və
+      saniyədə ~90 səs düyünü yaranırdı. İndi musiqi oyun başlayanda bir dəfə öncədən render olunur
+      (hər dəfə 1 takt, arxa planda) və döngə kimi çalınır: kadr sürətindən asılı deyil, yükü sıfıra yaxındır.
+   3) Qış: boran küləyinin uğultusu (dalğalanan, fit verən külək; çovğunda güclü, evdə boğuq).
+      Çovğun səsi hər dəfə 5 saniyəlik bufer yaratmırdı — indi bir dəfə yaradılır.
+   5) İlk fırtına / ilk ildırım anındakı donma: bulud xəritələri və ildırım şeyderləri oyunun
+      başlanğıcında hazırlanır (əvvəl fırtınanın ortasında hazırlanırdı).
+   4) Sincab kəsilmiş (və ya yıxılan) ağaca dırmaşmır; ağac kəsiləndə üstündəki sincab yerə düşüb qaçır.
+      Bayquş kəsilmiş ağacın budağında havada qalmır.
+   ============================================================ */
+const errOnceV100=new Set();
+function safeV100(name,fn){try{return fn();}catch(e){if(!errOnceV100.has(name)){errOnceV100.add(name);console.warn('V100 '+name,e);try{logErrV98('V100 '+name,e);}catch(_){}}}}
+
+/* ---------- 1) Son çıxışda limiter ---------- */
+function limiterV100(){
+ const A=audioV92;if(!A.ready||!A.ctx||A.limCtxV100===A.ctx)return;
+ const a=A.ctx,c=a.createDynamicsCompressor(),post=a.createGain();
+ c.threshold.value=-6;c.knee.value=4;c.ratio.value=8;c.attack.value=.003;c.release.value=.18;
+ post.gain.value=.7;                       // kompressorun avtomatik gücləndirməsini geri alır: sakit səslər dəyişmir
+ c.directV92=true;post.directV92=true;
+ A.master.disconnect();connectCoreV92.call(A.master,c);connectCoreV92.call(c,post);connectCoreV92.call(post,a.destination);
+ A.limV100=c;A.limCtxV100=a;
+}
+
+/* ---------- 2) Döyüş musiqisi: öncədən render olunmuş döngə ---------- */
+const loopV100={sr:32000,bars:8,buf:[null,null],acc:null,state:'idle',job:0,busy:false,last:0,ms:0,src:[null,null],g:[null,null],t0:0,playing:false,stopAt:0,peak:[0,0]};
+function iDrumV100(c,out,t,v,f0){   // tonal təbil: sinus gövdə + qısa üçbucaq zərbə, küy yoxdur
+ const o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain(),g2=c.createGain();
+ o.type='sine';o.frequency.setValueAtTime(f0*1.7,t);o.frequency.exponentialRampToValueAtTime(f0*.5,t+.13);
+ o2.type='triangle';o2.frequency.setValueAtTime(f0*3.1,t);o2.frequency.exponentialRampToValueAtTime(f0*1.05,t+.085);
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+.32);
+ g2.gain.setValueAtTime(.0001,t);g2.gain.exponentialRampToValueAtTime(v*.5,t+.005);g2.gain.exponentialRampToValueAtTime(.0001,t+.13);
+ o.connect(g);o2.connect(g2);g.connect(out);g2.connect(out);o.start(t);o2.start(t);o.stop(t+.34);o2.stop(t+.15);
+}
+function iTomV100(c,out,t,v,f){
+ const o=c.createOscillator(),lp=c.createBiquadFilter(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(f*1.45,t);o.frequency.exponentialRampToValueAtTime(f*.88,t+.15);
+ lp.type='lowpass';lp.frequency.value=1100;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+.22);
+ o.connect(lp);lp.connect(g);g.connect(out);o.start(t);o.stop(t+.24);
+}
+function iBassV100(c,out,t,f,dur,v){
+ const lp=c.createBiquadFilter(),g=c.createGain(),tr=c.createOscillator(),tg=c.createGain();lp.type='lowpass';lp.Q.value=.9;lp.frequency.setValueAtTime(780,t);lp.frequency.exponentialRampToValueAtTime(250,t+dur);
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.014);g.gain.exponentialRampToValueAtTime(.0001,t+dur);lp.connect(g);g.connect(out);
+ for(const det of [-6,6]){const o=c.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=det;o.connect(lp);o.start(t);o.stop(t+dur+.02);}
+ tr.type='triangle';tr.frequency.value=f*2;tg.gain.value=.5;tr.connect(tg);tg.connect(lp);tr.start(t);tr.stop(t+dur+.02);   // telefon dinamikində eşidilən oktava
+}
+function iStringsV100(c,out,t,freqs,dur,v,trem){
+ const lp=c.createBiquadFilter(),g=c.createGain();lp.type='lowpass';lp.frequency.value=trem?1150:720;lp.Q.value=.4;
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.1);g.gain.setValueAtTime(v,t+dur-.14);g.gain.exponentialRampToValueAtTime(.0001,t+dur+.06);lp.connect(g);g.connect(out);
+ if(trem){const l=c.createOscillator(),lg=c.createGain();l.type='sine';l.frequency.value=1/(BATTLE_STEP_V99*2);lg.gain.value=v*.5;l.connect(lg);lg.connect(g.gain);l.start(t);l.stop(t+dur+.1);}
+ for(const f of freqs)for(const det of [-6,6]){const o=c.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=det;o.connect(lp);o.start(t);o.stop(t+dur+.1);}
+}
+function iHornV100(c,out,t,f,dur,v){
+ const lp=c.createBiquadFilter(),g=c.createGain(),o=c.createOscillator(),o2=c.createOscillator();lp.type='lowpass';lp.Q.value=.6;lp.frequency.setValueAtTime(450,t);lp.frequency.linearRampToValueAtTime(1250,t+.1);lp.frequency.linearRampToValueAtTime(800,t+dur);
+ o.type='sawtooth';o.frequency.value=f;o2.type='triangle';o2.frequency.value=f*.5;
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.06);g.gain.setValueAtTime(v,t+dur*.6);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(lp);o2.connect(lp);lp.connect(g);g.connect(out);o.start(t);o2.start(t);o.stop(t+dur+.02);o2.stop(t+dur+.02);
+}
+function barV100(c,out,t0,bar,L){
+ const S=BATTLE_STEP_V99,ci=(bar>>1)%4,root=BATTLE_ROOTS_V99[ci];
+ for(let s=0;s<16;s++){const t=t0+s*S;
+  if(L>=2){
+   if(s===0||s===8)iDrumV100(c,out,t,.62,112);else if(s===3||s===6||s===11||s===14)iDrumV100(c,out,t,.4,104);
+   if(bar%4===3&&s>=12)iTomV100(c,out,t,.3,250-(s-12)*34);else if(s===4||s===12)iTomV100(c,out,t,.28,170);
+   if(s%2===0){const k=s/2,f=k===4?root*1.5:k===6?root*1.2:k===2?root*2:root;iBassV100(c,out,t,f,S*1.8,.2);}
+   if(s===0)iStringsV100(c,out,t,BATTLE_CHORDS_V99[ci],S*16,.05,true);
+   if(bar%2===0&&(s===0||s===6||s===12)){const m=BATTLE_MOTIF_V99[ci];iHornV100(c,out,t,m[s===0?0:s===6?1:2],S*(s===12?4:5),.06);}
+  }else{
+   if(s===0||s===8)iDrumV100(c,out,t,.5,108);else if(s===11)iDrumV100(c,out,t,.27,100);
+   if(s%4===0)iBassV100(c,out,t,s===12?root*.89:root,S*3.4,.17);
+   if(s===0)iStringsV100(c,out,t,[root*2,root*3],S*16,.045,false);
+  }
+ }
+}
+function renderBarV100(level,bar){
+ const OC=window.OfflineAudioContext||window.webkitOfflineAudioContext,sr=loopV100.sr,len=Math.ceil((16*BATTLE_STEP_V99+.8)*sr);
+ const c=new OC(1,len,sr),out=c.createGain(),lp=c.createBiquadFilter();out.gain.value=1;lp.type='lowpass';lp.frequency.value=5000;out.connect(lp);lp.connect(c.destination);
+ barV100(c,out,.02,bar,level);
+ const p=c.startRendering();
+ return (p&&typeof p.then==='function'?p:new Promise(res=>{c.oncomplete=e=>res(e.renderedBuffer);})).then(b=>b.getChannelData(0));
+}
+function loopJobV100(){
+ const L=loopV100,A=audioV92;if(L.state==='ready'||L.state==='failed'||L.busy||!A.ready)return;
+ const now=performance.now();
+ if(L.state==='idle'){
+  if(!(window.OfflineAudioContext||window.webkitOfflineAudioContext)){L.state='failed';return;}
+  L.N=Math.round(L.bars*16*BATTLE_STEP_V99*L.sr);L.acc=[new Float32Array(L.N),new Float32Array(L.N)];L.job=0;L.state='rendering';L.last=now+1500;L.tStart=now;return;
+ }
+ if(now-L.last<300)return;        // hər dəfə bir takt: yük zamana yayılır
+ const job=L.job,level=job<L.bars?1:2,bar=job%L.bars;L.busy=true;
+ let pr;try{pr=renderBarV100(level,bar);}catch(e){L.state='failed';L.busy=false;console.warn('V100 render',e);return;}
+ pr.then(d=>{
+  const acc=L.acc[level-1],N=L.N,off=Math.round(bar*16*BATTLE_STEP_V99*L.sr);
+  for(let i=0;i<d.length;i++){const k=off+i;acc[k<N?k:k-N]+=d[i];}      // takt sonundakı quyruq döngənin başına qatlanır: tikişsiz döngə
+  L.job++;L.busy=false;L.last=performance.now();
+  if(L.job===L.bars)loopFinishV100(0);else if(L.job>=L.bars*2){loopFinishV100(1);L.state='ready';L.acc=null;L.ms=Math.round(performance.now()-L.tStart);}
+ }).catch(e=>{L.state='failed';L.busy=false;console.warn('V100 render',e);});
+}
+function loopFinishV100(i){
+ const L=loopV100,acc=L.acc[i];let pk=0;for(let k=0;k<acc.length;k++){const v=acc[k]<0?-acc[k]:acc[k];if(v>pk)pk=v;}
+ const want=i?.95:.75,s=pk>0?want/pk:1;for(let k=0;k<acc.length;k++)acc[k]*=s;L.peak[i]=+pk.toFixed(3);
+ const b=audioV92.ctx.createBuffer(1,acc.length,L.sr);if(b.copyToChannel)b.copyToChannel(acc,0);else b.getChannelData(0).set(acc);L.buf[i]=b;L.bufCtx=audioV92.ctx;
+}
+function loopSrcV100(i,now){
+ const L=loopV100,B=battleV99,a=B.ctx;if(L.src[i]||!L.buf[i])return;
+ const s=a.createBufferSource(),g=a.createGain();s.buffer=L.buf[i];s.loop=true;g.gain.value=0;s.connect(g);g.connect(B.bus);
+ const at=now+.05,dur=L.buf[i].duration;if(!L.playing){L.t0=at;L.playing=true;}
+ s.start(at,Math.max(0,(at-L.t0)%dur));L.src[i]=s;L.g[i]=g;
+}
+function loopStopV100(){const L=loopV100;for(let i=0;i<2;i++){if(L.src[i]){try{L.src[i].stop();L.src[i].disconnect();L.g[i].disconnect();}catch(e){}L.src[i]=null;L.g[i]=null;}}L.playing=false;}
+battleTickV99=function(dt){
+ const A=audioV92,B=battleV99,L=loopV100;if(!AC||AC.state!=='running'||!A.ready)return;if(!battleInitV99())return;
+ limiterV100();loopJobV100();
+ const now=B.ctx.currentTime;
+ if(L.bufCtx&&L.bufCtx!==A.ctx){loopStopV100();B.on=false;}
+ B.chk-=dt;if(B.chk>0)return;B.chk=.2;
+ const lvl=A.vol.mus>.01?threatLevelV99():0;if(lvl>=1)B.onUntil=elapsed+4.2;if(lvl>=2)B.hiUntil=elapsed+5;
+ const on=lvl>0||(elapsed<B.onUntil&&flowV42.started&&!flowV42.paused&&!gameOver&&A.vol.mus>.01);
+ B.level=on?(elapsed<B.hiUntil?2:1):0;
+ if(on&&!B.on){
+  if(!L.buf[0])return;                     // hələ render olunmayıb (oyunun ilk saniyələri)
+  B.on=true;B.starts++;loopSrcV100(0,now);B.bus.gain.cancelScheduledValues(now);B.bus.gain.setTargetAtTime(1,now,.15);
+ }else if(!on&&B.on){B.on=false;B.bus.gain.cancelScheduledValues(now);B.bus.gain.setTargetAtTime(0,now,.6);L.stopAt=now+3.4;}
+ if(B.on){
+  if(L.buf[1]&&!L.src[1])loopSrcV100(1,now);
+  const hi=B.level>=2&&L.src[1];
+  if(L.g[0])L.g[0].gain.setTargetAtTime(hi?0:1,now,.22);if(L.g[1])L.g[1].gain.setTargetAtTime(hi?1:0,now,.22);
+  A.pluckT=Math.max(A.pluckT,4);A.chordT=Math.max(A.chordT,2.5);
+ }else if(L.playing&&now>L.stopAt)loopStopV100();
+};
+
+/* ---------- 2b) Uzaq gurultu kiçik dinamikdə xırıldamasın ---------- */
+rollV99=function(delay,vol,len){
+ const a=actx(),t=a.currentTime+delay,out=sfxOutV54(),s=noiseSrcV54('brown',.6+Math.random()*.2,true),hp=a.createBiquadFilter(),lp=a.createBiquadFilter(),g=a.createGain();
+ hp.type='highpass';hp.frequency.value=90;lp.type='lowpass';lp.Q.value=.5;lp.frequency.setValueAtTime(420,t);lp.frequency.exponentialRampToValueAtTime(160,t+len);
+ g.gain.setValueAtTime(.0001,a.currentTime);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,vol),t+.35);
+ const n=5+((Math.random()*3)|0);for(let i=1;i<n;i++)g.gain.exponentialRampToValueAtTime(Math.max(.0002,vol*(1-i/(n+1))*(.45+Math.random()*.6)),t+.35+i*(len-.6)/n);
+ g.gain.exponentialRampToValueAtTime(.0001,t+len);s.connect(hp);hp.connect(lp);lp.connect(g);g.connect(out);s.start(t,Math.random()*2);s.stop(t+len+.05);
+ try{weatherV60.sources.add(s);s.onended=()=>weatherV60.sources.delete(s);}catch(e){}
+};
+
+/* ---------- 3) Qış: boran küləyinin uğultusu ---------- */
+const howlV100={n:null,ctx:null,t:0,ph:Math.random()*200,lvl:0,f:0,bw:null,bwSr:0};
+function howlInitV100(){
+ const A=audioV92,H=howlV100;if(H.n&&H.ctx===A.ctx)return true;
+ const a=A.ctx,s=noiseSrcV54('pink',1,true),pre=a.createGain(),b1=a.createBiquadFilter(),b2=a.createBiquadFilter(),g2=a.createGain(),lp=a.createBiquadFilter(),out=a.createGain();
+ pre.gain.value=5;b1.type='bandpass';b1.Q.value=8;b1.frequency.value=420;b2.type='bandpass';b2.Q.value=13;b2.frequency.value=640;g2.gain.value=.5;
+ lp.type='lowpass';lp.frequency.value=1500;out.gain.value=0;
+ s.connect(pre);pre.connect(b1);pre.connect(b2);b1.connect(lp);b2.connect(g2);g2.connect(lp);lp.connect(out);out.connect(A.amb);s.start(a.currentTime,Math.random()*2);
+ H.n={s,b1,b2,g2,lp,out};H.ctx=a;return true;
+}
+function howlTickV100(dt){
+ const A=audioV92,H=howlV100;if(!A.ready||!AC||AC.state!=='running')return;
+ H.t+=dt;if(H.t<.25)return;const step=H.t;H.t=0;
+ const active=flowV42.started&&!flowV42.paused&&!gameOver&&!journeying,bl=weather.kind==='blizzard';
+ if(!active||!(season==='winter'||bl)){if(H.n&&H.lvl>0)rampV92(H.n.out.gain,0,.5);H.lvl=0;return;}
+ if(!howlInitV100())return;
+ H.ph+=step;const x=H.ph,gust=.5+.5*Math.sin(x*.31+Math.sin(x*.113)*2.3),swell=.5+.5*Math.sin(x*.73+1.7+Math.sin(x*.19)*1.4);
+ const snow=(typeof snowfallV84!=='undefined'&&Number.isFinite(snowfallV84.k))?snowfallV84.k:.4,w=(typeof windV51!=='undefined'?windV51.strength*windV51.gust:.2);
+ const power=bl?1:Math.min(.7,.15+snow*.3+w*.45),sheltered=protectedByShelter();
+ const lvl=(.015+.3*power*(.2+.8*gust*gust))*(sheltered?.5:1),f1=290+power*170+gust*270+swell*90;
+ const N=H.n;rampV92(N.out.gain,lvl,.5);rampV92(N.b1.frequency,f1,.6);rampV92(N.b2.frequency,f1*(1.48+swell*.12),.8);rampV92(N.g2.gain,.25+.5*swell,.8);rampV92(N.lp.frequency,sheltered?620:1600,.8);
+ H.lvl=lvl;H.f=f1;
+}
+// Çovğun uğultusu: 5 saniyəlik bufer hər çağırışda yox, bir dəfə yaradılır.
+playBlizzardWind=function(){
+ safeV100('blizzardWind',()=>{
+  const a=actx(),now=a.currentTime,H=howlV100;
+  if(!H.bw||H.bwSr!==a.sampleRate){const b=a.createBuffer(1,a.sampleRate*5,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(.25+.75*Math.sin(Math.PI*i/d.length));H.bw=b;H.bwSr=a.sampleRate;}
+  const n=a.createBufferSource();n.buffer=H.bw;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(220,now);f.Q.value=.45;
+  const g=a.createGain();g.gain.setValueAtTime(.001,now);g.gain.exponentialRampToValueAtTime(.24,now+.7);g.gain.exponentialRampToValueAtTime(.001,now+5);
+  n.connect(f).connect(g).connect(a.destination);n.start(now);
+ });
+};
+
+/* ---------- 4) Sincab və bayquş kəsilmiş ağacda qalmır ---------- */
+const treeFixV100={drops:0,retarget:0,owls:0};
+function treeStandsV100(x,z){
+ for(const t of trees)if(!t.falling&&Math.abs(t.x-x)<.8&&Math.abs(t.z-z)<.8)return true;
+ const cx=Math.floor(x/4),cz=Math.floor(z/4);
+ for(let i=cx-1;i<=cx+1;i++)for(let j=cz-1;j<=cz+1;j++){const l=deepForestV46.hash.get((i+600)*2000+j+600);if(l)for(const t of l)if(t.on&&Math.abs(t.x-x)<.8&&Math.abs(t.z-z)<.8)return true;}
+ return false;
+}
+updateCritterV52=(c=>function(o,dt){
+ if(o&&o.kind==='squirrel'&&dt>0){
+  const q=o.root.position;
+  if(o.fallV100){   // ağac kəsildi: sincab yerə düşür, sonra qaçır
+   const gy=terrainHeightAt(q.x,q.z);o.fallV100.vy-=20*dt;q.y+=o.fallV100.vy*dt;o.root.rotation.x+=(0-o.root.rotation.x)*Math.min(1,dt*7);
+   if(q.y>gy)return;q.y=gy;o.fallV100=null;o.root.rotation.x=0;
+  }
+  if(o.state==='climb'||o.state==='toTree'){
+   o.chkV100=(o.chkV100||0)-dt;
+   if(o.chkV100<=0){o.chkV100=.2;const T=o.state==='climb'?o.climb:o.tree;
+    if(T&&!treeStandsV100(T.x,T.z)){
+     if(o.state==='climb'){treeFixV100.drops++;o.state='flee';o.t=3;o.climb=null;if(q.y-terrainHeightAt(q.x,q.z)>.3){o.fallV100={vy:0};return;}o.root.rotation.x=0;}
+     else{treeFixV100.retarget++;const t=treeNearV52(q.x,q.z,14);if(t)o.tree=t;else{o.state='flee';o.t=3;}}
+    }
+   }
+  }
+ }
+ return c.apply(this,arguments);
+})(updateCritterV52);
+updateOwls=(c=>function(dt){
+ safeV100('owl',()=>{for(let i=owls.length-1;i>=0;i--){const o=owls[i],t=o.perch&&o.perch.tree;if(!t||(!t.falling&&trees.includes(t)))continue;
+  const next=owlPerchPoint(o.perch.x,o.perch.z);treeFixV100.owls++;
+  if(next&&next.tree!==t){o.perch=next;o.state='flying';}else{scene.remove(o.root);owls.splice(i,1);}}});
+ return c.apply(this,arguments);
+})(updateOwls);
+
+/* ---------- 5) İlk fırtına / ilk ildırım donması: hazırlıq oyunun başlanğıcına köçürülür ---------- */
+// Bulud xəritələri (~100 ms hesablama) və ildırım/qığılcım/parıltı şeyderləri əvvəl ilk fırtınanın
+// ortasında hazırlanırdı. İndi oyun başlayanda (yükləmə ekranı altında) bir dəfə hazırlanır;
+// gizli "saxlayıcı" obyektlər şeyder proqramlarını yaddaşda saxlayır ki, hər ildırımda yenidən yığılmasın.
+const warmV100={stage:0,frames:0,grp:null,ms:0};
+function warmTickV100(){
+ const W=warmV100;if(W.stage>=3||!flowV42.started||flowV42.restoring||journeying)return;
+ if(W.stage===0){const t=performance.now();cloudMapsV60();W.ms=Math.round(performance.now()-t);W.stage=1;return;}
+ if(W.stage===1){
+  overheadBankV60();sparksInitV98();
+  const g=new THREE.Group(),geo=new THREE.PlaneGeometry(1,1),maps=cloudMapsV60();geo.userData.shared=true;
+  const add=o=>{o.frustumCulled=false;o.castShadow=false;o.scale.setScalar(.001);g.add(o);};
+  add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xFF3A2C,transparent:true,opacity:0,depthWrite:false,fog:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide})));   // şimşək qolu, yer halqası
+  add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(0,1,0)]),new THREE.LineBasicMaterial({color:0xFF3A2C,transparent:true,opacity:0,blending:THREE.AdditiveBlending})));   // qısa elektrik qövsü
+  {const m=groundGlowMatV84.clone();m.opacity=0;add(new THREE.Sprite(m));}                                                                    // yer parıltısı
+  for(const map of maps)add(new THREE.Sprite(new THREE.SpriteMaterial({map,transparent:true,depthWrite:false,fog:false,opacity:0})));        // fırtına buludları (toxuma da yüklənir)
+  scene.add(g);W.grp=g;
+  const S=sparksV98;for(let i=0;i<S.n;i++)S.pos[i*3+1]=-999;S.pts.geometry.attributes.position.needsUpdate=true;S.pts.visible=true;
+  W.stage=2;W.frames=0;return;
+ }
+ const p=camHolder.position;camera.getWorldDirection(tmpV99);W.grp.position.set(p.x+tmpV99.x*2,p.y+1.5+tmpV99.y*2,p.z+tmpV99.z*2);
+ if(++W.frames>=4){W.grp.visible=false;if(!sparksV98.active)sparksV98.pts.visible=false;W.stage=3;}
+}
+
+/* ---------- Bağlantılar ---------- */
+tick=(c=>function(){const r=c.apply(this,arguments);safeV100('howl',()=>howlTickV100(1/30));safeV100('warm',warmTickV100);return r;})(tick);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v100={
+ loop:()=>({state:loopV100.state,job:loopV100.job,ms:loopV100.ms,ready:[!!loopV100.buf[0],!!loopV100.buf[1]],dur:loopV100.buf[0]?+loopV100.buf[0].duration.toFixed(3):0,rawPeak:loopV100.peak,playing:loopV100.playing,src:[!!loopV100.src[0],!!loopV100.src[1]],g:loopV100.g.map(g=>g?+g.gain.value.toFixed(2):null)}),
+ limiter:()=>({on:audioV92.limCtxV100===audioV92.ctx,reduction:audioV92.limV100?+(+audioV92.limV100.reduction.value||+audioV92.limV100.reduction||0).toFixed(1):null}),
+ howl:()=>({node:!!howlV100.n,level:+howlV100.lvl.toFixed(3),f:Math.round(howlV100.f),gain:howlV100.n?+howlV100.n.out.gain.value.toFixed(3):null}),
+ tree:()=>({...treeFixV100}),stands:(x,z)=>treeStandsV100(x,z),
+ warm:()=>({stage:warmV100.stage,cloudMs:warmV100.ms,programs:renderer.info.programs.length}),
+ errors:()=>[...errOnceV100]
+};
+/* /V100 */
+
 
 
 updateObjective();
