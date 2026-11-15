@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V101</title>
+<title>Wild Valley — Survival · V102</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V101</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V102</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V101</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V102</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V101'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V102'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V101 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V102 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -31073,6 +31073,180 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v101={
  seam:()=>({fixed:seamV101.fixed,wind:audioV92.wind?+audioV92.wind.s.loopEnd.toFixed(4):null,river:audioV92.river?+audioV92.river.s.loopEnd.toFixed(4):null,howl:howlV100.n?+howlV100.n.s.loopEnd.toFixed(4):null})
 };
 /* /V101 */
+
+/* ============================================================
+   V102 — MEQA ŞİMŞƏK FIRTINASI və DOLU (ayrı-ayrı hadisələr).
+   1) Yeni hadisə "Mega lightning storm": ~30 saniyə ərzində yerə dalbadal iri, budaqlı qırmızı
+      ildırımlar düşür (hər 1–2.3 saniyədən bir, bəzən 2–3-ü birdən). Əksəri baxdığın tərəfə,
+      zərər dairəsindən kənara düşür; ~6%-i birbaşa oyunçunun yanına. Dam altında zərər yoxdur.
+      Hər 6–7 zərbədən biri "tam" zərbədir: ağac yıxa, ot yandıra, ildırımötürəni doldura bilir.
+      Texniki olaraq "storm" havasının güclü rejimidir (qara bulud, yağış, külək eyni qalır).
+   2) Dolu ayrıca hadisədir: dolu oyunda var idi, amma hadisə növbəsinə daxil deyildi və heç vaxt
+      başlamırdı. İndi növbədədir. Dolu zamanı ildırım çaxmır (yalnız buz dənələri, yerdə sıçrayış,
+      "tık-tık" zərbə səsi; dam altında boğuq səs). Telefonda da səsi var.
+      Köhnə dolu çox seyrək idi (30×30 m-də 70–150 nöqtə) — indi oyunçunun ətrafında sıx düşür.
+   3) Növbə: hər 4 hava hadisəsindən biri meqa şimşək, biri dolu olur; ikisi heç vaxt üst-üstə düşmür.
+      Qışda hər ikisi əvvəlki kimi qar fırtınasına çevrilir.
+   ============================================================ */
+const errOnceV102=new Set();
+function safeV102(name,fn){try{return fn();}catch(e){if(!errOnceV102.has(name)){errOnceV102.add(name);console.warn('V102 '+name,e);try{logErrV98('V102 '+name,e);}catch(_){}}}}
+
+/* ---------- 1) Meqa şimşək fırtınası ---------- */
+const megaV102={on:false,armed:false,cd:1.6,queue:[],strikes:0,direct:0,full:0,big:0,thunderAt:-9999,age:0,count:0};
+weatherLabels.megaLightning='Mega lightning storm';
+DANGER_WEATHER.add('megaLightning');FRONT_KINDS_V51.add('megaLightning');
+safeV102('label',()=>{Object.defineProperty(weatherLabels,'storm',{get(){return megaV102.on?'Mega lightning storm':'Storm';},enumerable:true,configurable:true});});
+setWeatherV41=(c=>function(kind,duration,skipWarning){
+ if(kind==='megaLightning'){megaV102.armed=true;kind='storm';}
+ const r=c.call(this,kind,duration,skipWarning);
+ safeV102('megaSet',()=>{
+  const was=megaV102.on;
+  if(weather.kind==='storm'&&megaV102.armed&&!pendingWeather){
+   megaV102.armed=false;megaV102.on=true;megaV102.cd=1.8;megaV102.age=0;megaV102.queue.length=0;megaV102.count++;
+   const el=document.getElementById('weather');if(el)el.textContent=weatherLabels.storm;
+   showEvent('⚡ MEGA LIGHTNING STORM · bolts hammer the ground — get under a roof!',4200);
+  }else if(weather.kind!=='storm'){megaV102.on=false;megaV102.queue.length=0;if(kind!=='storm')megaV102.armed=false;}
+  else if(was&&!megaV102.armed&&kind==='storm'){megaV102.on=false;megaV102.queue.length=0;}   // adi fırtına başladı
+ });
+ return r;
+})(setWeatherV41);
+// Üfüqdən yaxınlaşan cəbhə meqa fırtınada da çaxır.
+stormFrontStartV51=(c=>function(e){const r=c.apply(this,arguments);if(r&&e&&e.kind==='megaLightning')stormFrontV51.kind='megaStorm';return r;})(stormFrontStartV51);
+
+function megaBoltV102(ground){   // şəkildəki kimi: buluddan yerə qalın, budaqlı kanal; nüvəsi ağ-isti
+ const top=ground.clone().add(new THREE.Vector3((Math.random()-.5)*11,36+Math.random()*9,(Math.random()-.5)*11)),n0=electricBursts.length;
+ boltTreeV60(top,ground,LOW_POWER?.085:.1,.5,false,LOW_POWER?3:5);
+ const b=electricBursts[n0];if(b&&b.mat&&b.mat.color)b.mat.color.setHex(0xFFF0E8);
+ for(let i=n0;i<electricBursts.length;i++)electricBursts[i].megaV102=true;   // bu kanallar bir anlıq yox, ~0.5 s parlaq qalır
+}
+function megaStrikeV102(x,z){
+ const M=megaV102,gy=terrainHeightAt(x,z),ground=new THREE.Vector3(x,gy+.08,z),p=camHolder.position,dist=Math.hypot(p.x-x,p.z-z);
+ megaBoltV102(ground);strike(dist,1.15,ground);weather.flash=Math.max(weather.flash,.18);M.strikes++;
+ const s=new THREE.Sprite(groundGlowMatV84.clone());s.position.set(x,gy+.6,z);s.scale.set(5,3,1);scene.add(s);groundGlowsV84.push({s,t:0,life:.55});
+ const ring=new THREE.Mesh(new THREE.RingGeometry(.6,1.1,20),new THREE.MeshBasicMaterial({color:0xFF3A2A,transparent:true,opacity:.9,depthWrite:false,fog:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+ ring.rotation.x=-Math.PI/2;ring.position.set(x,gy+.08,z);scene.add(ring);groundGlowsV84.push({s:ring,t:0,life:.5,ring:true});
+ sparkBurstV98(x,gy,z);if(!LOW_POWER)sparkBurstV98(x,gy,z);
+ shake=Math.max(shake,dist<6?.5:dist<16?.26:.12);
+ if(dist<lightningRadiusV45()&&!protectedFromHazard()){hurtPlayer(lightningDamageV45(),"Lightning strike");M.direct++;}
+ for(const a of [...animals])if(a.root.position.distanceTo(ground)<2.5)hitAnimal(a,7,'lightning');
+ for(const e of [...enemies])if(e.root.position.distanceTo(ground)<2.5)hitEnemy(e,7);
+}
+function megaPointV102(direct){
+ const p=camHolder.position,R=lightningRadiusV45();
+ if(direct){const a=Math.random()*6.283,d=Math.random()*R*.8;return {x:p.x+Math.cos(a)*d,z:p.z+Math.sin(a)*d};}
+ camera.getWorldDirection(tmpV99);const fa=Math.atan2(tmpV99.z,tmpV99.x),a=Math.random()<.74?fa+(Math.random()-.5)*1.9:Math.random()*6.283,d=R+3+Math.pow(Math.random(),1.3)*30;
+ return {x:p.x+Math.cos(a)*d,z:p.z+Math.sin(a)*d};
+}
+function megaTickV102(dt){
+ const M=megaV102;if(M.big>0)M.big--;
+ // İri kanal adi şimşək kimi 2 kadrda sönmür: ~0.14 s tam parlaq, sonra titrəyərək sönür.
+ for(const b of electricBursts){if(!b.megaV102)continue;const age=b.maxLife-b.life,k=age<.14?1:Math.max(0,1-(age-.14)/Math.max(.05,b.maxLife-.14));
+  b.mat.opacity=b.maxOpacity*Math.max(lightningPulseV60(age),k*(.76+.24*Math.sin(age*95)));}
+ if(!M.on)return;
+ if(weather.kind!=='storm'){M.on=false;M.queue.length=0;return;}
+ M.age+=dt;
+ for(let i=M.queue.length-1;i>=0;i--){const q=M.queue[i];q.t-=dt;if(q.t>0)continue;M.queue.splice(i,1);
+  if(q.full){M.big=4;M.full++;scheduleGroundLightning();}else megaStrikeV102(q.x,q.z);}
+ if(weather.timer<2.5)return;
+ M.cd-=dt;if(M.cd>0)return;
+ M.cd=(LOW_POWER?1.25:1)+Math.random()*1.3;
+ const n=M.age<3?1:Math.random()<.08?3:Math.random()<.27?2:1;
+ for(let k=0;k<n;k++){
+  const full=k===0&&Math.random()<.15,pt=megaPointV102(!full&&Math.random()<.06);
+  M.queue.push({t:k*(.1+Math.random()*.12),x:pt.x,z:pt.z,full});
+ }
+}
+// "Tam" zərbənin (ağac/od/ildırımötürən qaydaları ilə) kanalı da iri çəkilir.
+makeElectricLine=(c=>function(a,b){
+ if(megaV102.on&&megaV102.big>0&&a&&b&&Number.isFinite(a.x)&&Number.isFinite(b.x)&&a.distanceTo(b)>12){megaBoltV102(b.clone());megaV102.strikes++;return;}
+ return c.apply(this,arguments);
+})(makeElectricLine);
+// Dalbadal zərbələrdə hər birinə ayrı gurultu çalınmır (səs yığılıb boğulmasın).
+thunderV54=(c=>function(){
+ if(megaV102.on){const now=performance.now();if(now-megaV102.thunderAt<950)return;megaV102.thunderAt=now;}
+ return c.apply(this,arguments);
+})(thunderV54);
+
+/* ---------- 2) Dolu: ayrıca hadisə, ildırımsız ---------- */
+// Köhnə dolu 30×30 m sahədə cəmi 70–150 nöqtə idi və demək olar görünmürdü. İndi oyunçunun ətrafında
+// (12 m) sıx düşən buz dənələri var; hər dənə yerə dəydiyi nöqtədə sıçrayır.
+const hailV102={n:LOW_POWER?44:96,nn:LOW_POWER?240:520,pts:null,pos:null,vel:null,life:null,near:null,npos:null,ngy:null,slot:0,tapCd:0,taps:0,started:0,landed:0,was:false};
+makeSkyLightning=(c=>function(){if(weather.kind==='hail')return;return c.apply(this,arguments);})(makeSkyLightning);
+function hailDropV102(i,init){
+ const H=hailV102,p=camHolder.position,a=Math.random()*6.283,d=Math.sqrt(Math.random())*12,x=p.x+Math.cos(a)*d,z=p.z+Math.sin(a)*d,gy=terrainHeightAt(x,z);
+ H.npos[i*3]=x;H.npos[i*3+2]=z;H.ngy[i]=gy;H.npos[i*3+1]=gy+(init?Math.random()*11:9+Math.random()*3);
+}
+function hailInitV102(){
+ const H=hailV102;if(H.pts)return;
+ H.pos=new Float32Array(H.n*3).fill(-999);H.vel=new Float32Array(H.n*3);H.life=new Float32Array(H.n);
+ let g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(H.pos,3));
+ H.pts=new THREE.Points(g,new THREE.PointsMaterial({color:0xF4F9FF,size:.2,map:roundFlakeTexV51,alphaTest:.25,transparent:true,opacity:.98,depthWrite:false}));H.pts.frustumCulled=false;H.pts.visible=false;scene.add(H.pts);
+ H.npos=new Float32Array(H.nn*3);H.ngy=new Float32Array(H.nn);
+ g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(H.npos,3));
+ H.near=new THREE.Points(g,new THREE.PointsMaterial({color:0xEAF3FF,size:.26,map:roundFlakeTexV51,alphaTest:.25,transparent:true,opacity:.96,depthWrite:false}));H.near.frustumCulled=false;H.near.visible=false;scene.add(H.near);
+}
+function hailBounceV102(x,gy,z){
+ const H=hailV102;for(let k=0;k<H.n;k++){const i=(H.slot+k)%H.n;if(H.life[i]>0)continue;H.slot=i+1;
+  H.pos[i*3]=x;H.pos[i*3+1]=gy+.05;H.pos[i*3+2]=z;H.vel[i*3]=(Math.random()-.5)*1.8;H.vel[i*3+1]=1.6+Math.random()*2.4;H.vel[i*3+2]=(Math.random()-.5)*1.8;H.life[i]=.35+Math.random()*.3;return;}
+}
+function hailTapV102(){   // buz dənəsinin zərbəsi: dar zolaqlı qısa "tık" (fışıltı deyil); dam altında alçaq və boğuq
+ const a=actx(),t=a.currentTime,roof=protectedByShelter(),n=noiseSrcV54('white',1,false),bp=a.createBiquadFilter(),g=a.createGain();
+ bp.type='bandpass';bp.Q.value=roof?5:7;bp.frequency.value=roof?520+Math.random()*420:1300+Math.random()*1500;
+ const v=(roof?.16:.11)*(.5+Math.random()*.6);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+(roof?.07:.045));
+ n.connect(bp);bp.connect(g);g.connect(a.destination);n.start(t,Math.random()*1.2,.09);hailV102.taps++;
+}
+sHail=function(){};   // köhnə səs hər çağırışda yeni bufer yaradırdı və telefonda susurdu
+updateHail=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ safeV102('hailFx',()=>{
+  const H=hailV102,p=camHolder.position;hailInitV102();
+  if(!H.near.visible){for(let i=0;i<H.nn;i++)hailDropV102(i,true);H.near.visible=true;H.pts.visible=true;}
+  const fall=21*stormSpeedByDay()*dt,drift=1.7*dt;
+  for(let i=0;i<H.nn;i++){const j=i*3;H.npos[j+1]-=fall;H.npos[j]+=drift;
+   if(H.npos[j+1]<=H.ngy[i]){H.landed++;hailBounceV102(H.npos[j],H.ngy[i],H.npos[j+2]);hailDropV102(i,false);}
+   else if(Math.abs(H.npos[j]-p.x)>14||Math.abs(H.npos[j+2]-p.z)>14)hailDropV102(i,true);}
+  H.near.geometry.attributes.position.needsUpdate=true;
+  for(let i=0;i<H.n;i++){if(H.life[i]<=0){H.pos[i*3+1]=-999;continue;}H.life[i]-=dt;H.vel[i*3+1]-=13*dt;H.pos[i*3]+=H.vel[i*3]*dt;H.pos[i*3+1]+=H.vel[i*3+1]*dt;H.pos[i*3+2]+=H.vel[i*3+2]*dt;}
+  H.pts.geometry.attributes.position.needsUpdate=true;
+  H.tapCd-=dt;if(H.tapCd<=0){H.tapCd=(LOW_POWER?.16:.1)+Math.random()*.16;if(AC&&AC.state==='running')hailTapV102();}
+ });
+ return r;
+})(updateHail);
+safeV102('hailLook',()=>{hailPoints.material.size=.3;});
+function hailWatchV102(){
+ const H=hailV102,on=weather.kind==='hail';
+ if(on&&!H.was){H.started++;showEvent('🧊 HAIL · ice stones are falling — get under a roof!',3800);}
+ if(!on&&H.was&&H.pts){H.pts.visible=false;H.near.visible=false;H.life.fill(0);}
+ H.was=on;
+ // Dolu cəbhəsi yaxınlaşanda da şimşək çaxmır.
+ if(stormFrontV51.active&&stormFrontV51.kind==='hail')stormFrontV51.flashCd=9;
+}
+
+/* ---------- 3) Hadisə növbəsi ---------- */
+const planV102={cycle:-1,queued:[]};
+function planTickV102(){
+ const c=directorV42.cycle;if(c===planV102.cycle||!flowV42.started||flowV42.restoring)return;planV102.cycle=c;
+ if(c<2||season==='winter'||flowV42.step<6)return;
+ const k=c%4;
+ if(k===2&&campaignDay()>=2){requestEventV42('megaLightning',30);planV102.queued.push('megaLightning@'+c);}
+ else if(k===0){requestEventV42('hail',18);planV102.queued.push('hail@'+c);}
+}
+
+/* ---------- Bağlantılar ---------- */
+updateWeather=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ if(dt>0){safeV102('mega',()=>megaTickV102(dt));safeV102('hailWatch',hailWatchV102);safeV102('plan',planTickV102);}
+ return r;
+})(updateWeather);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v102={
+ mega:d=>{setWeatherV41('megaLightning',d||30,true);return {kind:weather.kind,on:megaV102.on,label:document.getElementById('weather').textContent};},
+ hail:d=>{setWeatherV41('hail',d||18,true);return weather.kind;},
+ state:()=>({kind:weather.kind,timer:+weather.timer.toFixed(1),mega:{on:megaV102.on,strikes:megaV102.strikes,direct:megaV102.direct,full:megaV102.full,queue:megaV102.queue.length,count:megaV102.count},
+  hail:{started:hailV102.started,taps:hailV102.taps,bounce:hailV102.life?[...hailV102.life].filter(v=>v>0).length:0,landed:hailV102.landed,near:!!(hailV102.near&&hailV102.near.visible),visible:hailPoints.visible},plan:{cycle:directorV42.cycle,queued:planV102.queued.slice(-4),queue:directorV42.queue.map(e=>e.kind)},label:weatherLabels.storm}),
+ errors:()=>[...errOnceV102]
+};
+/* /V102 */
+
 
 
 
