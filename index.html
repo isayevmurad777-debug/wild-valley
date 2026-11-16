@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V102</title>
+<title>Wild Valley — Survival · V103</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V102</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V103</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V102</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V103</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V102'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V103'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V102 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V103 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -31246,6 +31246,243 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v102={
  errors:()=>[...errOnceV102]
 };
 /* /V102 */
+
+/* ============================================================
+   V103 — SADƏ, ÇEVİK HEYVANLAR (1-ci mərhələ: bizon və dəvəquşu) + artıq təhlükələrin çıxarılması.
+   1) Bizon yenidən quruldu: 7 hissə (gövdə, baş, 4 ayaq, quyruq), hər hissə tək mesh, rəng təpələrdədir,
+      həndəsə bütün bizonlar üçün ortaqdır. Əvvəl telefonda 11, tam rejimdə 26 hissə idi. Qazanılan güc
+      hərəkətə gedir: sürətə uyğun addım, gövdənin yırğalanması, otlayan/ətrafa baxan baş, quyruq.
+   2) Alfa bizon: hər sürünün lideri — 1.28 dəfə iri, tünd, qızılı buynuzlu; can 20 (adi 8), zərbə 27
+      (adi 18), ət 10. Hücum qaydası dəyişmir: sürü yalnız çox yaxınlaşanda və ya vurulanda qəzəblənir.
+   3) Zəhərli duman hadisəsi çıxarıldı.
+   4) Bal porsuğu çıxarıldı (təsadüfi və pətək yanındakı). Sibir porsuğu qalır — o qovmur.
+   5) Vəhşi dəvəquşu sürüsü: açıq yerdə 3–5 quş birlikdə gəzir, dimdikləyir, birlikdə köçür. Çox
+      yaxınlaşanda və ya vuranda sürü basqına keçir (mövcud basqın qaydaları ilə). Sadə model: 10 hissə.
+   ============================================================ */
+const errOnceV103=new Set();
+function safeV103(name,fn){try{return fn();}catch(e){if(!errOnceV103.has(name)){errOnceV103.add(name);console.warn('V103 '+name,e);try{logErrV98('V103 '+name,e);}catch(_){}}}}
+
+/* ---------- 0) Sadə model qurucusu: hissələr → hər oynaq üçün tək, ortaq həndəsə ---------- */
+const geoV103={ico:new THREE.IcosahedronGeometry(1,1),box:new THREE.BoxGeometry(1,1,1),cyl:new THREE.CylinderGeometry(1,1,1,6,1),cone:new THREE.ConeGeometry(1,1,6,1),
+ cols:new Map(),cache:new Map(),solid:new Map(),e:new THREE.Euler(),q:new THREE.Quaternion(),v:new THREE.Vector3(),s:new THREE.Vector3()};
+function colV103(hex){let c=geoV103.cols.get(hex);if(!c){c={color:new THREE.Color(hex)};geoV103.cols.set(hex,c);}return c;}
+function ptV103(list,geo,hex,s,p,r){
+ const G=geoV103,M=new THREE.Matrix4();G.e.set(r?r[0]:0,r?r[1]:0,r?r[2]:0);G.q.setFromEuler(G.e);
+ M.compose(G.v.set(p[0],p[1],p[2]),G.q,G.s.set(s[0],s[1],s[2]));list.push({g:geo,mat:colV103(hex),M});
+}
+function bakeV103(list){const g=mergeBakedV91(list);g.userData.ownedV43=false;g.userData.shared=true;g.computeBoundingSphere();return g;}
+function solidV103(hex){let m=geoV103.solid.get(hex);if(!m){m=new THREE.MeshLambertMaterial({color:hex});geoV103.solid.set(hex,m);}return m;}
+// Blocky rejimdə həndəsə kuba çevrilir və təpə rəngi itir — orada düz rəngli material işlənir.
+function meshV103(parent,geo,hex){const m=new THREE.Mesh(geo,blockyV85.on?solidV103(hex):bakeV91.mat);m.castShadow=!LOW_POWER;parent.add(m);return m;}
+
+/* ---------- 1) Sadə bizon + alfa ---------- */
+function bisonGeosV103(alpha){
+ const key=alpha?'bisonA':'bison';let G=geoV103.cache.get(key);if(G)return G;
+ const coat=alpha?0x46311F:0x6E4E36,mane=alpha?0x17110E:0x2E2019,belly=alpha?0x33241A:0x553C2A,horn=alpha?0xE8C36A:0xD8CDB4,hoof=0x1E1A17,nose=0x171514,eye=0x0E0C0B,
+  I=geoV103.ico,B=geoV103.box,C=geoV103.cyl,K=geoV103.cone;
+ let L=[];
+ ptV103(L,I,coat,[.6,.6,.9],[0,1.12,.55]);ptV103(L,I,mane,[.72,.8,.85],[0,1.24,-.35]);ptV103(L,I,mane,[alpha?.66:.58,alpha?.7:.6,.6],[0,1.72,-.45]);ptV103(L,I,belly,[.5,.42,.95],[0,.9,.15]);
+ if(alpha)ptV103(L,I,0x7A5A40,[.32,.1,.5],[0,2.33,-.42]);
+ const body=bakeV103(L);
+ L=[];ptV103(L,I,mane,[.38,.4,.46],[0,-.02,-.3]);ptV103(L,I,coat,[.25,.22,.26],[0,-.2,-.66]);ptV103(L,B,nose,[.2,.1,.06],[0,-.2,-.9]);ptV103(L,K,mane,[.16,.42,.16],[0,-.52,-.4],[Math.PI,0,0]);
+ for(const s of [-1,1]){ptV103(L,K,horn,[alpha?.09:.075,alpha?.58:.42,alpha?.09:.075],[s*(alpha?.44:.38),.2,-.26],[0,0,-s*1]);ptV103(L,I,eye,[.045,.045,.045],[s*.27,.03,-.56]);}
+ const head=bakeV103(L);
+ const leg=front=>{const l=[];ptV103(l,C,front?mane:coat,[.15,.5,.15],[0,-.25,0]);ptV103(l,C,mane,[.1,.45,.1],[0,-.68,0]);ptV103(l,B,hoof,[.2,.12,.26],[0,-.9,-.03]);return bakeV103(l);};
+ L=[];ptV103(L,C,coat,[.035,.55,.035],[0,-.28,.04]);ptV103(L,I,mane,[.09,.14,.09],[0,-.6,.05]);const tail=bakeV103(L);
+ G={body,head,legF:leg(true),legB:leg(false),tail,coat,mane};geoV103.cache.set(key,G);return G;
+}
+function buildSimpleBisonV103(root,alpha){
+ const G=bisonGeosV103(alpha),W=new THREE.Group(),B=new THREE.Group();W.name='simpleV103';W.scale.setScalar(.86*(alpha?1.28:1));root.add(W);W.add(B);
+ meshV103(B,G.body,G.coat);
+ const head=new THREE.Group();head.position.set(0,1.32,-1.02);B.add(head);meshV103(head,G.head,G.mane);
+ const tail=new THREE.Group();tail.position.set(0,1.3,1.4);B.add(tail);meshV103(tail,G.tail,G.coat);
+ const legs=[];   // sıra əsas kodla eynidir: [sol-ön, sol-arxa, sağ-ön, sağ-arxa]
+ for(const side of [-1,1])for(const front of [true,false]){const p=new THREE.Group();p.position.set(side*(front?.34:.36),.95,front?-.5:.78);W.add(p);meshV103(p,front?G.legF:G.legB,front?G.mane:G.coat);legs.push(p);}
+ return {W,B,head,tail,legs};
+}
+const bisonV103={converted:0,alphas:0,hint:false};
+function convertBisonV103(a){
+ const root=a.root,E=a.skinV78;
+ if(E){let i=V78.list.indexOf(E);if(i>=0)V78.list.splice(i,1);i=V78Q.queue.indexOf(E);if(i>=0)V78Q.queue.splice(i,1);a.skinV78=null;}
+ const old=new THREE.Group();for(const ch of [...root.children]){root.remove(ch);old.add(ch);}old.traverse(o=>{if(o.isInstancedMesh)o.dispose();});releaseCreatureV43(old);
+ root.userData.skinV78=false;root.userData.noOptV78=true;root.userData.blockyV85=false;delete root.userData.arrowBodyMeshes;
+ const alpha=!!(a.bisonHerd&&a.bisonSlot===0&&!a.stampedeV69&&(a.bisonSize||0)>=2);
+ const rig=buildSimpleBisonV103(root,alpha);
+ a.legs=rig.legs;a.tailPivot=rig.tail;root.userData.bisonHeadV38=rig.head;a.optimizedV43=true;a.sizedV55=true;a.plumpedV66=true;
+ a.simpleV103={kind:'bison',B:rig.B,head:rig.head,tail:rig.tail,g:Math.random()*6.283,g0:Math.random()*6.283,px:root.position.x,pz:root.position.z,v:0,gt:Math.random()*4,up:false,look:0,hx:0,hy:0};
+ bisonV103.converted++;
+ if(alpha){a.alphaBisonV103=true;a.hp=20;a.maxHp=20;a.damage=27;a.speed*=1.08;a.meat=10;bisonV103.alphas++;}
+}
+function bisonAnimV103(a,dt){
+ const S=a.simpleV103,q=a.root.position,p=camHolder.position,ex=q.x-p.x,ez=q.z-p.z;
+ const sp=Math.hypot(q.x-S.px,q.z-S.pz)/Math.max(dt,.001);S.px=q.x;S.pz=q.z;S.v+=(Math.min(12,sp)-S.v)*Math.min(1,dt*8);
+ if(ex*ex+ez*ez>95*95)return;
+ const v=S.v;S.g+=dt*(1.6+v*1.55);const g=S.g,amp=v<.05?0:Math.min(.62,.07+v*.19),run=v>3;
+ for(let i=0;i<4;i++)a.legs[i].rotation.x=Math.sin(g+(i===0||i===3?0:Math.PI))*amp;
+ const B=S.B;B.position.y=Math.abs(Math.sin(g))*Math.min(.09,v*.028);B.rotation.z=Math.sin(g)*Math.min(.06,v*.02);B.rotation.x+=((run?-.06:0)-B.rotation.x)*Math.min(1,dt*5);B.scale.y=1+Math.sin(elapsed*1.7+S.g0)*.012;
+ const T=S.tail;T.rotation.z=Math.sin(elapsed*(run?9:2.2)+S.g0)*(run?.5:.28);T.rotation.x+=((run?1:.12)-T.rotation.x)*Math.min(1,dt*6);
+ if(!a.enraged&&!a.hornAttackV38){
+  S.gt-=dt;if(S.gt<=0){S.up=!S.up;S.gt=S.up?2+Math.random()*3:3.5+Math.random()*5;S.look=(Math.random()-.5)*.8;}
+  const walking=v>.5,tx=walking?-.1+Math.sin(g*2)*.04:S.up?.08:-.62+Math.sin(elapsed*5+S.g0)*.035,ty=!walking&&S.up?S.look:0;
+  S.hx+=(tx-S.hx)*Math.min(1,dt*3);S.hy+=(ty-S.hy)*Math.min(1,dt*2);S.head.rotation.x=S.hx;S.head.rotation.y=S.hy;
+ }else{S.hx=S.head.rotation.x;S.hy*=.8;S.head.rotation.y=S.hy;}
+}
+function bisonPassV103(dt,anim){
+ const p=camHolder.position;
+ for(const a of animals){
+  if(!a.bison||a.hp<=0)continue;
+  if(!a.simpleV103){if(!trueBisonV98(a))continue;safeV103('bisonConv',()=>convertBisonV103(a));if(!a.simpleV103)a.simpleV103={kind:'fail'};}
+  if(anim&&a.simpleV103.kind==='bison'&&dt>0){bisonAnimV103(a,dt);
+   if(a.alphaBisonV103&&!bisonV103.hint&&Math.hypot(a.root.position.x-p.x,a.root.position.z-p.z)<28){bisonV103.hint=true;showEvent('🦬 ALPHA BISON · the herd leader — much bigger and stronger than the others. Keep your distance.',4200);}}
+ }
+}
+animalNameV42=(c=>function(a){return a&&a.alphaBisonV103?'Alpha bison':c.apply(this,arguments);})(animalNameV42);
+
+/* ---------- 2) Zəhərli duman çıxarıldı ---------- */
+startPoisonFogV70=function(){return false;};
+
+/* ---------- 3) Bal porsuğu çıxarıldı ---------- */
+spawnBadgerV73=function(){return null;};makeBadgerAtV77=function(){return null;};hiveBadgerTickV77=function(){};updateBadgerSpawnV73=function(){};
+const cleanupV103={cd:0,badgers:0,fog:0};
+function cleanupTickV103(dt){
+ const C=cleanupV103;C.cd-=dt;if(C.cd>0)return;C.cd=1.5;
+ for(const a of [...animals])if(a.badgerV73&&!a.sibBadgerV77){removeAnimal(a);C.badgers++;}
+ if(fogV70.active){endPoisonFogV70(false);C.fog++;}
+}
+
+/* ---------- 4) Sadə dəvəquşu modeli ---------- */
+const OST_V103={black:0x24272C,white:0xE6E2D2,skin:0xC4A594,leg:0xA38472,red:0xC0342F,eye:0x151310,beak:0x8E7460};
+function ostrichGeosV103(){
+ let G=geoV103.cache.get('ost');if(G)return G;
+ const O=OST_V103,I=geoV103.ico,B=geoV103.box,C=geoV103.cyl,K=geoV103.cone;let L=[];
+ ptV103(L,I,O.black,[.56,.5,.82],[0,1.9,.1]);ptV103(L,I,O.black,[.44,.42,.46],[0,1.98,-.42]);const body=bakeV103(L);
+ L=[];ptV103(L,I,O.white,[.3,.26,.36],[0,.04,.2]);const tail=bakeV103(L);
+ const wing=s=>{const l=[];ptV103(l,I,O.black,[.15,.3,.56],[s*.05,-.06,.1]);ptV103(l,I,O.white,[.1,.17,.3],[s*.09,-.2,.5]);return bakeV103(l);};
+ L=[];ptV103(L,C,O.skin,[.075,.96,.075],[0,.48,-.04]);ptV103(L,C,O.red,[.095,.09,.095],[0,.42,-.04]);const neck=bakeV103(L);
+ L=[];ptV103(L,I,O.skin,[.17,.16,.24],[0,0,-.06]);ptV103(L,K,O.beak,[.075,.24,.075],[0,-.04,-.38],[-Math.PI/2,0,0]);ptV103(L,B,O.red,[.05,.17,.22],[0,.2,-.02]);
+ for(const s of [-1,1])ptV103(L,I,O.eye,[.036,.036,.036],[s*.145,.035,-.17]);const head=bakeV103(L);
+ L=[];ptV103(L,I,O.black,[.17,.3,.2],[0,-.04,.03]);ptV103(L,C,O.leg,[.06,.52,.06],[0,-.26,.04],[-.15,0,0]);const leg=bakeV103(L);
+ L=[];ptV103(L,C,O.leg,[.045,.7,.045],[0,-.35,-.06],[.17,0,0]);ptV103(L,B,O.leg,[.12,.06,.34],[0,-.7,-.2]);const shin=bakeV103(L);
+ G={body,tail,wingL:wing(-1),wingR:wing(1),neck,head,leg,shin};geoV103.cache.set('ost',G);return G;
+}
+function buildSimpleOstrichV103(root){   // oynaqlar köhnə quş skeleti ilə eynidir ki, basqın kodu dəyişmədən işləsin
+ const G=ostrichGeosV103(),O=OST_V103;
+ meshV103(root,G.body,O.black);
+ const tail=new THREE.Group();tail.position.set(0,1.95,.88);root.add(tail);meshV103(tail,G.tail,O.white);
+ const wings=[];for(const s of [-1,1]){const w=new THREE.Group();w.position.set(s*.5,1.96,0);root.add(w);meshV103(w,s<0?G.wingL:G.wingR,O.black);wings.push(w);}
+ const neck=new THREE.Group();neck.position.set(0,2.08,-.62);root.add(neck);meshV103(neck,G.neck,O.skin);
+ const head=new THREE.Group();head.position.set(0,.98,-.1);neck.add(head);meshV103(head,G.head,O.skin);
+ const jaw=new THREE.Group();jaw.position.set(0,-.1,-.17);head.add(jaw);
+ const legs=[],shins=[],feet=[];
+ for(const s of [-1,1]){const leg=new THREE.Group();leg.position.set(s*.3,1.26,.02);root.add(leg);meshV103(leg,G.leg,O.leg);legs.push(leg);
+  const shin=new THREE.Group();shin.position.set(0,-.51,.08);leg.add(shin);meshV103(shin,G.shin,O.leg);shins.push(shin);
+  const foot=new THREE.Group();foot.position.set(0,-.7,-.12);shin.add(foot);feet.push(foot);}
+ const rig={neck,head,jaw,wings,legs,shins,feet,tail,hip:1.26};root.userData.birdRigV39=rig;root.userData.noOptV78=true;return rig;
+}
+
+/* ---------- 5) Vəhşi dəvəquşu sürüsü ---------- */
+const flockV103={F:null,cd:18,seq:0,spawned:0,provoked:0,hint:false};
+function spawnOstrichFlockV103(x,z){
+ const S=flockV103,n=LOW_POWER?3:5,F={x,z,id:'ost'+(++S.seq),n:0,provoked:false,lost:false},s=wildOstrichStatsV44();
+ for(let i=0;i<n;i++){
+  const ang=i/n*6.283+Math.random()*.4,r=i?2.4+Math.random()*1.8:0,ax=x+Math.cos(ang)*r,az=z+Math.sin(ang)*r;
+  if(onWaterAt(ax,az)||wildlifeBlockedV39({ostrich:true},ax,az))continue;
+  const root=new THREE.Group(),rig=buildSimpleOstrichV103(root),sc=.95+Math.random()*.14;
+  root.position.set(ax,terrainHeightAt(ax,az),az);root.rotation.y=Math.random()*6.283;root.scale.setScalar(sc);scene.add(root);
+  animals.push({root,...rig,hp:s.hp,maxHp:s.hp,damage:s.damage,speed:s.speed,attackCd:0,meat:4,flightlessV39:true,ostrich:true,cassowary:false,wildOstrichV44:false,herdOstrichV103:true,flockV103:F,
+   nightStay:true,hunting:false,wadeV44:true,baseScale:sc,phase:Math.random()*6.283,wander:0,zone:{x,z,r:70},homeV39:{x,z,r:70},homeV38:{x,z,r:45,kind:'region'},indexV39:i,calmCd:0,provokedV39:0,warningV39:0,
+   raidStateV44:'herd',raidT:0,raidSide:(i%2?1:-1)*(1+Math.floor(i/2)*.6),chargeX:0,chargeZ:-1,chargeLeft:0,hitV44:false,stateT:Math.random()*3,tx:ax,tz:az,peckV103:0,ruffV103:0,nkV103:0,hdV103:0,
+   optimizedV43:true,sizedV55:true,plumpedV66:true});
+  F.n++;
+ }
+ if(!F.n)return null;S.F=F;S.spawned++;return F;
+}
+function provokeFlockV103(F){
+ if(F.provoked)return;F.provoked=true;flockV103.provoked++;let i=0;
+ for(const m of animals){if(m.flockV103!==F||!m.herdOstrichV103)continue;
+  m.herdOstrichV103=false;m.wildOstrichV44=true;m.hunting=true;m.raidStateV44='approach';m.raidT=.5+i*.8;m.fleeDirV99=null;m.indexV39=i;i++;
+  const rig=m.root.userData.birdRigV39;if(rig)rig.head.rotation.x=0;}
+ if(!i)return;
+ Object.assign(ostrichRaidV44,{active:true,t:0,charger:null,gap:0});
+ showEvent('🐦💨 The wild ostrich flock turns on you! When one lowers its head, step aside — then strike back.',4000);
+ try{sHissV44();}catch(e){}
+}
+function updateHerdOstrichV103(a,dt){
+ const F=a.flockV103,p=camHolder.position,q=a.root.position,dx=p.x-q.x,dz=p.z-q.z,d=Math.hypot(dx,dz)||.001,rig=a.root.userData.birdRigV39;
+ const sp=Math.hypot(playerVelV44.x,playerVelV44.z),alertR=(sp<.4?5:sp<2.4?7.5:10.5)*(stealthV49.hidden?.5:1);
+ if((d<alertR&&!protectedByShelter())||a.hp<a.maxHp||F.lost){provokeFlockV103(F);return;}
+ a.stateT-=dt;const C=herdV99.ctl.get(F),travel=!!C&&C.state==='travel',night=isNight();if(travel)C.speed=1.9;
+ if(!travel&&a.stateT<=0){a.stateT=3+Math.random()*5;
+  if(!night){const ang=Math.random()*6.283,r=Math.random()*7;a.tx=F.x+Math.cos(ang)*r;a.tz=F.z+Math.sin(ang)*r;}
+  a.peckV103=Math.random()<.65?1.5+Math.random()*2.5:0;a.ruffV103=Math.random()<.22?1:0;}
+ const tx=a.tx-q.x,tz=a.tz-q.z,td=Math.hypot(tx,tz);let moved=0;
+ if(td>1&&!night)moved=wildlifeStepV39(a,tx,tz,travel?1.9:1.15,dt);
+ birdGaitV39(a,dt,moved,false);
+ // əlavə hərəkət: addımla baş yellənməsi, dimdikləmə, qanad çırpma, quyruq
+ let nk,hd=0;
+ if(moved>0){a.peckV103=0;nk=Math.sin(elapsed*7+a.phase)*.1-.05;}
+ else if(a.peckV103>0&&!night){a.peckV103-=dt;nk=-1.9-.45*(.5+.5*Math.sin(elapsed*6+a.phase));hd=1.15;}
+ else nk=night?-.35:Math.sin(elapsed*1.3+a.phase)*.05;
+ a.nkV103+=(nk-a.nkV103)*Math.min(1,dt*4.5);a.hdV103+=(hd-a.hdV103)*Math.min(1,dt*4.5);rig.neck.rotation.x=a.nkV103;rig.head.rotation.x=a.hdV103;
+ if(a.ruffV103>0){a.ruffV103-=dt*.9;const f=(.35+Math.abs(Math.sin(elapsed*15+a.phase))*.55)*Math.min(1,a.ruffV103*3);rig.wings[0].rotation.z=-f;rig.wings[1].rotation.z=f;}
+ rig.tail.rotation.z=Math.sin(elapsed*3+a.phase)*.14;
+}
+updateWildOstrichV44=(c=>function(a,dt){
+ if(a&&a.herdOstrichV103){if(dt>0)safeV103('ostrichCalm',()=>updateHerdOstrichV103(a,dt));return true;}
+ return c.apply(this,arguments);
+})(updateWildOstrichV44);
+// Sürü nəzarətçisi (V99) dəvəquşu sürüsünü də birlikdə köçürür.
+herdRefV99=(c=>function(a){if(a&&a.flockV103)return a.herdOstrichV103&&a.hp>0?a.flockV103:null;return c.apply(this,arguments);})(herdRefV99);
+herdKindV99=(c=>function(m){return m&&m.herdOstrichV103?'ostrich':c.apply(this,arguments);})(herdKindV99);
+herdAlarmedV99=(c=>function(m,kind){return kind==='ostrich'?false:c.apply(this,arguments);})(herdAlarmedV99);
+isPreyV45=(c=>function(a){return a&&a.flockV103?false:c.apply(this,arguments);})(isPreyV45);
+function flockSpotV103(){
+ const p=camHolder.position;camera.getWorldDirection(tmpV99);
+ for(let t=0;t<14;t++){
+  const a=Math.random()*6.283,d=46+Math.random()*26,x=p.x+Math.cos(a)*d,z=p.z+Math.sin(a)*d;
+  if(Math.cos(a)*tmpV99.x+Math.sin(a)*tmpV99.z>.5)continue;                       // gözün qabağında yaranmasın
+  if(onWaterAt(x,z)||blocked(x,z)||wildlifeBlockedV39({ostrich:true},x,z)||Math.abs(x)>WORLD_V48.edge-40||Math.abs(z)>WORLD_V48.edge-40)continue;
+  if(Math.abs(terrainHeightAt(x,z)-terrainHeightAt(x+4,z))>1.6||Math.abs(terrainHeightAt(x,z)-terrainHeightAt(x,z+4))>1.6)continue;
+  let near=0;for(const tr of trees){if(Math.abs(tr.x-x)<12&&Math.abs(tr.z-z)<12&&++near>2)break;}if(near>2)continue;          // açıq yer
+  if(['northwood','plateau','mountain'].includes(regionAtV48(x,z)))continue;
+  return {x,z};
+ }
+ return null;
+}
+function flockTickV103(dt){
+ const S=flockV103,p=camHolder.position;
+ if(S.F){const F=S.F;let n=0,far=true;
+  for(const a of animals){if(a.flockV103!==F)continue;n++;if(Math.hypot(a.root.position.x-p.x,a.root.position.z-p.z)<190)far=false;}
+  if(!n){S.F=null;S.cd=90+Math.random()*60;return;}
+  if(far&&!F.provoked){for(const a of [...animals])if(a.flockV103===F)removeAnimal(a);S.F=null;S.cd=25;return;}
+  if(!F.provoked&&n<F.n)F.lost=true;
+  if(!S.hint&&!F.provoked&&Math.hypot(F.x-p.x,F.z-p.z)<55){S.hint=true;showEvent('🐦 A flock of wild ostriches roams here · keep your distance — they attack if you come close or shoot.',4400);}
+  return;}
+ S.cd-=dt;if(S.cd>0)return;S.cd=6;
+ if(!flowV42.started||flowV42.restoring||flowV42.step<6||journeying||gameOver||isNight()||season==='winter'||campaignDay()<2)return;
+ if(directorV42.active||ostrichRaidV44.active||activeBiome==='birdValley'||animals.length>ECOLOGY.maxAnimals+2)return;
+ const q=flockSpotV103();if(q)spawnOstrichFlockV103(q.x,q.z);
+}
+
+/* ---------- Bağlantılar ---------- */
+updateAnimals=(c=>function(dt){
+ if(flowV42.started){safeV103('bisonPre',()=>bisonPassV103(dt,false));if(dt>0){safeV103('cleanup',()=>cleanupTickV103(dt));safeV103('flock',()=>flockTickV103(dt));}}
+ const r=c.apply(this,arguments);
+ if(flowV42.started)safeV103('bisonPost',()=>bisonPassV103(dt,true));
+ return r;
+})(updateAnimals);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v103={
+ meshes:root=>{let n=0,t=0;root.traverse(o=>{if(o.isMesh&&o.visible){n++;const g=o.geometry;t+=(g.index?g.index.count:g.attributes.position.count)/3;}});return {meshes:n,tris:Math.round(t)};},
+ bison:()=>animals.filter(a=>a.bison&&a.simpleV103).map(a=>({kind:a.simpleV103.kind,alpha:!!a.alphaBisonV103,hp:a.hp,dmg:a.damage,enraged:!!a.enraged,v:a.simpleV103.v!==undefined?+a.simpleV103.v.toFixed(2):null,...window.wildValleyTestV44.v103.meshes(a.root)})),
+ spawnBison:d=>{const p=camHolder.position,pos={x:p.x+(d||14),z:p.z};faunaV48.spawnAt=pos;try{spawnBisonHerd(false);}finally{faunaV48.spawnAt=null;}return animals.filter(a=>a.bison).length;},
+ flock:()=>{const F=flockV103.F;return {alive:F?animals.filter(a=>a.flockV103===F).length:0,calm:F?animals.filter(a=>a.flockV103===F&&a.herdOstrichV103).length:0,provoked:F?F.provoked:null,center:F?[Math.round(F.x),Math.round(F.z)]:null,cd:+flockV103.cd.toFixed(1),spawned:flockV103.spawned,ctl:F&&herdV99.ctl.get(F)?herdV99.ctl.get(F).state:null};},
+ spawnFlock:d=>{const p=camHolder.position;camera.getWorldDirection(tmpV99);const F=spawnOstrichFlockV103(p.x+tmpV99.x*(d||22),p.z+tmpV99.z*(d||22));return F?F.n:0;},
+ provoke:()=>{if(flockV103.F)provokeFlockV103(flockV103.F);return flockV103.provoked;},
+ cleanup:()=>({...cleanupV103,badgers:animals.filter(a=>a.badgerV73&&!a.sibBadgerV77).length,fogActive:fogV70.active}),
+ errors:()=>[...errOnceV103]
+};
+/* /V103 */
+
 
 
 
