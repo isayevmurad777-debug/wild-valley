@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V103</title>
+<title>Wild Valley — Survival · V104</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V103</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V104</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V103</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V104</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V103'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V104'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V103 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V104 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -31482,6 +31482,192 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v103={
  errors:()=>[...errOnceV103]
 };
 /* /V103 */
+
+/* ============================================================
+   V104 — ATLAR, PƏLƏNG DİZAYNI, TƏBİİ İLDIRIM SƏSİ, SADƏ MARAL (2-ci mərhələ).
+   1) Atlar "yox kimi" idi: sürülər evdən 200–670 m uzaqda yaranırdı və adi yerişdə 18 m-dən hürküb
+      10 m/s ilə qaçırdı. İndi (a) gündüz oyunçunun olduğu yerə 50–75 m məsafədə "qonaq" at sürüsü gəlib
+      otlayır (istiqaməti yazı ilə bildirilir), (b) atlar yalnız ~11 m-dən hürkür.
+   2) Pələng: qılınc dişlər 1 m idi və yerə dirənirdi (miqyas vurulmaq əvəzinə mütləq yazılmışdı) — indi
+      real ölçüdədir. Baş böyüdüldü; alın zolaqları, qaş ləkələri, bığlar,
+      ağ sinə-qarın, ayaqlarda və quyruqda qara halqalar, qara quyruq ucu əlavə olundu.
+   3) İldırım səsi yenidən quruldu: yaxın zərbədə qısa "cırılma" (bir neçə kəsik çatırtı), ardınca
+      boğuq zərbə, sonra dalğalanaraq sönən uzun gurultu və relyefdən qayıdan əks-səda; uzaq ildırımda
+      yalnız alçaq gurultu.
+   4) Maral sadə modelə keçdi: 7 hissə (gövdə, baş-boyun-buynuz, quyruq, 4 ayaq). Alfa (iri, tünd,
+      qızılı buynuz, yal) və ağ maral variantları qalır. Cüyür yüngül ilkin modelinə qayıtdı.
+      Canavar DƏYİŞMƏDİ — yırtıcılar detallı qalır.
+   ============================================================ */
+const errOnceV104=new Set();
+function safeV104(name,fn){try{return fn();}catch(e){if(!errOnceV104.has(name)){errOnceV104.add(name);console.warn('V104 '+name,e);try{logErrV98('V104 '+name,e);}catch(_){}}}}
+
+/* ---------- 1) Atlar ---------- */
+alarmHorsesV49=(c=>function(a){
+ // Uzaqdan (11.5 m-dən çox) yaxınlaşmaq sürünü hürkütmür; vurulan at və uğursuz əhliləşdirmə əvvəlki kimi hürküdür.
+ if(a&&a.root&&!horseV49.tame&&!(a.hp<8)){const p=camHolder.position;if(Math.hypot(a.root.position.x-p.x,a.root.position.z-p.z)>11.5)return;}
+ return c.apply(this,arguments);
+})(alarmHorsesV49);
+const horseVisitV104={cd:45,spawned:0,hints:0,alive:0};
+function horseVisitTickV104(dt){
+ const S=horseVisitV104,p=camHolder.position;S.cd-=dt;if(S.cd>0)return;S.cd=8;
+ let n=0,far=true,near=false;
+ for(const a of animals){if(!a.horseV49)continue;const d=Math.hypot(a.root.position.x-p.x,a.root.position.z-p.z);if(d<130)near=true;if(a.visitV104){n++;if(d<230)far=false;}}
+ S.alive=n;
+ if(n&&far){for(const a of [...animals])if(a.visitV104)removeAnimal(a);S.cd=40;return;}
+ if(n||near)return;
+ if(!flowV42.started||flowV42.restoring||flowV42.step<6||journeying||gameOver||isNight()||directorV42.active||mountedV49||animals.length>ECOLOGY.maxAnimals+1)return;
+ const q=flockSpotV103();if(!q)return;
+ const born=spawnHorseHerdV49({x:q.x,z:q.z});if(!born||!born.length)return;
+ for(const a of born){a.visitV104=true;a.homeV38={x:q.x,z:q.z,r:45,kind:'region'};}
+ S.spawned++;S.cd=240+Math.random()*180;
+ if(S.hints<2||Math.random()<.35){S.hints++;showEvent('🐎 Wild horses are grazing to the '+compassToV55(q.x-p.x,q.z-p.z)+' · approach slowly (small joystick push) to tame one',4600);}
+}
+
+/* ---------- 2) Pələng dizaynı ---------- */
+const TIGER_V104={white:0xF2E9DA,black:0x15120F,pink:0xC98A7A};
+function tigerGeosV104(){
+ let G=geoV103.cache.get('tigerFx');if(G)return G;
+ const T=TIGER_V104,I=geoV103.ico,B=geoV103.box;let L=[];
+ // baş: alın zolaqları və qaş üstü ağ ləkələr (yanaq tükü, qulaq və burun köhnə modeldə var)
+ ptV103(L,B,T.black,[.02,.012,.12],[0,.158,-.07]);for(const s of [-1,1]){ptV103(L,B,T.black,[.02,.012,.1],[s*.065,.146,-.06],[0,0,-s*.25]);ptV103(L,I,T.white,[.034,.02,.016],[s*.085,.092,-.168]);}
+ for(const s of [-1,1])for(let i=0;i<3;i++)ptV103(L,B,T.white,[.12,.005,.005],[s*.15,-.035-i*.022,-.2+i*.012],[0,s*.25,-s*(.18-i*.17)]);   // bığlar
+ const head=bakeV103(L);
+ L=[];ptV103(L,I,T.white,[.24,.15,.56],[0,.49,-.05]);ptV103(L,I,T.white,[.2,.22,.17],[0,.63,-.7]);const belly=bakeV103(L);
+ L=[];for(const y of [-.1,-.22])ptV103(L,B,T.black,[.14,.03,.14],[0,y,0]);const bands=bakeV103(L);
+ const ring=k=>[.092,.092,.03,0,-.16*k,.24*k];
+ L=[];for(const k of [.35,.75]){const r=ring(k);ptV103(L,I,T.black,[r[0],r[1],r[2]],[r[3],r[4],r[5]],[.585,0,0]);}const tail0=bakeV103(L);
+ L=[];for(const k of [.3,.65]){const r=ring(k);ptV103(L,I,T.black,[r[0]*.9,r[1]*.9,r[2]],[r[3],r[4],r[5]],[.585,0,0]);}ptV103(L,I,T.black,[.075,.075,.11],[0,-.17,.27],[.585,0,0]);const tail1=bakeV103(L);
+ G={head,belly,bands,tail0,tail1};geoV103.cache.set('tigerFx',G);return G;
+}
+const tigerV104={done:0,fangs:0};
+function tigerMakeoverV104(a){
+ const root=a.root,G=tigerGeosV104(),T=TIGER_V104,H=a.headRig;
+ const add=(parent,geo,hex)=>{const m=meshV103(parent,geo,hex);m.name='tigerFxV104';return m;};
+ // dişlər: 1 m → ~0.36 m (baş 1.22 dəfə böyüyür, ona görə miqyas .34)
+ root.traverse(o=>{if(o.name==='saberFang'){o.scale.y=.34;tigerV104.fangs++;}});
+ if(H){H.scale.multiplyScalar(1.22);add(H,G.head,T.black);}
+ // gövdə hissələri ilə eyni koordinat sistemində (root-lokal) yerləşdirilir
+ const lift=root.getObjectByName('liftV67')||root.getObjectByName('catVisualV62')||root,holder=new THREE.Group();holder.name='tigerFxV104';
+ root.updateMatrixWorld(true);holder.applyMatrix4(new THREE.Matrix4().copy(lift.matrixWorld).invert().multiply(root.matrixWorld));lift.add(holder);add(holder,G.belly,T.white);
+ if(a.knees)for(const k of a.knees)if(k&&k.isObject3D)add(k,G.bands,T.black);
+ const tj=a.tailJoints;if(tj&&tj[0])add(tj[0],G.tail0,T.black);if(tj&&tj[1])add(tj[1],G.tail1,T.black);
+ root.userData.blockyV85=false;delete root.userData.arrowBodyMeshes;
+ tigerV104.done++;
+}
+function tigerPassV104(){
+ for(const a of animals){if(!a.tiger||a.makeoverV104||a.hp<=0)continue;a.makeoverV104=true;safeV104('tiger',()=>tigerMakeoverV104(a));}
+}
+
+/* ---------- 3) Təbii ildırım səsi ---------- */
+const thunderStatV104={played:0,cracks:0,skipped:0};
+function thunderCurveV104(n,peaks,decay){   // dalğalanan, tədricən sönən zərf
+ const c=new Float32Array(n),ph=[];for(let k=0;k<peaks;k++)ph.push({t:Math.random(),w:.05+Math.random()*.12,a:.45+Math.random()*.55});
+ for(let i=0;i<n;i++){const x=i/(n-1);let v=.16;for(const q of ph){const d=(x-q.t)/q.w;v+=q.a*Math.exp(-d*d);}c[i]=Math.min(1,v)*Math.pow(1-x,decay)*Math.min(1,x*14);}
+ c[0]=0;c[n-1]=0;return c;
+}
+function thunderV104(distance,strength){
+ const a=actx(),now=a.currentTime,out=sfxOutV54(),S=thunderStatV104;
+ distance=Number.isFinite(distance)?Math.max(0,distance):110;strength=Number.isFinite(strength)?Math.min(1.6,Math.max(.1,strength)):1;
+ const t=now+Math.max(.035,distance/343),near=Math.max(0,Math.min(1,1-distance/150)),vol=Math.min(.8,strength*.72*Math.sqrt(90/(90+distance)));
+ const track=s=>{try{weatherV60.sources.add(s);s.onended=()=>weatherV60.sources.delete(s);}catch(e){}return s;};
+ S.played++;
+ // a) cırılma: bir neçə qısa, kəsik çatırtı (yalnız yaxın zərbədə)
+ if(near>.05){S.cracks++;const cnt=3+((Math.random()*3)|0);let at=t;
+  for(let i=0;i<cnt;i++){const s=track(noiseSrcV54('white',1,false)),bp=a.createBiquadFilter(),g=a.createGain(),d=.022+Math.random()*.05,v=vol*near*(.75-i*.1)*(.7+Math.random()*.5);
+   bp.type='bandpass';bp.frequency.value=1500+Math.random()*2300;bp.Q.value=.9;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(Math.max(.0002,v),at+.004);g.gain.exponentialRampToValueAtTime(.0001,at+d);
+   s.connect(bp);bp.connect(g);g.connect(out);s.start(at,Math.random()*1.2,d+.03);at+=d*.6+.012+Math.random()*.045;}
+  // b) boğuq zərbə
+  const bs=track(noiseSrcV54('brown',1.1,true)),lp=a.createBiquadFilter(),bg=a.createGain(),bt=t+.05;lp.type='lowpass';lp.Q.value=.8;lp.frequency.setValueAtTime(420,bt);lp.frequency.exponentialRampToValueAtTime(110,bt+.9);
+  bg.gain.setValueAtTime(.0001,bt);bg.gain.exponentialRampToValueAtTime(Math.max(.0002,vol*(.55+.45*near)),bt+.03);bg.gain.exponentialRampToValueAtTime(.0001,bt+1.1);
+  bs.connect(lp);lp.connect(bg);bg.connect(out);bs.start(bt,Math.random()*2);bs.stop(bt+1.15);
+ }
+ // c) uzun gurultu + d) əks-səda
+ const len=3.4+Math.min(3.2,distance/170)+Math.random()*1.2,rs=track(noiseSrcV54('brown',.62+Math.random()*.2,true)),hp=a.createBiquadFilter(),rl=a.createBiquadFilter(),rg=a.createGain(),rt=t+(near>.05?.12:0);
+ hp.type='highpass';hp.frequency.value=70;rl.type='lowpass';rl.Q.value=.5;rl.frequency.setValueAtTime(Math.max(230,820/(1+distance/120)),rt);rl.frequency.exponentialRampToValueAtTime(115,rt+len);
+ rg.gain.setValueAtTime(0,now);rg.gain.setValueCurveAtTime(thunderCurveV104(48,5+((Math.random()*4)|0),1.5).map(v=>v*vol),rt,len);
+ rs.connect(hp);hp.connect(rl);rl.connect(rg);rg.connect(out);
+ const dl=a.createDelay(1.2),fb=a.createGain(),el=a.createBiquadFilter(),eg=a.createGain();dl.delayTime.value=.38+Math.random()*.3;fb.gain.value=.32;el.type='lowpass';el.frequency.value=340;eg.gain.value=.5;
+ rg.connect(dl);dl.connect(el);el.connect(fb);fb.connect(dl);el.connect(eg);eg.connect(out);
+ rs.start(rt,Math.random()*2);rs.stop(rt+len+.05);
+ setTimeout(()=>{try{fb.gain.value=0;eg.disconnect();dl.disconnect();el.disconnect();fb.disconnect();}catch(e){}},(rt-now+len+3)*1000);
+}
+thunderV54=function(distance,strength){
+ if(megaV102.on){const n=performance.now();if(n-megaV102.thunderAt<950){thunderStatV104.skipped++;return;}megaV102.thunderAt=n;}
+ safeV104('thunder',()=>thunderV104(distance,strength));
+};
+
+/* ---------- 4) Sadə maral (alfa və ağ variantla) ---------- */
+function deerGeosV104(variant){
+ const key='deer_'+variant;let G=geoV103.cache.get(key);if(G)return G;
+ const alpha=variant==='alpha',white=variant==='white',I=geoV103.ico,B=geoV103.box,C=geoV103.cyl;
+ const coat=alpha?0x7D3F24:white?0xF0F2F5:0xC08A52,face=white?0xFFFFFF:0xD9A970,belly=white?0xFFFFFF:0xF2E3CC,horn=alpha?0xD7B36B:white?0xD8D0BC:0x8A6A48,dark=0x2A211B,hoof=0x302820,mane=0x3B251C;
+ let L=[];
+ ptV103(L,I,coat,[.5,.5,1],[0,1.25,.12]);ptV103(L,I,coat,[.48,.52,.5],[0,1.3,-.5]);ptV103(L,I,coat,[.5,.52,.55],[0,1.22,.72]);ptV103(L,I,belly,[.4,.22,.78],[0,.96,.14]);ptV103(L,I,belly,[.34,.32,.12],[0,1.22,1.2]);
+ const body=bakeV103(L);
+ L=[];   // baş-boyun (oynaq: 0,1.08,-.5)
+ ptV103(L,I,coat,[.28,.62,.3],[0,.49,-.19],[-.32,0,0]);if(alpha)ptV103(L,I,mane,[.33,.5,.34],[0,.42,-.13],[-.32,0,0]);
+ ptV103(L,I,belly,[.18,.42,.09],[0,.49,-.458],[-.32,0,0]);ptV103(L,I,face,[.26,.26,.34],[0,.955,-.51]);ptV103(L,I,face,[.19,.18,.36],[0,.856,-.8],[-.16,0,0]);ptV103(L,I,dark,[.1,.08,.08],[0,.81,-1.135]);
+ if(alpha)ptV103(L,B,0xD7B36B,[.08,.1,.03],[0,1.02,-.84]);
+ for(const s of [-1,1]){
+  ptV103(L,I,dark,[.05,.05,.05],[s*.235,.97,-.67]);ptV103(L,I,face,[.09,.24,.05],[s*.33,1.2,-.42],[0,0,-s*.95]);
+  const bl=alpha?1:.8,br=alpha?.045:.035,dx=s*.48,dy=.84,dz=.26;   // əsas budaq: yuxarı, çölə və geriyə
+  ptV103(L,C,horn,[br,bl,br],[s*.08+dx*bl*.5,1.21+dy*bl*.5,-.43+dz*bl*.5],[.3,0,-s*.5]);
+  ptV103(L,C,horn,[.026,.34,.026],[s*.2,1.4,-.52],[-.7,0,-s*.2]);ptV103(L,C,horn,[.026,.3,.026],[s*(alpha?.5:.42),alpha?1.92:1.78,alpha?-.14:-.2],[-.5,0,-s*.9]);
+  if(alpha){ptV103(L,C,horn,[.026,.32,.026],[s*.36,1.62,-.3],[.9,0,-s*.3]);ptV103(L,C,horn,[.026,.28,.026],[s*.58,2.0,-.05],[.2,0,-s*1.2]);}
+ }
+ const head=bakeV103(L);
+ L=[];ptV103(L,I,coat,[.11,.12,.27],[0,0,.13]);ptV103(L,I,belly,[.085,.07,.23],[0,-.07,.16]);const tail=bakeV103(L);
+ L=[];ptV103(L,C,coat,[.11,.5,.11],[0,-.24,0]);ptV103(L,C,face,[.06,.46,.06],[0,-.69,-.01]);ptV103(L,B,hoof,[.1,.08,.15],[0,-.97,-.03]);const legF=bakeV103(L);
+ L=[];ptV103(L,C,coat,[.14,.5,.14],[0,-.24,.07],[-.29,0,0]);ptV103(L,C,face,[.065,.44,.065],[0,-.675,.08],[.27,0,0]);ptV103(L,B,hoof,[.1,.08,.15],[0,-.97,-.01]);const legB=bakeV103(L);
+ G={body,head,tail,legF,legB,coat,face};geoV103.cache.set(key,G);return G;
+}
+const deerV104={converted:0,alpha:0,white:0};
+function convertDeerV104(a){
+ const root=a.root,E=a.skinV78,variant=a.alphaDeer?'alpha':a.white?'white':'natural';
+ if(E){let i=V78.list.indexOf(E);if(i>=0)V78.list.splice(i,1);i=V78Q.queue.indexOf(E);if(i>=0)V78Q.queue.splice(i,1);a.skinV78=null;}
+ const old=new THREE.Group();for(const ch of [...root.children]){root.remove(ch);old.add(ch);}old.traverse(o=>{if(o.isInstancedMesh)o.dispose();});releaseCreatureV43(old);
+ root.userData.skinV78=false;root.userData.noOptV78=true;root.userData.blockyV85=false;delete root.userData.arrowBodyMeshes;
+ const G=deerGeosV104(variant),B=new THREE.Group();B.name='simpleV104';root.add(B);meshV103(B,G.body,G.coat);
+ const headRig=new THREE.Group();headRig.position.set(0,1.08,-.5);headRig.rotation.x=-.07;B.add(headRig);meshV103(headRig,G.head,G.face);
+ const ears=[];for(const s of [-1,1]){const e=new THREE.Group();e.userData.side=s;e.userData.baseZ=-s*.95;e.rotation.z=e.userData.baseZ;headRig.add(e);ears.push(e);}   // qulaqlar başla birdir; kod üçün boş oynaqlar
+ const tail=new THREE.Group();tail.position.set(0,1.36,1.1);tail.rotation.x=-.2;B.add(tail);meshV103(tail,G.tail,G.coat);
+ const legs=[];for(const side of [-1,1])for(const front of [true,false]){const p=new THREE.Group();p.position.set(side*.32,1.06,front?-.51:.7);root.add(p);meshV103(p,front?G.legF:G.legB,G.coat);legs.push(p);}
+ a.legs=legs;a.frontLegs=[legs[0],legs[2]];a.headRig=headRig;a.tail=tail;a.ears=ears;a.optimizedV43=true;a.sizedV55=true;a.plumpedV66=true;
+ a.simpleV103={kind:'deer',B,g:Math.random()*6.283,g0:Math.random()*6.283,px:root.position.x,pz:root.position.z,v:0};
+ deerV104.converted++;if(variant!=='natural')deerV104[variant]++;
+}
+function deerPassV104(dt,anim){
+ const p=camHolder.position;
+ for(const a of animals){
+  if(!a.deer||a.hp<=0)continue;
+  if(!a.simpleV103){const E=a.skinV78;if(!E||E.kind!=='deer')continue;safeV104('deerConv',()=>convertDeerV104(a));if(!a.simpleV103)a.simpleV103={kind:'fail'};}
+  const S=a.simpleV103;if(!anim||S.kind!=='deer'||dt<=0)continue;
+  const q=a.root.position,sp=Math.hypot(q.x-S.px,q.z-S.pz)/Math.max(dt,.001);S.px=q.x;S.pz=q.z;S.v+=(Math.min(12,sp)-S.v)*Math.min(1,dt*8);
+  const ex=q.x-p.x,ez=q.z-p.z;if(ex*ex+ez*ez>85*85)continue;
+  const v=S.v;S.g+=dt*(2+v*1.5);const B=S.B;   // gövdənin yüngül yırğalanması və nəfəs
+  B.rotation.z=Math.sin(S.g)*Math.min(.05,v*.014);B.rotation.x+=((v>3.5?-.05:0)-B.rotation.x)*Math.min(1,dt*5);B.scale.y=1+Math.sin(elapsed*1.9+S.g0)*.012;
+ }
+}
+// Cüyür: tüklü studiya modeli əvəzinə yüngül ilkin model (eyni skelet, eyni animasiya).
+buildRoeV52=function(root,buck,winter){return buildRoeCoreV78.apply(this,arguments);};
+
+/* ---------- Bağlantılar ---------- */
+updateAnimals=(c=>function(dt){
+ if(flowV42.started){safeV104('deerPre',()=>deerPassV104(dt,false));if(dt>0)safeV104('horseVisit',()=>horseVisitTickV104(dt));}
+ const r=c.apply(this,arguments);
+ if(flowV42.started){safeV104('deerPost',()=>deerPassV104(dt,true));safeV104('tigerPass',tigerPassV104);}
+ return r;
+})(updateAnimals);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v104={
+ deer:()=>animals.filter(a=>a.deer&&a.simpleV103).map(a=>({kind:a.simpleV103.kind,alpha:!!a.alphaDeer,white:!!a.white,...window.wildValleyTestV44.v103.meshes(a.root)})),
+ deerStat:()=>({...deerV104}),tiger:()=>({...tigerV104}),thunder:()=>({...thunderStatV104,sources:weatherV60.sources.size}),
+ playThunder:(d,s)=>{thunderV54(d===undefined?40:d,s||1);return thunderStatV104.played;},
+ horses:()=>({...horseVisitV104,cd:+horseVisitV104.cd.toFixed(1),visiting:animals.filter(a=>a.visitV104).length,all:animals.filter(a=>a.horseV49).length}),
+ visitNow:()=>{horseVisitV104.cd=0;return true;},
+ errors:()=>[...errOnceV104]
+};
+/* /V104 */
+
 
 
 
