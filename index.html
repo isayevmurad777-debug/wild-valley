@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V104</title>
+<title>Wild Valley — Survival · V105</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V104</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V105</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V104</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V105</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V104'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V105'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V104 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V105 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -31667,6 +31667,103 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v104={
  errors:()=>[...errOnceV104]
 };
 /* /V104 */
+
+/* ============================================================
+   V105 — TELEFON SINAĞI: atəşdə boz ekran, qayıq xətası, güclü alfa bizon, vəhşi atlar.
+   1) "Silah atanda ekran bozarır": köhnə "ov dumanı" yayı dartanda görünüşü 34–44 m-ə endirib boz
+      pərdə çəkirdi; dürbünlü yayda (3.6× yaxınlaşdırma) demək olar bütün ekran boz olurdu.
+      Ov dumanı çıxarıldı. Dürbünə baxanda (hava pis deyilsə) duman əksinə uzağa çəkilir.
+   2) Qayıq: dağ çayında (yatağı 1–23 m hündürlükdə olan çaylar) qayıq oyunçunu dəniz səviyyəsinə
+      (0.07 m) qoyurdu — kamera yerin altına düşür, ekran pozulurdu. İndi qayıq çayın öz səthində
+      üzür və heç vaxt yerdən aşağı düşmür.
+   3) Alfa bizon daha güclüdür: can 20 → 45, zərbə 27 → 36, ölçü 1.28 → 1.45, bir az sürətli, ət 14.
+      Zərbəsi oyunçunu geri atır.
+   4) Vəhşi atlar: qonaq sürü daha tez-tez gəlir (hər ~2 dəqiqədən bir yoxlanır, əvvəl 4–7 dəq),
+      heyvan həddi dolu olanda da 3–4 at yaranır, yaranan kimi ekranda istiqamət və məsafə göstərilir.
+   ============================================================ */
+const errOnceV105=new Set();
+function safeV105(name,fn){try{return fn();}catch(e){if(!errOnceV105.has(name)){errOnceV105.add(name);console.warn('V105 '+name,e);try{logErrV98('V105 '+name,e);}catch(_){}}}}
+
+/* ---------- 1) Ov dumanı yoxdur; dürbün uzağı açır ---------- */
+const scopeFogV105={k:0};
+updateHuntingFog=function(dt){
+ safeV105('scopeFog',()=>{
+  huntingFogStrength=0;
+  const on=typeof scopeOnV63==='function'&&scopeOnV63()&&scopeV63.k>.05&&['clear','wind','rumble'].includes(weather.kind)&&!isNight();
+  scopeFogV105.k+=((on?scopeV63.k:0)-scopeFogV105.k)*Math.min(1,dt*5);const k=scopeFogV105.k;if(k<.02)return;
+  scene.fog.far=THREE.MathUtils.lerp(scene.fog.far,Math.max(scene.fog.far,150),k);
+  scene.fog.near=THREE.MathUtils.lerp(scene.fog.near,Math.max(scene.fog.near,48),k);
+ });
+};
+
+/* ---------- 2) Qayıq çayın öz səthində üzür ---------- */
+const raftFixV105={lifted:0};
+waterSurfaceYAtV67=(c=>function(x,z){
+ let y=c.apply(this,arguments);
+ if(torrentAtV67(x,z))return y;
+ for(const s of terrainRiverSegments){
+  if(s.scenic&&(x<s.minX||x>s.maxX||z<s.minZ||z>s.maxZ))continue;
+  if(segmentDistance2D(x,z,s)<s.w/2){const ry=riverSurfaceYAt(s,x,z)+.03;if(Number.isFinite(ry)&&ry>y)y=ry;}
+ }
+ const th=terrainHeightAt(x,z)+.05;if(th>y){y=th;raftFixV105.lifted++;}   // heç vaxt yerdən aşağı deyil
+ return y;
+})(waterSurfaceYAtV67);
+
+/* ---------- 3) Güclü alfa bizon ---------- */
+const alphaV105={upgraded:0,knocks:0};
+function alphaBisonPassV105(){
+ for(const a of animals){
+  if(!a.alphaBisonV103||a.alphaV105||a.hp<=0)continue;a.alphaV105=true;
+  const full=a.hp>=(a.maxHp||20);a.maxHp=45;if(full)a.hp=45;else a.hp=Math.min(45,Math.round(a.hp*2.25));
+  a.damage=36;a.speed*=1.07;a.meat=14;
+  const W=a.root.getObjectByName('simpleV103');if(W)W.scale.setScalar(.86*1.45);
+  alphaV105.upgraded++;
+ }
+}
+hurtPlayer=(c=>function(amount,cause){
+ const h0=playerHealth,r=c.apply(this,arguments);
+ if(cause==='Alpha bison'&&playerHealth<h0)safeV105('knock',()=>{   // zərbə oyunçunu geri atır
+  const p=camHolder.position;let best=null,bd=9;for(const a of animals){if(!a.alphaBisonV103)continue;const d=Math.hypot(a.root.position.x-p.x,a.root.position.z-p.z);if(d<bd){bd=d;best=a;}}
+  if(best){const dx=p.x-best.root.position.x,dz=p.z-best.root.position.z,l=Math.hypot(dx,dz)||1;knockPlayerV44(dx/l,dz/l,1.3);shake=Math.max(shake,.55);alphaV105.knocks++;}
+ });
+ return r;
+})(hurtPlayer);
+
+/* ---------- 4) Vəhşi atlar daha görünən ---------- */
+horseVisitV104.cd=Math.min(horseVisitV104.cd,20);
+horseVisitTickV104=function(dt){
+ const S=horseVisitV104,p=camHolder.position;S.cd-=dt;if(S.cd>0)return;S.cd=8;
+ let n=0,far=true,near=false;
+ for(const a of animals){if(!a.horseV49)continue;const d=Math.hypot(a.root.position.x-p.x,a.root.position.z-p.z);if(d<95)near=true;if(a.visitV104){n++;if(d<230)far=false;}}
+ S.alive=n;
+ if(n&&far){for(const a of [...animals])if(a.visitV104)removeAnimal(a);S.cd=30;return;}
+ if(n||near)return;
+ if(!flowV42.started||flowV42.restoring||flowV42.step<6||journeying||gameOver||isNight()||directorV42.active||mountedV49)return;
+ const q=flockSpotV103();if(!q)return;
+ // Heyvan həddi dolu olsa da sürü tam yaransın (hədd yalnız bu çağırış üçün qaldırılır).
+ const max0=ECOLOGY.maxAnimals;let born=null;ECOLOGY.maxAnimals=Math.max(max0,animals.length+3);
+ try{born=spawnHorseHerdV49({x:q.x,z:q.z});}finally{ECOLOGY.maxAnimals=max0;}
+ if(!born||!born.length)return;
+ for(const a of born){a.visitV104=true;a.homeV38={x:q.x,z:q.z,r:45,kind:'region'};}
+ S.spawned++;S.cd=100+Math.random()*60;
+ try{threatPingV44('WILD HORSES',q.x,q.z,9);}catch(e){}
+ if(S.hints<3||Math.random()<.4){S.hints++;showEvent('🐎 A wild horse herd is grazing to the '+compassToV55(q.x-p.x,q.z-p.z)+' · approach slowly (small joystick push) to tame one',4600);}
+};
+
+/* ---------- Bağlantılar ---------- */
+updateAnimals=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ if(flowV42.started)safeV105('alphaBison',alphaBisonPassV105);
+ return r;
+})(updateAnimals);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v105={
+ fog:()=>({hunting:+huntingFogStrength.toFixed(2),scopeK:+scopeFogV105.k.toFixed(2),near:Math.round(scene.fog.near),far:Math.round(scene.fog.far)}),
+ raft:()=>({...raftFixV105,on:raftV67.on,y:+camHolder.position.y.toFixed(2),ground:+terrainHeightAt(camHolder.position.x,camHolder.position.z).toFixed(2)}),
+ alpha:()=>({...alphaV105,list:animals.filter(a=>a.alphaBisonV103).map(a=>({hp:a.hp,max:a.maxHp,dmg:a.damage,meat:a.meat}))}),
+ errors:()=>[...errOnceV105]
+};
+/* /V105 */
+
 
 
 
