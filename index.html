@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V105</title>
+<title>Wild Valley — Survival · V106</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V105</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V106</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V105</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V106</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V105'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V106'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V105 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V106 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -31763,6 +31763,196 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v105={
  errors:()=>[...errOnceV105]
 };
 /* /V105 */
+
+/* ============================================================
+   V106 — AT DİZAYNI, GÜCLÜ SİLAH AVTOMATİK, ARBALET, MEQA FIRTINA (külək yüksəlişi + real səs).
+   1) At yenidən quruldu: sinə, çiyin, sağrı, cidov, qövslü boyun, yal və kəkil, uzunsov baş (çənə,
+      burun dəlikləri, qulaqlar), əzələli bud, diz, incə baldır, topuq, dırnaq, axan quyruq. Rəngə görə
+      alında ağ zolaq, ağ corablar, belində tünd zolaq. 8 hissə (hər oynaq tək mesh), skelet və
+      animasiya əvvəlki kimidir. Əhliləşdirilmiş at da eyni modeldədir.
+   2) Silah düyməsi ilə dəyişəndə zəif əsas silah yox, sahib olduğun ən güclü variant gəlir
+      (yay: arbalet > ovçu yayı > dürbünlü yay; nizə: tufan nizəsi > dino nizə). Öz seçdiyin variant
+      yadda qalır və növbəti dəfə o gəlir. Əsas yay/nizə yalnız ⚙ menyusundan seçilir.
+   3) Arbaletin doldurma müddəti 1.45 s → 0.8 s.
+   4) Meqa fırtına və meqa şimşək fırtınası 15 saniyə uzundur. Gəlişindən əvvəl külək yavaş-yavaş
+      başlayır, güclənir, sonra fırtına vurur (ağaclar, külək səsi və yarpaq dəstələri buna uyğun artır).
+   5) İldırım səsi: yaxın zərbədə uzanan "cırılma", ardınca bir neçə ayrı-ayrı gurultu zərbəsi (real
+      ildırımdakı kimi qeyri-bərabər), sonra uzun, alçalan uğultu və əks-səda; səs sağ-sol arasında yayılır.
+   ============================================================ */
+const errOnceV106=new Set();
+function safeV106(name,fn){try{return fn();}catch(e){if(!errOnceV106.has(name)){errOnceV106.add(name);console.warn('V106 '+name,e);try{logErrV98('V106 '+name,e);}catch(_){}}}}
+
+/* ---------- 1) At ---------- */
+geoV103.ico2=new THREE.IcosahedronGeometry(1,2);              // hamar səth üçün (at gövdəsi, boynu, başı)
+geoV103.taperUp=new THREE.CylinderGeometry(.62,1,1,10,1);     // yuxarıya doğru nazilən (boyun, quyruq dibi)
+geoV103.taperDown=new THREE.CylinderGeometry(1,.6,1,10,1);   // aşağıya doğru nazilən (bud, baldır)
+function horseGeosV106(coat){
+ const key='horse_'+coat;let G=geoV103.cache.get(key);if(G)return G;
+ const C=HORSE_COATS_V49[coat]||HORSE_COATS_V49[0],I=geoV103.ico2,I1=geoV103.ico,B=geoV103.box,Y=geoV103.cyl,K=geoV103.cone,TU=geoV103.taperUp,TD=geoV103.taperDown;
+ const body=C.body,mane=C.mane,leg=C.leg,muz=new THREE.Color(C.body).multiplyScalar(.6).getHex(),under=new THREE.Color(C.body).multiplyScalar(.9).getHex(),hoof=0x1B1714,eye=0x0D0B0A,white=0xF1ECE2;
+ const blaze=[0,1,4].includes(coat),socks=[1,4].includes(coat),stripe=coat===5;
+ let L=[];   // gövdə (oynaq: y 1.18) — hamar silindrik gövdə, sinə və sağrı
+ ptV103(L,I,body,[.5,.52,1],[0,0,0]);ptV103(L,I,body,[.49,.56,.5],[0,.04,-.52]);ptV103(L,I,body,[.51,.56,.54],[0,.06,.54]);
+ ptV103(L,I,body,[.18,.15,.34],[0,.47,-.48]);ptV103(L,I,body,[.38,.2,.42],[0,.42,.5]);ptV103(L,I,under,[.42,.3,.72],[0,-.28,.02]);ptV103(L,I,body,[.34,.4,.24],[0,-.04,-.9]);
+ if(stripe)ptV103(L,B,mane,[.07,.02,1.5],[0,.535,.1]);
+ const bodyG=bakeV103(L);
+ L=[];   // boyun (oynaq: 0,.22,-.78; -0.85 rad əyilmiş): nazilən silindr + yal
+ ptV103(L,I,body,[.3,.24,.35],[0,.05,.02]);ptV103(L,TU,body,[.29,.8,.34],[0,.4,.01]);ptV103(L,I,body,[.19,.16,.23],[0,.78,0]);
+ ptV103(L,B,mane,[.06,.84,.13],[0,.42,.3],[.07,0,0]);
+ const neckG=bakeV103(L);
+ L=[];   // baş (oynaq: boynun ucu): kəllə, çənə, uzun üz, tünd burun
+ ptV103(L,I,body,[.16,.18,.3],[0,0,-.14]);ptV103(L,I,body,[.14,.15,.2],[0,-.085,-.02]);ptV103(L,I,body,[.115,.125,.25],[0,-.03,-.42]);ptV103(L,I,muz,[.11,.105,.11],[0,-.04,-.62]);ptV103(L,B,mane,[.07,.09,.2],[0,.165,-.04]);
+ if(blaze)ptV103(L,B,white,[.05,.014,.36],[0,.155,-.3],[.16,0,0]);
+ for(const s of [-1,1]){ptV103(L,K,body,[.045,.17,.045],[s*.085,.21,.05],[0,0,-s*.2]);ptV103(L,I1,eye,[.03,.034,.034],[s*.148,.05,-.14]);ptV103(L,I1,eye,[.02,.016,.02],[s*.055,-.02,-.715]);}
+ const headG=bakeV103(L);
+ L=[];ptV103(L,I,mane,[.08,.1,.08],[0,-.03,.01]);ptV103(L,TU,mane,[.14,.9,.14],[0,-.5,.06],[Math.PI,0,0]);const tailG=bakeV103(L);   // aşağı doğru genişlənən quyruq
+ const low=socks?white:leg;
+ L=[];ptV103(L,TD,body,[.15,.5,.17],[0,-.24,0]);ptV103(L,I1,leg,[.08,.07,.085],[0,-.5,0]);ptV103(L,Y,low,[.052,.4,.052],[0,-.72,0]);ptV103(L,I1,low,[.066,.055,.075],[0,-.9,0]);ptV103(L,TU,hoof,[.1,.1,.105],[0,-.97,-.01]);const legF=bakeV103(L);
+ L=[];ptV103(L,I1,body,[.19,.3,.24],[0,-.08,.03]);ptV103(L,TD,body,[.15,.44,.18],[0,-.28,.04]);ptV103(L,I1,leg,[.08,.08,.095],[0,-.5,.05]);ptV103(L,Y,low,[.052,.4,.052],[0,-.72,.03],[.1,0,0]);ptV103(L,I1,low,[.066,.055,.075],[0,-.9,.01]);ptV103(L,TU,hoof,[.1,.1,.105],[0,-.97,0]);const legB=bakeV103(L);
+ G={bodyG,neckG,headG,tailG,legF,legB,body,mane,leg};geoV103.cache.set(key,G);return G;
+}
+buildHorseV49=function(root,coat){
+ const G=horseGeosV106(coat);
+ const body=new THREE.Group();body.position.y=1.18;root.add(body);meshV103(body,G.bodyG,G.body);
+ const neck=new THREE.Group();neck.position.set(0,.22,-.78);neck.rotation.x=-.85;body.add(neck);meshV103(neck,G.neckG,G.body);
+ const head=new THREE.Group();head.position.set(0,.8,-.02);head.rotation.x=.5;neck.add(head);meshV103(head,G.headG,G.body);   // burun bir az aşağı baxır (əvvəl yuxarı baxırdı)
+ const tail=new THREE.Group();tail.position.set(0,.18,.98);tail.rotation.x=.35;body.add(tail);meshV103(tail,G.tailG,G.mane);
+ const legs=[];
+ for(const [x,z] of [[-.24,-.54],[.24,-.54],[-.25,.58],[.25,.58]]){const g=new THREE.Group();g.position.set(x,1.02,z);root.add(g);meshV103(g,z<0?G.legF:G.legB,G.leg);legs.push(g);}
+ root.userData.noOptV78=true;
+ return {legs,neck,head,tail,body};
+};
+
+/* ---------- 2) Ən güclü silah avtomatik ---------- */
+const weaponPrefV106={bow:'',spear:'',auto:0,startDone:false};
+safeV106('prefLoad',()=>{const s=JSON.parse(localStorage.getItem('wvWeaponPrefV106')||'null');if(s&&typeof s==='object'){if(typeof s.bow==='string')weaponPrefV106.bow=s.bow;if(typeof s.spear==='string')weaponPrefV106.spear=s.spear;}});
+function eliteAvailV106(e){
+ return e==='crossbowV53'?!!inv.crossbowV53:e==='scopeBowV63'?!!inv.scopeBowV63:e==='slingV53'?!!inv.slingV53:e==='hunterBow'?campaignDay()>=28:e==='tempestSpear'?campaignDay()>=40:e==='dinoSpear'?campaignDay()>=44:false;
+}
+function eliteModeV106(e){return e==='tempestSpear'||e==='dinoSpear'?'spear':'bow';}
+function bestEliteV106(mode){
+ const pref=weaponPrefV106[mode];if(pref&&eliteModeV106(pref)===mode&&eliteAvailV106(pref))return pref;
+ const order=mode==='bow'?['crossbowV53','hunterBow','scopeBowV63']:mode==='spear'?['tempestSpear','dinoSpear']:[];
+ for(const e of order)if(eliteAvailV106(e))return e;
+ return '';
+}
+const ELITE_NAME_V106={crossbowV53:'🔩 Crossbow',hunterBow:'🎯 Hunter bow',scopeBowV63:'🔭 Scoped bow',slingV53:'🪨 Slingshot',tempestSpear:'🌪️ Tempest spear',dinoSpear:'🦖 Dino spear'};
+function savePrefV106(){try{localStorage.setItem('wvWeaponPrefV106',JSON.stringify({bow:weaponPrefV106.bow,spear:weaponPrefV106.spear}));}catch(e){}}
+function equipBestV106(quiet){
+ if(buildMode||eliteWeapon||(weaponMode!=='bow'&&weaponMode!=='spear'))return false;
+ const b=bestEliteV106(weaponMode);if(!b)return false;
+ eliteWeapon=b;drawT=-1;applyWeapon();weaponPrefV106.auto++;
+ if(!quiet)showEvent((ELITE_NAME_V106[b]||b)+' ready',1300);
+ return true;
+}
+toggleWeapon=(c=>function(){
+ const m0=weaponMode,e0=eliteWeapon,r=c.apply(this,arguments);
+ safeV106('autoBest',()=>{
+  if(weaponMode!==m0)equipBestV106(false);                                   // rejim dəyişdi: ən güclü variant gəlir
+  else if(eliteWeapon&&eliteWeapon!==e0&&(weaponMode==='bow'||weaponMode==='spear')){weaponPrefV106[weaponMode]=eliteWeapon;savePrefV106();}   // öz seçimin yadda qalır
+ });
+ return r;
+})(toggleWeapon);
+chooseWeaponFromSettings=(c=>function(btn){
+ const r=c.apply(this,arguments);
+ safeV106('prefSet',()=>{if(weaponMode==='bow'||weaponMode==='spear'){weaponPrefV106[weaponMode]=eliteWeapon||'';savePrefV106();}});
+ return r;
+})(chooseWeaponFromSettings);
+
+/* ---------- 3) Arbalet ---------- */
+XBOW_V53.reloadTime=.8;
+
+/* ---------- 4) Meqa fırtına: +15 s və külək yüksəlişi ---------- */
+const megaKindV106=k=>k==='megaStorm'||k==='megaLightning';
+eventDurationV43=(c=>function(e){const d=c.apply(this,arguments);return e&&megaKindV106(e.kind)?d+15:d;})(eventDurationV43);
+const windRampV106={k:0,stage:0,target:0};
+function windRampTargetV106(){
+ const F=stormFrontV51,P=directorV42.pending;
+ if(P&&megaKindV106(P.kind))return .6+.4*(1-Math.max(0,Math.min(12,P.left))/12);           // son 12 s: .6 → 1
+ if(F.active&&F.e&&megaKindV106(F.e.kind)&&F.eta<42)return .6*Math.min(1,(42-F.eta)/30);    // ondan əvvəlki 30 s: 0 → .6
+ return 0;
+}
+updateWindV51=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ safeV106('windRamp',()=>{
+  const R=windRampV106,W=windV51,t=windRampTargetV106();R.target=t;
+  R.k+=(t-R.k)*Math.min(1,dt*(t>R.k?1.6:.5));
+  const megaNow=megaV102.on||weather.kind==='megaStorm';
+  if(R.k>.02)W.strength=Math.max(W.strength,.14+.72*Math.pow(R.k,1.35));
+  if(megaNow)W.strength=Math.max(W.strength,.9);
+  // mərhələlər: yüngül meh → güclənən külək → uğuldayan külək
+  const stage=R.k>.86?3:R.k>.45?2:R.k>.08?1:0;
+  if(stage>R.stage&&t>0){
+   if(stage===1)showEvent('🍃 A breeze is picking up · the air feels heavy',3000);
+   else if(stage===2)showEvent('🌬️ The wind is rising · something big is coming',3000);
+   else showEvent('💨 The wind howls · the mega storm is seconds away!',2800);
+   if(typeof gustStartV98==='function'&&actionAllowedV42())gustStartV98();
+  }
+  if(t<=0&&R.k<.05)R.stage=0;else R.stage=Math.max(R.stage,stage);
+ });
+ return r;
+})(updateWindV51);
+
+/* ---------- 5) Real ildırım səsi ---------- */
+const thunderStatV106={played:0,peals:0,light:0,dropped:0};
+function thunderV106(distance,strength){
+ const a=actx(),now=a.currentTime,S=thunderStatV106;
+ // Səs büdcəsi: çox ildırım üst-üstə düşəndə telefonun səs axını yüklənməsin.
+ const busy=weatherV60.sources.size;if(busy>20){S.dropped++;return;}const light=busy>10;if(light)S.light++;
+ distance=Number.isFinite(distance)?Math.max(0,distance):110;strength=Number.isFinite(strength)?Math.min(1.6,Math.max(.1,strength)):1;
+ const t=now+Math.max(.035,distance/343),near=Math.max(0,Math.min(1,1-distance/170)),vol=Math.min(.85,strength*.76*Math.sqrt(90/(90+distance)));
+ const track=s=>{try{weatherV60.sources.add(s);s.onended=()=>weatherV60.sources.delete(s);}catch(e){}return s;};
+ // səs sağ-sol arasında yayılır
+ let out=sfxOutV54();
+ if(a.createStereoPanner){const pan=a.createStereoPanner(),p0=(Math.random()-.5)*1.2;pan.pan.setValueAtTime(p0,t);pan.pan.linearRampToValueAtTime(-p0*.6,t+5);pan.connect(out);out=pan;setTimeout(()=>{try{pan.disconnect();}catch(e){}},(t-now+11)*1000);}
+ S.played++;
+ // a) cırılma: yuxarıdan aşağı süzülən, titrəyən sərt səs (yalnız yaxında)
+ if(near>.05){
+  const dur=.16+near*.2,s=track(noiseSrcV54('white',1,false)),bp=a.createBiquadFilter(),g=a.createGain(),v=vol*near*.9;
+  bp.type='bandpass';bp.Q.value=.7;bp.frequency.setValueAtTime(4200,t);bp.frequency.exponentialRampToValueAtTime(700,t+dur);
+  const n=Math.max(8,Math.round(dur*70)),curve=new Float32Array(n);for(let i=0;i<n;i++){const x=i/(n-1);curve[i]=v*(.35+Math.random()*.65)*Math.pow(1-x,.9)*(i%3===2?.45:1);}curve[n-1]=0;
+  g.gain.setValueAtTime(0,now);g.gain.setValueCurveAtTime(curve,t,dur);s.connect(bp);bp.connect(g);g.connect(out);s.start(t,Math.random()*1.1,dur+.05);
+ }
+ // b) ayrı-ayrı gurultu zərbələri: kanalın müxtəlif hissələrindən gələn, qeyri-bərabər aralıqlı
+ const peals=light?1:near>.05?3+((Math.random()*3)|0):1+((Math.random()*2)|0);let pt=t+(near>.05?.07:0);
+ for(let i=0;i<peals;i++){
+  const s=track(noiseSrcV54(i%2?'pink':'brown',.8+Math.random()*.5,true)),hp=a.createBiquadFilter(),lp=a.createBiquadFilter(),g=a.createGain(),d=.55+Math.random()*.7,v=vol*(i===0?1:.75-i*.1)*(.75+Math.random()*.4)*(near>.05?1:.7);
+  hp.type='highpass';hp.frequency.value=65;lp.type='lowpass';lp.Q.value=.7;lp.frequency.setValueAtTime(Math.max(200,(520-i*60)/(1+distance/160)),pt);lp.frequency.exponentialRampToValueAtTime(100,pt+d);
+  g.gain.setValueAtTime(.0001,pt);g.gain.exponentialRampToValueAtTime(Math.max(.0002,v),pt+.025+Math.random()*.03);g.gain.exponentialRampToValueAtTime(.0001,pt+d);
+  s.connect(hp);hp.connect(lp);lp.connect(g);g.connect(out);s.start(pt,Math.random()*2);s.stop(pt+d+.05);S.peals++;
+  pt+=.22+Math.random()*.6;
+ }
+ if(light)return;
+ // c) uzun, alçalan uğultu + d) əks-səda
+ const len=4.2+Math.min(3.6,distance/150)+Math.random()*1.4,rs=track(noiseSrcV54('brown',.6+Math.random()*.2,true)),rh=a.createBiquadFilter(),rl=a.createBiquadFilter(),rg=a.createGain(),rt=t+(near>.05?.15:0);
+ rh.type='highpass';rh.frequency.value=60;rl.type='lowpass';rl.Q.value=.5;rl.frequency.setValueAtTime(Math.max(210,700/(1+distance/130)),rt);rl.frequency.exponentialRampToValueAtTime(105,rt+len);
+ rg.gain.setValueAtTime(0,now);rg.gain.setValueCurveAtTime(thunderCurveV104(56,6+((Math.random()*5)|0),1.35).map(v=>v*vol*.85),rt,len);
+ rs.connect(rh);rh.connect(rl);rl.connect(rg);rg.connect(out);
+ const dl=a.createDelay(1.5),fb=a.createGain(),el=a.createBiquadFilter(),eg=a.createGain();dl.delayTime.value=.42+Math.random()*.4;fb.gain.value=.36;el.type='lowpass';el.frequency.value=300;eg.gain.value=.55;
+ rg.connect(dl);dl.connect(el);el.connect(fb);fb.connect(dl);el.connect(eg);eg.connect(out);
+ rs.start(rt,Math.random()*2);rs.stop(rt+len+.05);
+ setTimeout(()=>{try{fb.gain.value=0;eg.disconnect();dl.disconnect();el.disconnect();fb.disconnect();}catch(e){}},(rt-now+len+3.5)*1000);
+}
+thunderV54=function(distance,strength){
+ if(megaV102.on){const n=performance.now();if(n-megaV102.thunderAt<1500){thunderStatV104.skipped++;return;}megaV102.thunderAt=n;}
+ safeV106('thunder',()=>thunderV106(distance,strength));
+};
+
+/* ---------- Bağlantılar ---------- */
+updateAnimals=(c=>function(dt){
+ // Oyun başlayanda/yüklənəndə bir dəfə: əlində zəif əsas silah qalıbsa güclüsü ilə əvəz olunur.
+ if(!weaponPrefV106.startDone&&flowV42.started&&!flowV42.restoring&&flowV42.seconds>1.5){weaponPrefV106.startDone=true;safeV106('startBest',()=>equipBestV106(true));}
+ return c.apply(this,arguments);
+})(updateAnimals);
+if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v106={
+ weapon:()=>({mode:weaponMode,elite:eliteWeapon,best:{bow:bestEliteV106('bow'),spear:bestEliteV106('spear')},pref:{bow:weaponPrefV106.bow,spear:weaponPrefV106.spear},auto:weaponPrefV106.auto,reload:XBOW_V53.reloadTime,hud:(document.getElementById('weptext')||{}).textContent}),
+ wind:()=>({k:+windRampV106.k.toFixed(2),target:+windRampV106.target.toFixed(2),stage:windRampV106.stage,strength:+windV51.strength.toFixed(2),label:(document.getElementById('windTxt51')||{}).textContent}),
+ thunder:()=>({...thunderStatV106,sources:weatherV60.sources.size}),
+ horse:coat=>{const r=new THREE.Group(),rig=buildHorseV49(r,coat||0);return {...window.wildValleyTestV44.v103.meshes(r),joints:Object.keys(rig)};},
+ errors:()=>[...errOnceV106]
+};
+/* /V106 */
+
 
 
 
