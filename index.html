@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V107</title>
+<title>Wild Valley — Survival · V108</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V107</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V108</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V107</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V108</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V107'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V108'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V107 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V108 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -32470,6 +32470,181 @@ if(flowV42.debug&&window.wildValleyTestV44){
  };
 }
 /* /V107 */
+/* ============================================================
+   V108 — YÜNGÜL TÜK, CAVAN AYI ÜÇLÜYÜ.
+   1) Tük: hər tük 50 üçbucaqlı konus idi (5×5 seqment + qapaq); High-da bir ayı 2087 tük
+      = ~116 min üçbucaq. İndi tük 3 tərəfli, 2 seqmentli, qapaqsız (9 üçbucaq), bir az
+      qalın; ayıda say 40% az. Bütün tüklü heyvanlara (ayı, canavar) aiddir.
+      Telefonda Low/Medium-da tük onsuz da yoxdur.
+   2) CAVAN AYI ÜÇLÜYÜ: kiçik, sürətli, zəif zərbəli üç ayı; dəvəquşu basqını kimi bir-bir
+      şığıyır, zərbədən sonra geri çəkilir. 13-cü gecədən sonra, yalnız klassik hücum
+      gecələrinin bir qismində (N%8===1: 17, 25, 33…), gecədə bir dəfə. Onlar olanda
+      canavar dalğası gəlmir. Ocaq/sığınacaq qoruyur; biri qalanda qaçır.
+   3) V107 yol-tapması kilidlənmiş şığımanı (dəvəquşu, ayı) öz yoluna çəkməsin.
+   ============================================================ */
+const errOnceV108=new Set();
+function safeV108(name,fn){try{return fn();}catch(e){if(!errOnceV108.has(name)){errOnceV108.add(name);console.warn('V108 '+name,e);try{logErrV98('V108 '+name,e);}catch(_){}}}}
+
+/* ---------- 1) Yüngül tük ---------- */
+safeV108('strand',()=>{
+ const H=.135,geo=new THREE.ConeGeometry(.0098,H,3,2,true);geo.translate(0,H/2,0);
+ const pos=geo.attributes.position,colors=[];
+ for(let i=0;i<pos.count;i++){const t=Math.max(0,Math.min(1,pos.getY(i)/H));pos.setZ(i,pos.getZ(i)-(t*t)*.042);const shade=.42+Math.pow(t,.85)*.86;colors.push(shade,shade*.98,shade*.94);}
+ geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeVertexNormals();geo.userData.shared=true;
+ V78.strand=geo;
+});
+createBearModelV78=(c=>function(){const d=V78.density;V78.density=d*.6;try{return c.apply(this,arguments);}finally{V78.density=d;}})(createBearModelV78);
+
+/* ---------- 2) Cavan ayı üçlüyü ---------- */
+const ybV108={night:-1,cd:0,warned:false,done:false,active:false,t:0,charger:null,gap:0,made:0,count:0,force:false,hits:0};
+function youngBearNightV108(){
+ if(ybV108.force)return true;
+ const N=nightsSurvived+1;return flowV42.step>=6&&N>=13&&N%8===1&&nightKindV107()==='classic';
+}
+function makeYoungBearV108(x,z,index){
+ const p=camHolder.position,root=new THREE.Group();root.position.set(x,terrainHeightAt(x,z),z);
+ const rig=buildBearModel(root,{body:dayBearBrownMat,head:dayBearBrownHeadMat,muzzle:dayBearMuzzleMat},false);
+ const s=.66+Math.random()*.06,N=nightsSurvived+1;root.scale.setScalar(s);root.rotation.y=Math.atan2(-(p.x-x),-(p.z-z));scene.add(root);
+ const hp=Math.round(Math.min(9,6+Math.max(0,N-13)*.1)),damage=Math.round(Math.min(14,10+Math.max(0,N-13)*.12));
+ const a={root,legs:rig.legs,frontLegs:rig.frontLegs,jaw:rig.jaw,hp,maxHp:hp,damage,speed:5.2+Math.random()*.4,attackCd:0,meat:3,youngBearV108:true,nightStay:true,hunting:true,ownYV63:true,
+  baseScale:s,phase:Math.random()*6.283,wander:0,stV108:'approach',tV108:.5+index*.8,sideV108:index%2?1:-1,idxV108:index,cxV108:0,czV108:-1,leftV108:0,hitV108:false,gaitV108:Math.random()*6.283};
+ animals.push(a);return a;
+}
+function spawnYoungBearsV108(force){
+ if(!force&&(calmV92()||gameOver||journeying))return false;
+ const p=camHolder.position,n=3,probe={youngBearV108:true};
+ for(let guard=0;guard<6&&animals.length>ECOLOGY.maxAnimals-n;guard++){const far=animals.find(a=>farRemovableV48(a));if(!far)break;removeAnimal(far);}
+ let base=null;
+ for(let i=0;i<30&&!base;i++){const ang=Math.random()*6.283,r=36+Math.random()*9,x=p.x+Math.cos(ang)*r,z=p.z+Math.sin(ang)*r;
+  if(onWaterAt(x,z)||wildlifeBlockedV39(probe,x,z)||Math.abs(terrainHeightAt(x,z)-p.y)>14)continue;base={x,z,ang};}
+ if(!base)return false;
+ const sx=-Math.sin(base.ang),sz=Math.cos(base.ang);let made=0;
+ for(let i=0;i<n;i++){const o=(i-(n-1)/2)*3.2,x=base.x+sx*o,z=base.z+sz*o;if(onWaterAt(x,z)||wildlifeBlockedV39(probe,x,z))continue;makeYoungBearV108(x,z,i);made++;}
+ if(!made)return false;
+ Object.assign(ybV108,{active:true,t:0,charger:null,gap:0,made});ybV108.count++;
+ showEvent('🐻🐻🐻 YOUNG BEARS · fast but light. They charge one at a time — sidestep the rush, then strike back!',4800);
+ sGrowl();threatPingV44('YOUNG BEARS',base.x,base.z,6);return true;
+}
+function youngBearTurnV108(a){
+ const R=ybV108;
+ if(R.charger&&(!animals.includes(R.charger)||R.charger.hp<=0||!['windup','charge'].includes(R.charger.stV108)))R.charger=null;
+ if(R.charger===a)return true;
+ if(R.charger||R.gap>0)return false;
+ const p=camHolder.position;let best=null,bd=Infinity;
+ for(const o of animals){if(!o.youngBearV108||o.hp<=0||o.stV108!=='approach'||o.attackCd>0||o.tV108>0)continue;const dd=Math.hypot(o.root.position.x-p.x,o.root.position.z-p.z);if(dd<bd){bd=dd;best=o;}}
+ return best===a;
+}
+function updateYoungBearV108(a,dt){
+ if(dt<=0||a.hp<=0)return true;
+ const R=ybV108,p=camHolder.position,q=a.root.position,dx=p.x-q.x,dz=p.z-q.z,d=Math.hypot(dx,dz)||.001;
+ const fireR=FIRE.radius*.7,safe=protectedByShelter()||nearestFireDist()<fireR;
+ a.tV108-=dt;a.attackCd=Math.max(0,a.attackCd-dt);
+ let moved=0,fast=false,lift=0,jaw=0;
+ if(a.stV108==='flee'){
+  moved=wildlifeStepV39(a,-dx,-dz,a.speed*1.1,dt);fast=true;if(d>62)a.removeV108=true;
+ }else if(safe&&a.stV108!=='charge'){
+  // Ocaq/sığınacaq: yaxınlaşmır, kənarda dövrə vurur.
+  const want=fireR+7,rad=d<want?-1:d>want+5?.8:0;
+  moved=wildlifeStepV39(a,-dz/d*a.sideV108+dx/d*rad,dx/d*a.sideV108+dz/d*rad,3.4,dt);
+  a.stV108='approach';a.tV108=Math.max(a.tV108,.8);if(R.charger===a)R.charger=null;
+ }else if(a.stV108==='approach'){
+  const my=youngBearTurnV108(a);
+  if(d>19||my){
+   const side=a.sideV108*Math.min(5,d*.22);
+   moved=wildlifeStepV39(a,p.x-dz/d*side-q.x,p.z+dx/d*side-q.z,a.speed*(d>22?1:.85),dt);fast=true;
+  }else{
+   // Növbəsini gözləyənlər 12–14 m-də dövrə vurur.
+   const want=12+(a.idxV108%2)*2,rad=d<want-2?-.8:d>want+2?.8:0;
+   moved=wildlifeStepV39(a,-dz/d*a.sideV108+dx/d*rad,dx/d*a.sideV108+dz/d*rad,a.speed*.5,dt);
+  }
+  if(my&&d<13.5&&a.tV108<=0&&a.attackCd<=0){a.stV108='windup';a.tV108=.6;R.charger=a;sGrowl();}
+ }else if(a.stV108==='windup'){
+  turnCreatureToward(a.root,dx,dz,dt,10);lift=Math.sin(Math.min(1,Math.max(0,(.6-a.tV108)/.6))*Math.PI)*.2;jaw=.4;
+  if(a.tV108<=0){
+   // İstiqamət bir dəfə kilidlənir: yana addım atan oyunçu zərbədən qaçır.
+   const tx=p.x+playerVelV44.x*.25-q.x,tz=p.z+playerVelV44.z*.25-q.z,tl=Math.hypot(tx,tz)||1;
+   a.cxV108=tx/tl;a.czV108=tz/tl;a.leftV108=tl+5;a.stV108='charge';a.tV108=1.9;a.hitV108=false;a.detourHoldV44=0;a.detourV44=0;
+   if(a.detV107){a.detV107.path=null;a.detV107.hold=0;a.detV107.t=0;a.detV107.prog=0;}
+  }
+ }else if(a.stV108==='charge'){
+  const ox=q.x,oz=q.z;fast=true;jaw=.3;
+  moved=wildlifeStepV39(a,a.cxV108,a.czV108,a.speed*1.55,dt);a.leftV108-=moved;
+  const sx=q.x-ox,sz=q.z-oz,sl=sx*sx+sz*sz||1e-6,st=THREE.MathUtils.clamp(((p.x-ox)*sx+(p.z-oz)*sz)/sl,0,1),near=Math.hypot(p.x-(ox+sx*st),p.z-(oz+sz*st));
+  if(!a.hitV108&&Math.min(near,Math.hypot(p.x-q.x,p.z-q.z))<1.95&&Math.abs(p.y-q.y)<2.4&&!gameOver){
+   a.hitV108=true;R.hits++;hurtPlayer(protectedByShelter()?Math.ceil(a.damage*.3):a.damage,'Young bear charge');knockPlayerV44(a.cxV108,a.czV108,.8);shake=Math.max(shake,.3);sGrowl();
+  }
+  if(moved===0||a.leftV108<=0||a.tV108<=0){a.stV108='recover';a.tV108=1.1+Math.random()*.7;a.attackCd=1.5+Math.random()*.8;if(R.charger===a){R.charger=null;R.gap=.8;}}
+ }else{ // recover: qövslə uzaqlaşır
+  moved=wildlifeStepV39(a,a.cxV108*.5-a.czV108*a.sideV108,a.czV108*.5+a.cxV108*a.sideV108,a.speed*.7,dt);
+  if(a.tV108<=0){a.stV108='approach';a.tV108=.3;}
+ }
+ q.y=terrainHeightAt(q.x,q.z)+lift;
+ const run=moved>0;a.gaitV108+=dt*(run?(fast?12:6.5):1.5);
+ const amp=run?(fast?.62:.32):.03;
+ if(a.legs)for(let i=0;i<a.legs.length;i++)a.legs[i].rotation.x=Math.sin(a.gaitV108+(i===0||i===3?0:Math.PI))*amp;
+ if(a.jaw)a.jaw.rotation.x+=(jaw-a.jaw.rotation.x)*Math.min(1,dt*10);
+ a.root.rotation.x=THREE.MathUtils.lerp(a.root.rotation.x,a.stV108==='windup'?-.22:0,Math.min(1,dt*9));
+ return true;
+}
+function youngBearTickV108(dt){
+ const R=ybV108;
+ for(let i=animals.length-1;i>=0;i--)if(animals[i].removeV108)removeAnimal(animals[i]);
+ let alive=null;for(const a of animals)if(a.youngBearV108&&a.hp>0)(alive||(alive=[])).push(a);
+ if(R.active){
+  R.t+=dt;R.gap=Math.max(0,R.gap-dt);
+  if(!alive){R.active=false;R.charger=null;if(!flowV42.restoring&&!journeying){showEvent('🐻 The young bears are gone.',2400);flowV42.saveDue=1;}return;}
+  if(R.t>75||(!isNight()&&!R.force)||journeying||(alive.length<=1&&R.made>=2))for(const a of alive)a.stV108='flee';
+  return;
+ }
+ if(alive){for(const a of alive)a.stV108='flee';return;}
+ if(!isNight()||!youngBearNightV108()||!canSpawnEnemyV42()||calmV92()||flowV42.seconds<300||gameOver||journeying)return;
+ const N=nightsSurvived+1;if(R.night!==N){R.night=N;R.cd=14+Math.random()*7;R.warned=false;R.done=false;}
+ if(R.done)return;
+ R.cd-=dt;
+ if(R.cd<6&&!R.warned){R.warned=true;sGrowl();showEvent('🐻 Branches crack in the dark · YOUNG BEARS are closing in. They charge one at a time — sidestep!',4400);}
+ if(R.cd<=0){if(spawnYoungBearsV108())R.done=true;else R.cd=4;}
+}
+/* ---------- Bağlantılar ---------- */
+updateWildOstrichV44=(c=>function(a,dt){
+ if(a&&a.youngBearV108){const r=safeV108('bearAI',()=>updateYoungBearV108(a,dt));return r===undefined?true:r;}
+ // V107 yol-tapması: şığıma başlayanda köhnə yol silinir (kilidlənmiş istiqamət dəyişməsin).
+ if(a&&a.wildOstrichV44&&a.raidStateV44==='windup'&&a.detV107){a.detV107.path=null;a.detV107.hold=0;}
+ return c.apply(this,arguments);
+})(updateWildOstrichV44);
+updateBearChargeV73=(c=>function(b,dt){
+ if(b&&b.chargeV73&&b.chargeV73.mode==='windup'&&b.detV107){b.detV107.path=null;b.detV107.hold=0;}
+ return c.apply(this,arguments);
+})(updateBearChargeV73);
+updateAnimals=(c=>function(dt){const r=c.apply(this,arguments);if(dt>0)safeV108('bearTick',()=>youngBearTickV108(dt));return r;})(updateAnimals);
+// Ayı gecəsində ayılar gedənə qədər canavar, pələng və kirpi sürüsü gözləyir (hamısı birdən gəlmir).
+function bearHoldV108(){
+ const R=ybV108;if(R.active)return true;
+ return !R.force&&isNight()&&youngBearNightV108()&&!calmV92()&&!(R.night===nightsSurvived+1&&R.done);
+}
+spawnWolfPack=(c=>function(){if(bearHoldV108())return;return c.apply(this,arguments);})(spawnWolfPack);
+spawnEnemy=(c=>function(){if(bearHoldV108())return;return c.apply(this,arguments);})(spawnEnemy);
+spawnNightTiger=(c=>function(){if(bearHoldV108())return false;return c.apply(this,arguments);})(spawnNightTiger);
+spawnPackV50=(c=>function(night){if(night&&bearHoldV108())return false;return c.apply(this,arguments);})(spawnPackV50);
+// Pələngin "yaxınlaşır" xəbərdarlığı da ayılar gedəndən sonra gəlir.
+scheduleNightHunterV39=(c=>function(dt){if(bearHoldV108()){tigerNight=-1;tigerSpawnCd=Infinity;tigerWarned=false;return;}return c.apply(this,arguments);})(scheduleNightHunterV39);
+// Qalxdığı anda vurulan ayı səndələyir və şığıya bilmir.
+hitAnimal=(c=>function(animal){
+ if(animal&&animal.youngBearV108&&animal.hp>0&&animal.stV108==='windup'){animal.stV108='recover';animal.tV108=.9;animal.attackCd=1.2;if(ybV108.charger===animal){ybV108.charger=null;ybV108.gap=.5;}}
+ return c.apply(this,arguments);
+})(hitAnimal);
+animalNameV42=(c=>function(a){return a&&a.youngBearV108?'Young bear':c.apply(this,arguments);})(animalNameV42);
+animalIconV49=(c=>function(a){return a&&a.youngBearV108?'🐻':c.apply(this,arguments);})(animalIconV49);
+animalRadius=(c=>function(a){return a&&a.youngBearV108?.78:c.apply(this,arguments);})(animalRadius);
+farRemovableV48=(c=>function(a){return a&&a.youngBearV108?false:c.apply(this,arguments);})(farRemovableV48);
+if(flowV42.debug&&window.wildValleyTestV44){
+ window.wildValleyTestV44.v108={
+  bears:()=>{ybV108.force=true;return spawnYoungBearsV108(true);},
+  nights:(to=60)=>{const o=[];for(let n=1;n<=to;n++)if(n>=13&&n%8===1&&nightKindV107(n)==='classic')o.push(n);return o;},
+  state:()=>({active:ybV108.active,t:+ybV108.t.toFixed(1),made:ybV108.made,hits:ybV108.hits,alive:animals.filter(a=>a.youngBearV108).map(a=>a.stV108+':'+a.hp),strandTris:V78.strand?(V78.strand.index?V78.strand.index.count/3:V78.strand.attributes.position.count/3):0,errs:[...errOnceV108]})
+ };
+}
+/* /V108 */
+
 
 
 
