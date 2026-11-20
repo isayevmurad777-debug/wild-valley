@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<title>Wild Valley — Survival · V106</title>
+<title>Wild Valley — Survival · V107</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   html,body { height:100%; overflow:hidden; background:#12101a; font-family:'Segoe UI',system-ui,sans-serif; }
@@ -992,13 +992,13 @@ body.wet-hud #raindrops { opacity:1; }
 <div id="worldPin42" hidden><span>TARGET</span><b>↓</b></div><div id="controlCue42" hidden><span></span><b>↓</b></div><div id="swipeCue42" hidden><span>↔</span><b>SWIPE TO LOOK</b></div>
 <div id="hazard42" role="status" hidden></div><div id="noise42" role="status" hidden></div>
 <div id="pausePanel42" role="dialog" aria-modal="true" aria-labelledby="pauseTitle42" hidden>
- <div class="panel42"><span class="eyebrow42">WILD VALLEY · V106</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
+ <div class="panel42"><span class="eyebrow42">WILD VALLEY · V107</span><h2 id="pauseTitle42">Paused</h2><p id="pauseText42">Game time and dangers are paused.</p>
  <button id="resume42">CONTINUE</button><button id="saveButton42" class="secondary42">SAVE GAME</button>
  <button id="export42" class="secondary42">EXPORT SAVE FILE</button><button id="pauseNew42" class="secondary42">NEW GAME</button>
  <small>Esc / Ⅱ to pause. Progress is saved in this browser. Export your save to move to another device.</small></div>
 </div>
 <div id="start">
- <span class="eyebrow42">56 DAYS OF SURVIVAL · V106</span><h1>Wild Valley</h1>
+ <span class="eyebrow42">56 DAYS OF SURVIVAL · V107</span><h1>Wild Valley</h1>
  <p class="intro42">First wood. First shelter. First night.<br>Learn a new skill with every step.</p>
  <button id="continue42" hidden>CONTINUE</button><button id="new42">NEW GAME</button>
  <button id="import42" class="secondary42">IMPORT SAVE FILE</button>
@@ -30277,7 +30277,7 @@ function logErrV98(stage,e){
  let it=L.list.find(x=>x.stage===stage&&x.msg===msg&&!x.old);
  if(!it){
   let pos=[0,0];try{pos=[Math.round(camHolder.position.x),Math.round(camHolder.position.z)];}catch(_){}
-  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V106'};
+  it={stage,msg,stack:String(e&&e.stack||'').split('\n').slice(1,4).map(s=>s.trim().replace(/https?:\/\/[^)\s]*\//g,'')).join(' | ').slice(0,260),n:0,v:'V107'};
   try{it.day=campaignDay();it.hour=+gameHourFloat().toFixed(1);it.pos=pos;it.season=season;it.step=flowV42.step;it.diff=diffV92.mode;it.gfx=gfxV80.level;}catch(_){}
   L.list.push(it);if(L.list.length>12)L.list.shift();console.warn('V98 stage '+stage,e);L.saveCd=0;
  }
@@ -30319,7 +30319,7 @@ function buildDiagV98(){
   box=document.createElement('div');box.id='diag98';box.innerHTML='<div class="t"><span>DIAGNOSTICS</span><button type="button" id="diagCopy98">COPY</button><button type="button" id="diagClear98">CLEAR</button></div><pre></pre>';
   panel.insertBefore(box,panel.querySelector('small'));
   for(const ev of ['pointerdown','touchstart','click'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V106 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
+  document.getElementById('diagCopy98').addEventListener('click',()=>{const t='Wild Valley V107 diagnostics\n'+diagTextV98();const done=()=>{document.getElementById('diagCopy98').textContent='COPIED';setTimeout(()=>{const b=document.getElementById('diagCopy98');if(b)b.textContent='COPY';},1600);};
    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){const r=document.createRange();r.selectNodeContents(box.querySelector('pre'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done();}catch(_){}}});
   document.getElementById('diagClear98').addEventListener('click',()=>{errLogV98.list.length=0;try{localStorage.removeItem('wvErrLogV98');}catch(_){ }buildDiagV98();});
  }
@@ -31952,6 +31952,525 @@ if(flowV42.debug&&window.wildValleyTestV44)window.wildValleyTestV44.v106={
  errors:()=>[...errOnceV106]
 };
 /* /V106 */
+/* ============================================================
+   V107 — SAKİT GECƏLƏR, DAĞ LEOPARDLARI, TİTRƏMƏ, DAĞDA/QAYADA İLİŞMƏ,
+          SƏHƏR DUMANI, DAĞ BULUDLARI, ZİRVƏ QARI.
+   1) Hər gecə hücum olmur. Gecə N (=nightsSurvived+1): N=1 klassik (ilk pələng dərsi),
+      cüt gecələr SAKİT (yırtıcı gəlmir; yalnız sadə fırtına / uzaq gurultu ola bilər),
+      tək gecələr növbə ilə: N%4===3 → DAĞ LEOPARDLARI, N%4===1 → klassik (canavar,
+      pələng, kirpi). Alfa canavar sakit/leopard gecəsinə düşsə növbəti klassik gecəyə keçir.
+   2) DAĞ LEOPARDLARI: açıq-boz xallı sürü zirvələrdən enir (V62 pişik AI-si), canavar və
+      kirpilərin gəlmədiyi gecələrdə hücum edir, sübhdə dağa qayıdır.
+   3) TİTRƏMƏ: (a) keçi zonasının kənarında hər kadr içəri-çölə addımlayırdı; (b) düzənlik
+      heyvanları dağ ətəyində hər kadr geri çəkilir + wander saniyədə bir dövr fırlanırdı;
+      (c) sakit otyeyənlər üçün dönmə sürəti məhdudlaşdırıldı, yerində fırlanan heyvan
+      dayanıb otlayır.
+   4) İLİŞMƏ: aslan/puma/pələng/ayı oyunçunun dalınca dağa çıxa bilir (əvvəl 9 m
+      hündürlükdə dayanıb qalırdı); maneə qarşısında irəliləməyən heyvan yandan dolanır.
+   5) Səhər dumanı (dərədə, hündürdə yoxdur), dağın belində bulud qurşağı (içinə girəndə
+      duman, yuxarıda buludların üstü), zirvədə qar yağır.
+   ============================================================ */
+const errOnceV107=new Set();
+function safeV107(name,fn){try{return fn();}catch(e){if(!errOnceV107.has(name)){errOnceV107.add(name);console.warn('V107 '+name,e);try{logErrV98('V107 '+name,e);}catch(_){}}}}
+
+/* ---------- 1) Gecə planı ---------- */
+const nightV107={announced:-1,stormNight:-1,stormT:0,sweep:0,was:false,force:null,log:[]};
+function nightKindV107(n){
+ if(nightV107.force)return nightV107.force;
+ n=n||nightsSurvived+1;if(n<=1)return 'classic';if(n%2===0)return 'quiet';return n%4===3?'leopard':'classic';
+}
+function quietNightV107(){return isNight()&&flowV42.step>=6&&nightKindV107()==='quiet';}
+function leopardNightV107(){return isNight()&&flowV42.step>=6&&nightKindV107()==='leopard';}
+function noPackNightV107(){return isNight()&&flowV42.step>=6&&nightKindV107()!=='classic';}
+spawnEnemy=(c=>function(){if(noPackNightV107())return;return c.apply(this,arguments);})(spawnEnemy);
+spawnWolfPack=(c=>function(){if(noPackNightV107())return;return c.apply(this,arguments);})(spawnWolfPack);
+spawnNightTiger=(c=>function(){if(noPackNightV107()){flowV42.firstNightSeen=true;return false;}return c.apply(this,arguments);})(spawnNightTiger);
+spawnAlphaTigerV72=(c=>function(){if(noPackNightV107())return false;return c.apply(this,arguments);})(spawnAlphaTigerV72);
+spawnAlphaBoss=(c=>function(){if(noPackNightV107()){pendingCampaignAlpha=true;return;}return c.apply(this,arguments);})(spawnAlphaBoss);
+spawnOstrichRaidV44=(c=>function(){if(quietNightV107())return false;return c.apply(this,arguments);})(spawnOstrichRaidV44);
+spawnEagleFlockV77=(c=>function(force){if(quietNightV107()&&!force)return 0;return c.apply(this,arguments);})(spawnEagleFlockV77);
+spawnEagleAttack=(c=>function(){if(quietNightV107())return;return c.apply(this,arguments);})(spawnEagleAttack);
+startStampedeV69=(c=>function(force){if(quietNightV107()&&!force)return false;return c.apply(this,arguments);})(startStampedeV69);
+spawnStormBoss=(c=>function(){if(quietNightV107())return;return c.apply(this,arguments);})(spawnStormBoss);
+// Adi leopard sürüsü (V52) gecə yalnız leopard gecəsində gəlir; gündüz əvvəlki kimi.
+spawnLeopardPackV52=(c=>function(){if(isNight()&&flowV42.step>=6&&nightKindV107()!=='leopard')return false;return c.apply(this,arguments);})(spawnLeopardPackV52);
+// Kirpi gecələri klassik gecələrin içində: tək kirpi hər ikinci klassik gecə (5, 13, 21…), sürü 11-dən sonra.
+quillNightV42=function(){return isNight()&&nightsSurvived>=1&&flowV42.step>=6&&nightKindV107()==='classic'&&(nightsSurvived+1)%8===5;};
+packNightV50=function(){return isNight()&&nightsSurvived>=10&&flowV42.step>=6&&nightKindV107()==='classic';};
+scheduleNightHunterV39=(c=>function(dt){if(noPackNightV107()){tigerSpawnCd=Infinity;tigerWarned=false;return;}return c.apply(this,arguments);})(scheduleNightHunterV39);
+// Sakit gecədə meteor yağışı da gözləyir.
+updateDirectorV42=(c=>function(dt){
+ if(!quietNightV107()||!worldEvent.meteorPending)return c.apply(this,arguments);
+ worldEvent.meteorPending=false;try{return c.apply(this,arguments);}finally{worldEvent.meteorPending=true;}
+})(updateDirectorV42);
+// Sadə gecə fırtınası: yağış, göy gurultusu, uzaq şimşək. Yerə düşən (oyunçunu nişan alan) ildırım və
+// "ildırım pələngi" yoxdur.
+scheduleGroundLightning=(c=>function(){if(nightV107.plain)return;return c.apply(this,arguments);})(scheduleGroundLightning);
+function nightStormV107(){
+ megaV102.armed=false;
+ if((nightsSurvived+1)%6===0&&typeof rumbleStartV99==='function'){rumbleStartV99(52+Math.random()*14);nightV107.log.push('rumble@'+(nightsSurvived+1));return;}
+ nightV107.hintWas=stormV64.hint;stormV64.hint=true;nightV107.plain=true;
+ setWeatherV41('storm',46+Math.random()*14,true);
+ showEvent('🌧️ A plain night storm rolls over the valley · no hunters tonight, only rain and thunder',3800);
+ nightV107.log.push('storm@'+(nightsSurvived+1));
+}
+function nightTickV107(dt){
+ const S=nightV107,night=isNight(),N=nightsSurvived+1;
+ // Sakit gecənin sadə fırtınası: oyunçunu itələyən külək zərbələri yoxdur.
+ if(S.plain){
+  if(weather.kind!=='storm'){S.plain=false;if(S.hintWas===false)stormV64.hint=false;}
+  else{stormV64.gust=0;stormV64.gustCd=Math.max(stormV64.gustCd||0,3);}
+ }
+ if(!night){S.was=false;return;}
+ if(flowV42.step<6||!actionAllowedV42())return;
+ const kind=nightKindV107();
+ if(!S.was){S.was=true;S.stormT=11+Math.random()*9;S.sweep=0;}
+ if(S.announced!==N&&N>=2){
+  S.announced=N;
+  if(kind==='quiet')showEvent('🌙 QUIET NIGHT · no hunters tonight — rest, craft and repair',4200);
+  else if(kind==='leopard'&&!calmV92())showEvent('🐆 Tonight the MOUNTAIN LEOPARDS come down from the peaks · keep your fire burning',4600);
+ }
+ if(kind!=='quiet')return;
+ // Gündüzdən qalan ovçular sakit gecədə çəkilir.
+ S.sweep-=dt;
+ if(S.sweep<=0){
+  S.sweep=1;const p=camHolder.position;
+  for(const e of enemies)if(!e.stormBoss&&e.state!=='fleeing'){e.state='fleeing';e.t=0;}
+  for(const a of [...animals]){
+   if(!(a.nightSaberV39||a.quillV42||(a.packQuillV50&&a.nightPack)||a.wildcatV58||a.stalkerV49||a.leopardV52))continue;
+   const d=Math.hypot(a.root.position.x-p.x,a.root.position.z-p.z);
+   if(d>30)removeAnimal(a);else if(isAttackingCatV62(a)){const C=a.catAttackV62||(a.catAttackV62={mode:'approach',t:0,hit:false});if(C.mode!=='flee'&&C.mode!=='pounce'){C.mode='flee';C.t=4;}}
+  }
+ }
+ // Yalnız sadə fırtına (qışda yox): boss, meqa ildırım, hücum yoxdur.
+ if(S.stormNight!==N&&season!=='winter'){
+  S.stormT-=dt;
+  if(S.stormT<=0){
+   if(weather.kind==='clear'&&!directorV42.active&&!directorV42.pending&&!(stormFrontV51&&stormFrontV51.active)){S.stormNight=N;nightStormV107();}
+   else S.stormT=6;
+  }
+ }
+}
+
+/* ---------- 2) Dağ leopardları ---------- */
+const mleoV107={night:-1,cd:0,warned:false,waves:0,spawned:0,dawnMsg:-1};
+function mountainLeopardsAliveV107(){let n=0;for(const a of animals)if(a.mountainV107&&a.hp>0)n++;return n;}
+function spawnMountainLeopardsV107(force){
+ if(!force&&(calmV92()||gameOver||journeying))return false;
+ const p=camHolder.position,toM=Math.atan2(ALPINE_MOUNTAIN.z-p.z,ALPINE_MOUNTAIN.x-p.x);let c=null;
+ for(let t=0;t<26&&!c;t++){
+  const a=toM+(Math.random()-.5)*(t<12?1.7:6.283),d=34+Math.random()*12,x=p.x+Math.cos(a)*d,z=p.z+Math.sin(a)*d;
+  if(!onWaterAt(x,z)&&!blocked(x,z)&&Math.abs(x)<WORLD_V48.edge-30&&Math.abs(z)<WORLD_V48.edge-30&&Math.abs(terrainHeightAt(x,z)-p.y)<14)c={x,z};
+ }
+ if(!c)return false;
+ const N=nightsSurvived+1,n=Math.min(LOW_POWER?3:4,2+(N>=11?1:0)+(N>=23?1:0));
+ const hp=Math.round(Math.min(11,6+N*.2)),dmg=Math.round(Math.min(15,7+N*.33));
+ if(animals.length+n>ECOLOGY.maxAnimals+3){for(const a of [...animals])if(farRemovableV48(a)&&animals.length+n>ECOLOGY.maxAnimals+2)removeAnimal(a);}
+ const pack={members:[],phase:'roam',t:0,strikeCd:4,id:Math.random(),warned:true,mountainV107:true};
+ for(let i=0;i<n;i++){
+  let x=c.x+(i-1)*2.4,z=c.z+(i%2)*2.2;if(onWaterAt(x,z)||blocked(x,z)){x=c.x;z=c.z;}
+  const root=new THREE.Group();root.position.set(x,terrainHeightAt(x,z),z);
+  const rig=buildWildCatV34(root,'snow'),s=i===0?1.1:.98;root.scale.setScalar(s);root.rotation.y=Math.atan2(-(p.x-x),-(p.z-z));scene.add(root);
+  const a={root,...rig,hp,maxHp:hp,speed:8.6,damage:dmg,attackCd:2,wander:Math.random()*6.283,leopardV52:true,mountainV107:true,packV52:pack,leader:i===0,slot:i,nightStay:true,meat:4,baseScale:s,phase:Math.random()*6.283,stateV52:'roam',stateT:0};
+  animals.push(a);pack.members.push(a);
+ }
+ leopardV52.packs.push(pack);mleoV107.spawned+=n;
+ try{yowlV58(.7);}catch(e){}sGrowl();threatPingV44('MOUNTAIN LEOPARDS',c.x,c.z,6);
+ showEvent('🐆🐆 MOUNTAIN LEOPARDS · one leaps in and pulls back — dodge the leap, strike after it lands, or stand by the fire',5000);
+ return true;
+}
+function mountainLeopardTickV107(dt){
+ const M=mleoV107,N=nightsSurvived+1;
+ if(!isNight()){
+  // Sübh: leopardlar zirvələrə qayıdır.
+  let any=false,gone=null;const p=camHolder.position;
+  for(const a of animals){
+   if(!a.mountainV107||a.hp<=0)continue;any=true;
+   const q=a.root.position,d=Math.hypot(q.x-p.x,q.z-p.z);
+   if(d>60||(d>28&&!inViewV77(q))){(gone||(gone=[])).push(a);continue;}
+   const C=a.catAttackV62||(a.catAttackV62={mode:'approach',t:0,hit:false});if(C.mode!=='flee'&&C.mode!=='pounce'){C.mode='flee';C.t=5;}
+  }
+  if(gone)for(const a of gone)removeAnimal(a);
+  if(any&&M.dawnMsg!==N){M.dawnMsg=N;showEvent('🌄 Dawn · the mountain leopards slip back to the peaks',2800);}
+  return;
+ }
+ if(!leopardNightV107()||!canSpawnEnemyV42()||calmV92()||flowV42.seconds<300)return;
+ if(M.night!==N){M.night=N;M.cd=15+Math.random()*8;M.warned=false;M.waves=0;}
+ if(mountainLeopardsAliveV107())return;
+ const maxWaves=N>=15?3:2;if(M.waves>=maxWaves)return;
+ M.cd-=dt;
+ if(M.cd<7&&!M.warned){M.warned=true;try{yowlV58(.5);}catch(e){}showEvent('🐆 A yowl echoes from the peaks · the MOUNTAIN LEOPARDS are hunting. Stay near fire or shelter!',4400);}
+ if(M.cd<=0){if(spawnMountainLeopardsV107()){M.waves++;M.cd=42+Math.random()*22;M.warned=true;}else M.cd=4;}
+}
+animalNameV42=(c=>function(a){return a&&a.mountainV107?'Mountain leopard':c.apply(this,arguments);})(animalNameV42);
+
+/* ---------- 3) Titrəmə ---------- */
+function calmKindV107(a){return !!(a&&(a.goat||a.zebraV46||a.gazelle||a.deer||a.giraffeV46||a.roeV52||a.antelopeV64));}
+function restV107(a,sec){
+ a.restV107=Math.max(a.restV107||0,sec);
+ if(a.goat||a.deer||a.gazelle||a.zebraV46||a.giraffeV46){a.grazing=true;a.behaviorCd=Math.max(a.behaviorCd||0,sec);}
+}
+// (a) Keçi/dovşan: zonadan çıxanda gəzinti istiqaməti içəri çevrilir — sərhəddə irəli-geri addımlamır.
+updateLivingFaunaV43=(c=>function(a,dt){
+ if(a&&(a.goat||a.rabbit)&&!a.spooked&&a.zone&&dt>0){
+  const q=a.root.position,zx=a.zone.x-q.x,zz=a.zone.z-q.z;
+  if(Math.hypot(zx,zz)>a.zone.r*.75)a.wander=Math.atan2(zz,zx)+(((a.phase||0)%1)-.5)*.7;
+ }
+ return c.apply(this,arguments);
+})(updateLivingFaunaV43);
+// (b)+(4b) Addım: sakit heyvan əvvəl dönür sonra gedir; sürətli heyvan maneədə ilişəndə yandan dolanır.
+const DET_V107={win:1.1,minProg:.22};
+// Kiçik yol axtarışı (A*, 1.2 m xanalar, heyvanın ətrafında ±10.8 m): yalnız heyvan ilişəndə işləyir.
+const PG_V107={cs:1.2,R:9},pathV107={stamp:-1,solves:0,found:0,ms:0,maxMs:0};
+const NB4_V107=[[1,0],[-1,0],[0,1],[0,-1]];
+function solvePathV107(a,gx,gz){
+ const t0=performance.now(),q=a.root.position,cs=PG_V107.cs,R=PG_V107.R,W=2*R+1,N=W*W;
+ let tx=(gx-q.x)/cs,tz=(gz-q.z)/cs;const m=Math.max(Math.abs(tx),Math.abs(tz));if(m>R-1){tx*=(R-1)/m;tz*=(R-1)/m;}
+ const gi=Math.round(tx),gj=Math.round(tz);
+ const st=new Uint8Array(N),hh=new Float32Array(N),g=new Float32Array(N).fill(1e9),from=new Int16Array(N).fill(-1),closed=new Uint8Array(N);
+ const free=(i,j)=>{const k=(j+R)*W+(i+R);if(!st[k]){const x=q.x+i*cs,z=q.z+j*cs;hh[k]=terrainHeightAt(x,z);st[k]=((i===0&&j===0)||!wildlifeBlockedV39(a,x,z))?1:2;}return st[k]===1;};
+ const H=(i,j)=>Math.abs(i-gi)+Math.abs(j-gj);
+ free(0,0);const s0=R*W+R,h0=H(0,0);g[s0]=0;const open=[s0];let best=s0,bestH=h0,goal=-1,exp=0;
+ while(open.length&&exp<230){
+  let bi=0,bf=1e9;for(let n=0;n<open.length;n++){const k=open[n],f=g[k]+H(k%W-R,((k/W)|0)-R)*1.05;if(f<bf){bf=f;bi=n;}}
+  const k=open[bi];open[bi]=open[open.length-1];open.pop();if(closed[k])continue;closed[k]=1;exp++;
+  const i=k%W-R,j=((k/W)|0)-R,h=H(i,j);if(h<bestH){bestH=h;best=k;}
+  if(h<=1){goal=k;break;}
+  for(const nb of NB4_V107){
+   const ni=i+nb[0],nj=j+nb[1];if(ni<-R||ni>R||nj<-R||nj>R)continue;
+   const nk=(nj+R)*W+(ni+R);if(closed[nk])continue;
+   if(!free(ni,nj)||Math.abs(hh[nk]-hh[k])>1.5)continue;
+   if(wildlifeBlockedV39(a,q.x+(i+ni)*.5*cs,q.z+(j+nj)*.5*cs))continue;
+   const ng=g[k]+1;if(ng<g[nk]){g[nk]=ng;from[nk]=k;open.push(nk);}
+  }
+ }
+ const end=goal>=0?goal:(bestH<=h0-3?best:-1);
+ let pts=null;
+ if(end>=0&&end!==s0){
+  const ks=[];for(let k=end;k!==s0&&k>=0;k=from[k])ks.push(k);ks.reverse();
+  // Pilləli künclər diaqonala çevrilir (qarşı künc xanası boşdursa).
+  const out=[];let pi=0,pj=0;
+  for(let n=0;n<ks.length;n++){
+   const i=ks[n]%W-R,j=((ks[n]/W)|0)-R;
+   if(n+1<ks.length){const i2=ks[n+1]%W-R,j2=((ks[n+1]/W)|0)-R;if(Math.abs(i2-pi)===1&&Math.abs(j2-pj)===1){const oi=pi+i2-i,oj=pj+j2-j;if(st[(oj+R)*W+(oi+R)]===1)continue;}}
+   out.push({x:q.x+i*cs,z:q.z+j*cs});pi=i;pj=j;
+  }
+  pts=out.length?out:null;
+ }
+ const ms=performance.now()-t0;pathV107.solves++;pathV107.ms+=ms;pathV107.maxMs=Math.max(pathV107.maxMs,ms);if(pts)pathV107.found++;
+ return pts;
+}
+function detourStepV107(core,self,a,vx,vz,speed,dt){
+ const q=a.root.position,p=camHolder.position;
+ const D=a.detV107||(a.detV107={x:q.x,z:q.z,t:0,prog:0,fail:0,side:(a.phase||0)>3?1:-1,hold:0,ang:0,last:-99,count:0});
+ if(elapsed-D.last>.5||Math.hypot(q.x-D.x,q.z-D.z)>4){D.t=0;D.prog=0;D.x=q.x;D.z=q.z;D.hold=0;}
+ D.last=elapsed;
+ const l=Math.hypot(vx,vz);if(l<.001)return core.call(self,a,vx,vz,speed,dt);
+ const ux=vx/l,uz=vz/l;
+ if(D.path){
+  // Tapılmış yol nöqtələri ilə gedir; yol bağlanarsa və ya oyunçu yerini dəyişərsə buraxılır.
+  D.hold-=dt;
+  let wp=D.path[D.pi],wx=wp.x-q.x,wz=wp.z-q.z;
+  while(Math.hypot(wx,wz)<.85){D.pi++;if(D.pi>=D.path.length)break;wp=D.path[D.pi];wx=wp.x-q.x;wz=wp.z-q.z;}
+  if(D.pi>=D.path.length||D.hold<=0||(D.gp&&Math.hypot(p.x-D.gp.x,p.z-D.gp.z)>5)){D.path=null;D.t=0;D.prog=0;D.x=q.x;D.z=q.z;if(D.pi>=1)D.fail=0;return core.call(self,a,vx,vz,speed,dt);}
+  const r=core.call(self,a,wx,wz,speed,dt);
+  if(!(r>0)){D.blockT=(D.blockT||0)+dt;if(D.blockT>.4){D.path=null;D.blockT=0;}}else D.blockT=0;
+  D.x=q.x;D.z=q.z;D.t=0;D.prog=0;
+  return r;
+ }
+ if(D.hold>0){
+  D.hold-=dt;
+  const cA=Math.cos(D.ang),sA=Math.sin(D.ang);
+  let r=core.call(self,a,ux*cA-uz*sA,ux*sA+uz*cA,speed,dt);
+  if(!(r>0)){D.ang=-D.ang;D.flip=(D.flip||0)+1;if(D.flip>2){D.hold=0;D.flip=0;}}
+  D.x=q.x;D.z=q.z;D.t=0;D.prog=0;
+  return r;
+ }
+ D.prog+=(q.x-D.x)*ux+(q.z-D.z)*uz;D.x=q.x;D.z=q.z;D.t+=dt;
+ // Oyunçunun yanında (təmas məsafəsi) irəliləməmək ilişmə deyil.
+ if(Math.hypot(p.x-q.x,p.z-q.z)<4.6){D.t=0;D.prog=0;}
+ if(D.t>=DET_V107.win){
+  if(D.prog<speed*D.t*DET_V107.minProg){
+   D.fail=Math.min(6,D.fail+1);D.count++;
+   // Əvvəl real yol axtarılır (kadrda ən çox bir axtarış); tapılmasa yandan dolanma.
+   if(pathV107.stamp!==elapsed&&elapsed-(D.lastSolve||-9)>1.2){
+    pathV107.stamp=elapsed;D.lastSolve=elapsed;
+    const pdx=p.x-q.x,pdz=p.z-q.z,pd=Math.hypot(pdx,pdz)||1,chase=pd<45&&(pdx*ux+pdz*uz)/pd>.8;
+    const pts=solvePathV107(a,chase?p.x:q.x+ux*9,chase?p.z:q.z+uz*9);
+    if(pts){D.path=pts;D.pi=0;D.hold=pts.length*PG_V107.cs/speed*2.2+1.5;D.gp=chase?{x:p.x,z:p.z}:null;D.blockT=0;D.t=0;D.prog=0;return core.call(self,a,pts[0].x-q.x,pts[0].z-q.z,speed,dt);}
+   }
+   const mag=D.fail>=3?2.0:1.4;let side=D.side;
+   // Boş tərəfi seç: 2.6 m yanda maneə və dik yamac olmayan tərəf.
+   for(const s of [D.side,-D.side]){const A=mag*s,cA=Math.cos(A),sA=Math.sin(A),nx=q.x+(ux*cA-uz*sA)*2.6,nz=q.z+(ux*sA+uz*cA)*2.6;if(!wildlifeBlockedV39(a,nx,nz)&&Math.abs(terrainHeightAt(nx,nz)-terrainHeightAt(q.x,q.z))<2.6){side=s;break;}}
+   D.ang=mag*side;D.side=side;D.hold=1+.45*D.fail;D.flip=0;
+  }else D.fail=Math.max(0,D.fail-1);
+  D.t=0;D.prog=0;
+ }
+ return core.call(self,a,vx,vz,speed,dt);
+}
+wildlifeStepV39=(c=>function(a,vx,vz,speed,dt){
+ if(a&&a.root&&dt>0&&speed>0&&Number.isFinite(vx)&&Number.isFinite(vz)){
+  if(speed<2.3){
+   if(calmKindV107(a)){
+    if((a.restV107||0)>0)return 0;
+    if(Math.hypot(vx,vz)>.001){
+     const err=angDiffV99(Math.atan2(-vx,-vz),a.root.rotation.y);
+     if(Math.abs(err)>1.25){a.root.rotation.y+=Math.sign(err)*Math.min(Math.abs(err),3*dt);return 1e-4;}
+    }
+   }
+  }else if(!a.fleeDirV99&&!a.mounted){
+   const self=this,r=safeV107('detour',()=>detourStepV107(c,self,a,vx,vz,speed,dt));
+   if(r!==undefined)return r;
+  }
+ }
+ return c.call(this,a,vx,vz,speed,dt);
+})(wildlifeStepV39);
+// (c) Dönmə sürəti həddi + yerində fırlanan/irəli-geri gedən heyvan dayanıb otlayır.
+const smoothV107={rests:0,clamps:0};
+function smoothPassV107(dt){
+ for(const a of animals){
+  if(!calmKindV107(a)||a.hp<=0||!a.root)continue;
+  const q=a.root.position,yawNow=a.root.rotation.y;
+  let S=a.smV107;if(!S)S=a.smV107={x:q.x,z:q.z,yaw:yawNow,wx:q.x,wz:q.z,wt:0,path:0};
+  const step=Math.hypot(q.x-S.x,q.z-S.z);
+  if(step>3||!Number.isFinite(S.yaw)||!Number.isFinite(yawNow)){S.yaw=Number.isFinite(yawNow)?yawNow:0;S.wx=q.x;S.wz=q.z;S.wt=0;S.path=0;}
+  else{
+   const fast=step/dt>2.6||a.spooked||!!a.fleeDirV99||(a.alertV39||0)>0||(a.guardT||0)>0||(a.predatorFear||0)>0||!!a.antlerStrikeV39;
+   const lim=(fast?10:3.2)*dt,d=angDiffV99(yawNow,S.yaw);
+   if(Math.abs(d)>lim){a.root.rotation.y=S.yaw+Math.sign(d)*lim;smoothV107.clamps++;}
+   S.yaw=a.root.rotation.y;
+   if(fast){S.wx=q.x;S.wz=q.z;S.wt=0;S.path=0;}
+   else{
+    S.path+=step;S.wt+=dt;
+    if(S.wt>=3){
+     const net=Math.hypot(q.x-S.wx,q.z-S.wz);
+     if(S.path>2.4&&net<1.1&&net<S.path*.3){restV107(a,3+Math.random()*4);smoothV107.rests++;}
+     S.wx=q.x;S.wz=q.z;S.wt=0;S.path=0;
+    }
+   }
+  }
+  S.x=q.x;S.z=q.z;
+  if(a.restV107>0)a.restV107-=dt;
+ }
+}
+
+/* ---------- 4) Dağ sərhədi: yırtıcı oyunçunun dalınca çıxır, qalanı sakit dayanır ---------- */
+const leashV107={climbs:0,descents:0,stops:0};
+function downhillV107(a,dt,speed){
+ const q=a.root.position,e=1.5,gx=alpineClusterHeightAt(q.x+e,q.z)-alpineClusterHeightAt(q.x-e,q.z),gz=alpineClusterHeightAt(q.x,q.z+e)-alpineClusterHeightAt(q.x,q.z-e),gl=Math.hypot(gx,gz);
+ if(gl<.0001)return false;
+ const nx=q.x-gx/gl*speed*dt,nz=q.z-gz/gl*speed*dt;
+ if(onWaterAt(nx,nz)||wildlifeBlockedV39(a,nx,nz))return false;
+ q.x=nx;q.z=nz;q.y=terrainHeightAt(nx,nz);turnCreatureToward(a.root,-gx,-gz,dt,4);a.wander=Math.atan2(-gz,-gx);return true;
+}
+function herdOffMountainV107(a,back){
+ if(typeof herdRefV99!=='function')return;
+ const H=herdRefV99(a);if(!H||!Number.isFinite(H.x)||!Number.isFinite(H.z))return;
+ const C=herdV99.ctl.get(H);
+ if(C&&C.state==='travel'){
+  C.state='graze';C.t=10+Math.random()*10;C.dest=null;
+  const M=herdV99.groups.get(H);if(M)for(const m of M)if(m.gxV99!==undefined&&(m.deer||m.gazelle||m.zebraV46)){m.ox=m.gxV99;m.oz=m.gzV99;}
+ }
+ // Heyvanın hədəfi (sürü mərkəzi + öz yeri) dağdadırsa mərkəz düzənliyə doğru çəkilir.
+ const tx=H.x+(a.ox||0),tz=H.z+(a.oz||0);
+ if(alpineClusterHeightAt(tx,tz)>=7){
+  const k=.5;H.x+=(back.x-tx)*k;H.z+=(back.z-tz)*k;
+  if(H.tx!==undefined){H.tx=H.x;H.tz=H.z;}
+  if(H.homeV39&&alpineClusterHeightAt(H.homeV39.x,H.homeV39.z)>=5){H.homeV39.x+=(H.x-H.homeV39.x)*.5;H.homeV39.z+=(H.z-H.homeV39.z)*.5;}
+  if(C){C.home={x:H.x,z:H.z,r:Math.min(C.home?C.home.r:28,20)};}
+ }
+}
+habitatLeashV46=function(dt){
+ if(!(dt>0))return;
+ const p=camHolder.position,playerHigh=!mountainHeightOkV46(p.x,p.z);
+ for(const a of animals){
+  if(!lowlandSpeciesV46(a))continue;
+  const q=a.root.position;
+  if(!a.zoneCheckedV46){a.zoneCheckedV46=true;if(!mountainHeightOkV46(q.x,q.z)){relocateLowlandV46(a);continue;}}
+  if(mountainHeightOkV46(q.x,q.z)){a.lastLowV46={x:q.x,z:q.z};a.highV107=false;continue;}
+  if(a.lion||a.puma||a.dayBear){
+   // Oyunçu dağdadırsa yırtıcı onun dalınca çıxır (əvvəl 9 m hündürlükdə dayanıb qalırdı).
+   if(playerHigh&&!gameOver&&Math.hypot(p.x-q.x,p.z-q.z)<95){if(!a.highV107){a.highV107=true;leashV107.climbs++;}continue;}
+   // Oyunçu düzənliyə enib: yırtıcı ışınlanmır, yamacdan özü enir.
+   if(a.highV107||!a.lastLowV46||Math.hypot(a.lastLowV46.x-q.x,a.lastLowV46.z-q.z)>5){if(downhillV107(a,dt,2.6))leashV107.descents++;continue;}
+  }
+  const back=a.lastLowV46;if(!back)continue;
+  if(Math.hypot(back.x-q.x,back.z-q.z)>6){downhillV107(a,dt,2.2);continue;}
+  // Yumşaq sərhəd: bir addım geri, fırlanma yoxdur.
+  q.x+=(back.x-q.x)*Math.min(1,dt*6);q.z+=(back.z-q.z)*Math.min(1,dt*6);q.y=terrainHeightAt(q.x,q.z);
+  const e=1.5,gx=alpineClusterHeightAt(q.x+e,q.z)-alpineClusterHeightAt(q.x-e,q.z),gz=alpineClusterHeightAt(q.x,q.z+e)-alpineClusterHeightAt(q.x,q.z-e);
+  if(Math.hypot(gx,gz)>.0001)a.wander=Math.atan2(-gz,-gx)+(((a.phase||0)%1)-.5)*1.2;
+  if(a.spooked){if(a.calmCd>1.5)a.calmCd=1.5;}
+  else if(calmKindV107(a)){restV107(a,2+Math.random()*3);leashV107.stops++;safeV107('herdOff',()=>herdOffMountainV107(a,back));}
+ }
+};
+// Pişiklərin sıçrayışı: əvvəl yol boyu hündürlük başlanğıcdan 1.05 m-dən çox fərqlənəndə sıçrayış ləğv
+// olunurdu — yamacda (dağda) heç bir pişik hücum edə bilmir, yaxınlaşıb geri çəkilirdi. İndi yalnız
+// qəfil pillə (qaya divarı, uçurum) sıçrayışı dayandırır, hamar yamac yox.
+catLaunchV62=function(a,S){
+ const q=a.root.position,p=camHolder.position,dx=p.x-q.x,dz=p.z-q.z,d=Math.hypot(dx,dz)||1;
+ const reach=catPounceRangeV62(a),travel=Math.max(0,Math.min(4.3,d-reach)),x1=q.x+dx/d*travel,z1=q.z+dz/d*travel;
+ const h0=terrainHeightAt(q.x,q.z),stepMax=.25+travel/8*1.3;let prev=h0;
+ for(let i=1;i<=8;i++){
+  const x=THREE.MathUtils.lerp(q.x,x1,i/8),z=THREE.MathUtils.lerp(q.z,z1,i/8),h=terrainHeightAt(x,z);
+  if(wildlifeBlockedV39(a,x,z)||Math.abs(h-prev)>stepMax||Math.abs(h-h0)>4.8)return false;
+  prev=h;
+ }
+ a.root.rotation.y=Math.atan2(-dx,-dz);S.mode='pounce';S.t=0;S.hit=false;S.x0=q.x;S.z0=q.z;S.x1=x1;S.z1=z1;
+ S.y0=q.y;S.y1=terrainHeightAt(x1,z1);S.duration=a.siberianV59||a.lion?.39:.34;
+ S.height=a.siberianV59||a.lion?.58:.48;S.dirX=dx/d;S.dirZ=dz/d;
+ if(a.packV52)a.packV52.attackerV62=a;sGrowl();return true;
+};
+// Sürü köçü üçün hədəf dağ yamacında seçilmir.
+herdPickDestV99=(c=>function(C,H,m,kind){
+ for(let i=0;i<4;i++){const d=c.apply(this,arguments);if(!d)return d;if(!lowlandSpeciesV46(m)||alpineClusterHeightAt(d.x,d.z)<6)return d;}
+ return null;
+})(herdPickDestV99);
+
+/* ---------- 5) Səhər dumanı, dağ buludları, zirvə qarı ---------- */
+const skyV107={mist:0,cloud:0,snow:0,force:{mist:null,cloud:null,snow:null},mistMsg:-1,cloudMsg:0,aboveMsg:0,snowMsg:0,sprites:[],clouds:[],root:null,snowPts:null,t:0,col:new THREE.Color(),tmp:new THREE.Color()};
+const MIST_COL_V107=new THREE.Color(0xD3DCDF),CLOUD_COL_V107=new THREE.Color(0xE4E9EC);
+const CLOUD_BAND_V107={lo:54,hi:84};
+function mistMorningV107(){const m=nightsSurvived+((dayT>=.05&&dayT<.5)?0:1);return (m*7+3)%10<7||season==='autumn';}
+function mistTargetV107(){
+ if(skyV107.force.mist!==null)return skyV107.force.mist;
+ if(flowV42.step<6||!mistMorningV107()||!['clear','rumble','wind'].includes(weather.kind))return 0;
+ const t=dayT;let s=0;
+ if(t>=.93)s=(t-.93)/.07*.6;else if(t<.045)s=.6+t/.045*.4;else if(t<.11)s=1;else if(t<.18)s=1-(t-.11)/.07;
+ // Dərə dumanı: hündürə qalxdıqca seyrəlir.
+ return s*THREE.MathUtils.clamp(1-(camHolder.position.y-14)/20,0,1);
+}
+function cloudTargetV107(){
+ if(skyV107.force.cloud!==null)return skyV107.force.cloud;
+ const p=camHolder.position,B=CLOUD_BAND_V107;
+ if(alpineClusterHeightAt(p.x,p.z)<30)return 0;
+ const y=p.y,mid=(B.lo+B.hi)/2,half=(B.hi-B.lo)/2;
+ return THREE.MathUtils.clamp(1-Math.abs(y-mid)/half,0,1);
+}
+function snowTargetV107(){
+ if(skyV107.force.snow!==null)return skyV107.force.snow;
+ const p=camHolder.position;if(alpineClusterHeightAt(p.x,p.z)<40)return 0;
+ return THREE.MathUtils.smoothstep(p.y,72,90);
+}
+// Ağ, yumşaq dağ buludu toxuması (fırtına buludlarının tünd toxumasından fərqli).
+const cloudMapsV107=[];
+function cloudMapV107(seed){
+ const w=LOW_POWER?128:256,h=w/2,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
+ let s=seed;const rnd=()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff;};
+ for(let i=0;i<26;i++){
+  const u=.13+rnd()*.74,edge=1-Math.abs(u-.5)*2,x=u*w,y=(.52+(rnd()-.5)*.3-edge*.08)*h;
+  const r=Math.min((.06+rnd()*.1)*w*(.45+edge*.6),x*.97,(w-x)*.97,y*.97,(h-y)*.97);if(r<3)continue;
+  const sh=(236+rnd()*19)|0,gr=g.createRadialGradient(x,y,0,x,y,r);
+  gr.addColorStop(0,'rgba('+sh+','+sh+','+Math.min(255,sh+3)+',.6)');gr.addColorStop(.5,'rgba('+sh+','+sh+','+Math.min(255,sh+3)+',.3)');gr.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,6.283);g.fill();
+ }
+ g.globalCompositeOperation='source-atop';const lg=g.createLinearGradient(0,h*.4,0,h*.95);lg.addColorStop(0,'rgba(118,134,152,0)');lg.addColorStop(1,'rgba(118,134,152,.42)');g.fillStyle=lg;g.fillRect(0,0,w,h);
+ const t=new THREE.CanvasTexture(c);t.minFilter=THREE.LinearFilter;t.magFilter=THREE.LinearFilter;t.generateMipmaps=false;t.userData={shared:true};return t;
+}
+function cloudSpriteV107(i){
+ if(!cloudMapsV107.length)for(const seed of [1171,2903,4517])cloudMapsV107.push(cloudMapV107(seed));
+ const m=new THREE.SpriteMaterial({map:cloudMapsV107[i%3],color:0xFFFFFF,transparent:true,depthWrite:false,fog:false,opacity:0});m.userData.shared=true;
+ return new THREE.Sprite(m);
+}
+function buildSkyV107(){
+ const S=skyV107;if(S.root)return;
+ S.root=new THREE.Group();S.root.name='skyV107';scene.add(S.root);
+ // Yer dumanı: oyunçunun ətrafında sürüşən yumşaq zolaqlar.
+ const nm=LOW_POWER?5:8;
+ for(let i=0;i<nm;i++){const s=cloudSpriteV107(i);s.visible=false;s.renderOrder=3;s.userData.m={a:i/nm*6.283+Math.random(),r:16+Math.random()*26,w:24+Math.random()*16,h:5.5+Math.random()*3,drift:(Math.random()<.5?-1:1)*(.012+Math.random()*.02),k:.7+Math.random()*.3};S.root.add(s);S.sprites.push(s);}
+ // Dağ buludları: əsas dağın belində qurşaq + hər peyk təpədə kiçik papaq.
+ const add=(M,n,rad,y0,y1,sc)=>{for(let i=0;i<n;i++){const s=cloudSpriteV107(i+1);s.renderOrder=2;
+  s.userData.c={M,a:i/n*6.283+(Math.random()-.5)*.25,r:rad*(.9+Math.random()*.22),y:y0+Math.random()*(y1-y0),w:sc*(.8+Math.random()*.5),h:0,sp:(.0035+Math.random()*.003)*(i%2?1:.7),ph:Math.random()*6.283,k:.62+Math.random()*.3};
+  S.root.add(s);S.clouds.push(s);}};
+ add(ALPINE_MOUNTAIN,LOW_POWER?10:16,132,58,82,105);
+ for(const m of ALPINE_SATELLITES)add(m,LOW_POWER?2:3,m.r*.36,m.height*.72,m.height*.98,58);
+ // Zirvə qarı.
+ const n=LOW_POWER?150:280,pos=new Float32Array(n*3);
+ for(let i=0;i<n;i++){pos[i*3]=(Math.random()-.5)*28;pos[i*3+1]=Math.random()*16-4;pos[i*3+2]=(Math.random()-.5)*28;}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+ const m=new THREE.PointsMaterial({map:snowflakeTexture,color:0xFFFFFF,size:.13,transparent:true,opacity:0,depthWrite:false,fog:false,sizeAttenuation:true});
+ S.snowPts=new THREE.Points(g,m);S.snowPts.frustumCulled=false;S.snowPts.visible=false;S.snowPts.renderOrder=4;scene.add(S.snowPts);
+}
+function skyTickV107(dt){
+ const S=skyV107,p=camHolder.position;buildSkyV107();S.t+=dt;
+ const ease=(cur,tgt,rate)=>cur+(tgt-cur)*Math.min(1,dt*rate);
+ S.mist=ease(S.mist,mistTargetV107(),.35);S.cloud=ease(S.cloud,cloudTargetV107(),1.2);S.snow=ease(S.snow,snowTargetV107(),.8);
+ if(S.mist<.004)S.mist=0;if(S.cloud<.004)S.cloud=0;if(S.snow<.004)S.snow=0;
+ const night=typeof skyNightBlend==='number'?skyNightBlend:0,F=scene.fog;
+ // --- görünüş məsafəsi: duman 62 m-ə, buludun içi 24 m-ə qədər ---
+ if(S.mist>0){
+  const k=S.mist;F.far=THREE.MathUtils.lerp(F.far,Math.min(F.far,62),k);F.near=THREE.MathUtils.lerp(F.near,Math.min(F.near,4),k);
+  S.tmp.copy(MIST_COL_V107).multiplyScalar(1-night*.72);F.color.lerp(S.tmp,k*.62);
+ }
+ if(S.cloud>0){
+  const k=S.cloud;F.far=THREE.MathUtils.lerp(F.far,Math.min(F.far,24),k);F.near=THREE.MathUtils.lerp(F.near,Math.min(F.near,1.5),k);
+  S.tmp.copy(CLOUD_COL_V107).multiplyScalar(1-night*.74);F.color.lerp(S.tmp,k*.8);
+ }
+ // --- yer dumanı zolaqları ---
+ const mv=S.mist>.02;
+ for(const s of S.sprites){
+  s.visible=mv;if(!mv)continue;
+  const m=s.userData.m;m.a+=m.drift*dt;
+  const x=p.x+Math.cos(m.a)*m.r,z=p.z+Math.sin(m.a)*m.r;
+  s.position.set(x,Math.max(terrainHeightAt(x,z),0)+m.h*.3,z);s.scale.set(m.w,m.h,1);
+  s.material.opacity=S.mist*.3*m.k;s.material.color.copy(MIST_COL_V107).multiplyScalar(1-night*.7);
+ }
+ // --- dağ buludları ---
+ const storm=typeof skyStormBlend==='number'?skyStormBlend:0;
+ S.col.setRGB(1,1,1).multiplyScalar((1-night*.78)*(1-storm*.42));
+ for(const s of S.clouds){
+  const c=s.userData.c;c.a+=c.sp*dt;
+  const x=c.M.x+Math.cos(c.a)*c.r,z=c.M.z+Math.sin(c.a)*c.r,y=c.y+Math.sin(S.t*.11+c.ph)*1.6;
+  s.position.set(x,y,z);s.scale.set(c.w,c.w*.46,1);
+  // Kameranın düz üstünə gələn bulud ağ "divara" çevrilməsin: yaxında əriyir (içində duman onu əvəz edir).
+  const d=Math.hypot(x-p.x,y-p.y,z-p.z),near=THREE.MathUtils.smoothstep(d,c.w*.22,c.w*.75);
+  s.material.opacity=c.k*near*(1-S.cloud*.35);s.material.color.copy(S.col);s.visible=s.material.opacity>.01;
+ }
+ // --- zirvə qarı ---
+ // Oyunun öz alp qarı çox xırdadır (gözə dəymir): zirvədə iri dənəli qat əlavə olunur.
+ const P=S.snowPts,on=S.snow>.02;
+ P.visible=on;
+ if(on){
+  P.position.copy(p);P.material.opacity=S.snow*.92;
+  const arr=P.geometry.attributes.position.array,fall=1.7*dt,wx=Math.sin(S.t*.4)*.9*dt,wz=Math.cos(S.t*.31)*.6*dt;
+  for(let i=0;i<arr.length;i+=3){
+   arr[i]+=wx+Math.sin(S.t*1.3+i)*.004;arr[i+2]+=wz;arr[i+1]-=fall*(.7+(i%7)*.08);
+   if(arr[i+1]<-4)arr[i+1]+=16;
+   if(arr[i]>14)arr[i]-=28;else if(arr[i]<-14)arr[i]+=28;
+   if(arr[i+2]>14)arr[i+2]-=28;else if(arr[i+2]<-14)arr[i+2]+=28;
+  }
+  P.geometry.attributes.position.needsUpdate=true;
+ }
+ // --- bir dəfəlik yazılar ---
+ if(S.force.mist===null&&S.mist>.55&&!isNight()){const m=nightsSurvived+((dayT>=.05&&dayT<.5)?0:1);if(S.mistMsg!==m){S.mistMsg=m;showEvent('🌫️ Morning mist fills the valley · it lifts as the sun climbs',3200);}}
+ if(S.cloud>.6&&elapsed-S.cloudMsg>90){S.cloudMsg=elapsed;showEvent('☁️ You climb into the clouds · watch your footing',2800);}
+ if(S.cloud<.05&&p.y>CLOUD_BAND_V107.hi+3&&alpineClusterHeightAt(p.x,p.z)>60&&elapsed-S.aboveMsg>150&&elapsed-S.cloudMsg<60){S.aboveMsg=elapsed;showEvent('⛰️ Above the clouds · the valley lies under a white sea',3200);}
+ if(S.snow>.6&&elapsed-S.snowMsg>150){S.snowMsg=elapsed;showEvent('❄️ Snow falls on the summit',2600);}
+}
+
+/* ---------- Bağlantılar ---------- */
+updateAnimals=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ if(dt>0){safeV107('night',()=>nightTickV107(dt));safeV107('mleo',()=>mountainLeopardTickV107(dt));safeV107('smooth',()=>smoothPassV107(dt));}
+ return r;
+})(updateAnimals);
+updateWeather=(c=>function(dt){
+ const r=c.apply(this,arguments);
+ if(dt>0)safeV107('sky',()=>skyTickV107(dt));
+ return r;
+})(updateWeather);
+if(flowV42.debug&&window.wildValleyTestV44){
+ window.wildValleyTestV44.v107={
+  kind:n=>nightKindV107(n),plan:(from=1,to=16)=>{const o=[];for(let n=from;n<=to;n++)o.push(n+':'+nightKindV107(n)[0]);return o.join(' ');},
+  forceNight:k=>{nightV107.force=k||null;return nightKindV107();},
+  leopards:()=>spawnMountainLeopardsV107(true),alive:()=>mountainLeopardsAliveV107(),
+  storm:()=>nightStormV107(),
+  sky:(mist,cloud,snow)=>{skyV107.force.mist=mist===undefined?null:mist;skyV107.force.cloud=cloud===undefined?null:cloud;skyV107.force.snow=snow===undefined?null:snow;},
+  state:()=>({kind:nightKindV107(),night:nightsSurvived+1,isNight:isNight(),mleo:{...mleoV107},nightLog:nightV107.log.slice(-6),smooth:{...smoothV107},leash:{...leashV107},path:{solves:pathV107.solves,found:pathV107.found,maxMs:+pathV107.maxMs.toFixed(1)},sky:{mist:+skyV107.mist.toFixed(2),cloud:+skyV107.cloud.toFixed(2),snow:+skyV107.snow.toFixed(2),clouds:skyV107.clouds.length,sprites:skyV107.sprites.length},errs:[...errOnceV107]})
+ };
+}
+/* /V107 */
+
 
 
 
